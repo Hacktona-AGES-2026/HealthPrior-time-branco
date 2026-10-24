@@ -32,3 +32,13 @@ def test_cors_soma_as_origens_do_ambiente_sem_barra_final(monkeypatch):
     local = ("http://localhost:5173", "http://127.0.0.1:5173")
     assert recarregar(monkeypatch)[1] == local
     assert recarregar(monkeypatch, HP_CORS_ORIGINS="https://app.vercel.app/, https://x.com")[1] == local + ("https://app.vercel.app", "https://x.com")
+
+
+def test_imagem_docker_leva_a_tabela_de_irr_dos_fatores_do_score():
+    from pathlib import Path
+
+    raiz = Path(__file__).resolve().parents[2]
+    assert (raiz / "score" / "references" / "irr_nacional_cid_idade_2019_2023.csv").is_file()
+    assert "COPY score/references score/references" in (raiz / "backend" / "Dockerfile").read_text()
+    linhas = (raiz / ".dockerignore").read_text().split()
+    assert "score" not in linhas and "!score/references" in linhas
