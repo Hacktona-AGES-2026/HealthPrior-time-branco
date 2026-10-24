@@ -1,10 +1,10 @@
 import os
 
-import pytest
-from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
+os.environ.setdefault("HP_USE_MOCKS", "true")
 
-from app.models import Base
+import pytest
+from sqlalchemy.engine import make_url
+from sqlmodel import Session, SQLModel, create_engine, text
 
 TEST_DATABASE_URL = os.environ.get(
     "TEST_DATABASE_URL",
@@ -12,32 +12,35 @@ TEST_DATABASE_URL = os.environ.get(
 )
 
 
-def _ensure_database(url: str) -> None:
-    target = make_url(url)
-    admin = create_engine(target.set(database="postgres"), isolation_level="AUTOCOMMIT")
+def _garantir_banco(url: str) -> None:
+    alvo = make_url(url)
+    admin = create_engine(alvo.set(database="postgres"), isolation_level="AUTOCOMMIT")
     with admin.connect() as conn:
-        exists = conn.execute(
-            text("select 1 from pg_database where datname = :n"), {"n": target.database}
-        ).scalar()
-        if not exists:
-            conn.execute(text(f'create database "{target.database}"'))
+        existe = conn.execute(text("select 1 from pg_database where datname = :n"),
+                              {"n": alvo.database}).scalar()
+        if not existe:
+            conn.execute(text(f'create database "{alvo.database}"'))
     admin.dispose()
 
 
 @pytest.fixture(scope="session")
 def _engine():
     try:
-        _ensure_database(TEST_DATABASE_URL)
+        _garantir_banco(TEST_DATABASE_URL)
     except Exception as e:  # Postgres fora do ar: avisa em vez de falhar com stack trace
         pytest.skip(f"Postgres de teste indisponível ({e.__class__.__name__}); rode `docker compose up -d`")
+    from app.infrastructure import tables  # noqa: F401  (registra os modelos)
+
     engine = create_engine(TEST_DATABASE_URL)
     yield engine
     engine.dispose()
 
 
 @pytest.fixture
-def engine(_engine):
+def session(_engine):
     """Banco de teste vazio a cada teste."""
-    Base.metadata.drop_all(_engine)
-    yield _engine
-    Base.metadata.drop_all(_engine)
+    SQLModel.metadata.drop_all(_engine)
+    SQLModel.metadata.create_all(_engine)
+    with Session(_engine) as s:
+        yield s
+    SQLModel.metadata.drop_all(_engine)

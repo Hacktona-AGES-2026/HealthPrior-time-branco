@@ -21,6 +21,7 @@ Ao ser chamado:
    - **I-04** Classe muda sem passar por decisão humana (fora da carga inicial)?
    - **I-05** Saída de LLM usada diretamente como classe ou CID, sem citação literal verificada?
    - **I-07** O fluxo publica/escreve `fila_priorizada.csv` sem rodar o verificador?
+   - **Arquitetura (docs/arquitetura-backend.md §2):** `backend/app/domain` importando `fastapi`, `sqlmodel`, `pandas` ou outras camadas; `application` importando `infrastructure`/`api`; regra de negócio dentro de rota. Rode `cd backend && pytest -q tests/test_arquitetura.py`.
    - **Outros:** `today()`/`datetime.now()` em vez de `REF = 2026-10-23`; eventos com data anterior à entrada contando como piora; HbA1c/ASA/distância/faltas/contagem de eventos entrando no score; segredo no código.
 3. Se houver um `fila_priorizada.csv` gerado, rode `python src/verificar_fila_priorizada.py <arquivo>`.
 

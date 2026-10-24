@@ -1,50 +1,79 @@
+"""Comandos de linha (rode dentro de backend/):
+
+    python -m app.cli init-db     cria as tabelas
+    python -m app.cli carga       US-01/02: carga inicial + normalização (mesma transação)
+    python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
+    python -m app.cli gerar-fila  US-08/09/10: gera, verifica e publica fila_priorizada.csv
+    python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
+"""
 import argparse
 import sys
-from pathlib import Path
 
-from app import config
-from app.db import get_engine
-from app.loader import CargaError, carga
-from app.normalization import NormalizacaoResult, normalizar
+from sqlmodel import Session
 
-
-def cmd_carga(args: argparse.Namespace) -> int:
-    try:
-        resultado = carga(get_engine(), Path(args.data_dir))
-    except CargaError as e:
-        print(f"Erro na carga: {e}", file=sys.stderr)
-        return 1
-    for tabela, r in resultado.tabelas.items():
-        print(f"{tabela}: {r.lido} lidos, {r.inseridos} inseridos, {r.atualizados} atualizados")
-    _print_normalizacao(resultado.normalizacao)
-    return 0
+from app.application.carga_inicial import CargaInicial
+from app.application.normalizar import Normalizar, ResumoNormalizacao
+from app.config import settings
+from app.domain.errors import CargaInvalidaError
+from app.infrastructure.csv_loader import LeitorDataset
+from app.infrastructure.db import criar_tabelas, engine
+from app.infrastructure.repositories import (
+    SqlCargaRepository,
+    SqlCorrecaoRepository,
+    SqlSolicitacaoRepository,
+    SqlUnidadeDeTrabalho,
+)
 
 
-def cmd_normalizar(_: argparse.Namespace) -> int:
-    with get_engine().begin() as conn:
-        _print_normalizacao(normalizar(conn))
-    return 0
+def cmd_init_db() -> None:
+    criar_tabelas()
+    print(f"Tabelas criadas em {settings.db_url}")
 
 
-def _print_normalizacao(r: NormalizacaoResult) -> None:
+def _imprimir_normalizacao(r: ResumoNormalizacao) -> None:
     regras = ", ".join(f"{regra}: {n}" for regra, n in sorted(r.por_regra.items())) or "nenhuma"
     print(f"normalização: {r.solicitacoes} solicitações, {r.correcoes} correções ({regras})")
 
 
-def main(argv=None) -> int:
+def cmd_carga() -> None:
+    criar_tabelas()
+    with Session(engine) as session:
+        normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+        try:
+            resumo = CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
+                                  SqlUnidadeDeTrabalho(session)).executar()
+        except CargaInvalidaError as e:
+            sys.exit(f"Erro na carga: {e.mensagem}")
+    for tabela in ("procedimentos", "solicitacoes", "eventos"):
+        r = getattr(resumo, tabela)
+        print(f"{tabela}: {r.lido} lidos, {r.inseridos} inseridos, {r.atualizados} atualizados")
+    _imprimir_normalizacao(resumo.normalizacao)
+
+
+def cmd_normalizar() -> None:
+    with Session(engine) as session:
+        resumo = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session)).executar()
+        SqlUnidadeDeTrabalho(session).confirmar()
+    _imprimir_normalizacao(resumo)
+
+
+def cmd_gerar_fila() -> None:
+    raise NotImplementedError("US-08/09/10: montar GerarFila (ver app/api/deps.py) e executar")
+
+
+def cmd_decisoes() -> None:
+    raise NotImplementedError("US-11: gerar tabela de exclusões")
+
+
+COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
+            "gerar-fila": cmd_gerar_fila, "decisoes": cmd_decisoes}
+
+
+def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
-    sub = parser.add_subparsers(dest="comando", required=True)
-
-    p = sub.add_parser("carga", help="carrega os CSVs de data/ no banco (idempotente)")
-    p.add_argument("--data-dir", default=str(config.DATA_DIR))
-    p.set_defaults(func=cmd_carga)
-
-    p = sub.add_parser("normalizar", help="recalcula as colunas normalizadas e o correcoes_log")
-    p.set_defaults(func=cmd_normalizar)
-
-    args = parser.parse_args(argv)
-    return args.func(args)
+    parser.add_argument("comando", choices=COMANDOS)
+    COMANDOS[parser.parse_args().comando]()
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
