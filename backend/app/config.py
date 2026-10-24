@@ -7,6 +7,19 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _carregar_dotenv(caminho: Path) -> None:
+    """Lê KEY=valor do .env da raiz sem sobrescrever o ambiente (segredos ficam fora do código)."""
+    if not caminho.is_file():
+        return
+    for linha in caminho.read_text(encoding="utf-8").splitlines():
+        chave, sep, valor = linha.strip().partition("=")
+        if sep and not chave.startswith("#"):
+            os.environ.setdefault(chave.strip(), valor.strip().strip('"').strip("'"))
+
+
+_carregar_dotenv(REPO_ROOT / ".env")
+
+
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
@@ -15,6 +28,10 @@ class Settings:
     verificador_path: Path
     ref_date: date
     use_mocks: bool
+    openrouter_api_key: str
+    llm_model: str
+    llm_enabled: bool
+    llm_cache_path: Path
 
 
 def _load() -> Settings:
@@ -30,6 +47,11 @@ def _load() -> Settings:
         ref_date=date.fromisoformat(os.getenv("HP_REF_DATE", "2026-10-23")),
         # Enquanto os casos de uso não existem, a API devolve mocks com o contrato final.
         use_mocks=os.getenv("HP_USE_MOCKS", "true").lower() == "true",
+        # Extração de sinais do texto por LLM (OpenRouter). Sem chave, só palavra-chave.
+        openrouter_api_key=os.getenv("OPENROUTER_API_KEY", ""),
+        llm_model=os.getenv("HP_LLM_MODEL", "typesafe/jev-1.14"),
+        llm_enabled=os.getenv("HP_LLM_ENABLED", "true").lower() == "true",
+        llm_cache_path=Path(os.getenv("HP_LLM_CACHE", REPO_ROOT / "data" / "processed" / "cache_llm.json")),
     )
 
 
