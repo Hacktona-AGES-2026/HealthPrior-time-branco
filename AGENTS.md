@@ -48,7 +48,7 @@ docs/
   dataset-readme.md        README original do dataset (enunciado, entregável)
   dicionario_dados.md      descrição das colunas
   templates/               modelos (ex.: AGENTS.md de módulo)
-  (swalis.md)              a criar: regras internas do SWALIS
+  swalis.md                SWALIS por regras (eixos, negação, LLM)
 DECISOES.md                decisões e exclusões (entregável)
 backend/                   API FastAPI + pipeline (Clean Architecture) — ver backend/AGENTS.md
 frontend/                  a criar — tem seu próprio AGENTS.md

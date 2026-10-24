@@ -61,6 +61,7 @@ def montar_justificativa(
     pct_prazo: float,
     editado_manualmente: bool = False,
     sintomas: list[str] | None = None,
+    eixos: list[str] | None = None,
 ) -> str:
     """Gera a justificativa legível em português para uma linha da fila."""
     if camada == 1:
@@ -72,6 +73,8 @@ def montar_justificativa(
         base = "Camada 3: sem sinais clínicos de urgência."
     if sintomas:
         base += " Sintomas: " + "; ".join(_texto_motivo(s, solicitacao) for s in sintomas) + "."
+    if eixos:
+        base += " SWALIS: " + "; ".join(eixos) + "."
     texto = (f"{base} Classe {classe} (prazo {prazo_dias} dias, regras {versao_regras}); "
              f"{dias_em_fila} dias em fila, {pct_prazo:g}% do prazo.")
     if editado_manualmente:
@@ -123,7 +126,9 @@ def montar_fila(
             justificativa=montar_justificativa(camada, sol, motivos, classe_txt, prazo,
                                                res.versao_regras, dias,
                                                pct, sol.editado_manualmente,
-                                               sintomas=sintomas),
+                                               sintomas=sintomas,
+                                               eixos=[m.evidencia for m in res.motivos
+                                                      if m.sinal.startswith("eixo_")]),
             camada=camada,
             classe=classe_txt,
             pct_prazo_consumido=pct,

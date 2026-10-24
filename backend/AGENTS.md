@@ -17,10 +17,11 @@ python -m app.cli carga                # US-01 + US-02 (carga e normalização, 
 python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
 python -m app.cli gerar-fila           # US-08/09/10 (via banco, após US-01)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
+python -m app.cli extrair-sinais       # SWALIS: pré-aquece o cache do LLM e mostra as classes
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
-Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`.
+Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`, `OPENROUTER_API_KEY` (só no `.env` da raiz), `HP_LLM_MODEL` (padrão `typesafe/jev-1.14`), `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
 
 ## Arquitetura (Clean Architecture enxuta)
 
@@ -33,6 +34,8 @@ app/
     ports.py           interfaces (Protocol): repositórios, SwalisScorer, VerificadorFila
     cid.py             normalização e classificação de CID (I-09)
     urgencia.py        sinais de urgência (camada 2)
+    swalis.py          SWALIS por regras: eixos progressão × sintoma (docs/swalis.md)
+    texto.py           busca de termos com negação
     ranking.py         trava da regra de ouro (US-08)
     preprocessing/     regras PRE-xx (US-02..05)
   application/       CASOS DE USO. Orquestram domínio + portas. Um arquivo por caso de uso.
@@ -46,7 +49,9 @@ app/
     db.py, tables.py   Postgres/SQLModel (tabelas espelham fluxo-sistema.md §8)
     repositories.py    Sql*Repository (Table <-> entidade)
     csv_loader.py      leitura do dataset (CSV -> registros tipados; valores originais)
-    swalis_stub.py     SWALIS provisório (troque pelo real em api/deps.py)
+    swalis_stub.py     SWALIS provisório (não usado mais; referência)
+    swalis_regras.py   SwalisRegras (C-07) + criar_swalis() a partir da config
+    llm_openrouter.py  extrator de sinais por LLM (Jev/OpenRouter) com cache em JSON
     verificador.py     chama src/verificar_fila_priorizada.py
     exportador.py      escreve fila_priorizada.csv
   api/               ENTRADA HTTP. Fina: valida, chama caso de uso, devolve schema.
