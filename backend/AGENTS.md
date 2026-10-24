@@ -53,7 +53,7 @@ app/
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
-    detectar_recontato.py US-17 (REC-01; passo 3 da atualização diária, D-112/D-113)
+    detectar_recontato.py US-17 (REC-01; passo 3 da atualização diária, D-113/D-114)
     decidir.py         US-13 (aprovar); US-14 (editar/manter)
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.
