@@ -84,7 +84,7 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 
 ## Convenções locais
 - Sem migrations (D-16): tabelas via `create_all`. Mudou o schema? `docker compose down -v` e rode a carga de novo (ex.: a US-16 criou `fila_publicada.data_referencia`).
-- Data de referência (US-16, D-75): `HP_REF_DATE` (23/10) é a oficial (CLI, carga, entregável, testes). A API usa a `data_referencia` da última fila publicada (`get_data_referencia` em `api/deps.py`); só a atualização diária a avança, e o `gerar-fila` do CLI a volta para 23/10. Nada de `+1` gravado: tudo é recalculado da data.
+- Data de referência (US-16, D-76): `HP_REF_DATE` (23/10) é a oficial (CLI, carga, entregável, testes). A API usa a `data_referencia` da última fila publicada (`get_data_referencia` em `api/deps.py`); só a atualização diária a avança, e o `gerar-fila` do CLI a volta para 23/10. Nada de `+1` gravado: tudo é recalculado da data.
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
 - Transação: repositórios não confirmam; o caso de uso chama `UnidadeDeTrabalho.confirmar()/desfazer()` (carga + normalização entram juntas ou não entram).
 - Flags (US-03): `oncologico` pelo CID (nunca pela flag) e `piora_recalculada` pelos eventos; eventos recebem `duplicado_de`/`historico` (nunca são apagados). As flags originais ficam intactas e cada divergência vai para `correcoes_log` (PRE-05/06).

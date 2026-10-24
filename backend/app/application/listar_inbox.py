@@ -65,9 +65,10 @@ class ListarInbox:
             res = self._scorer.calcular(s, eventos_por_id.get(s.solicitacao_id, []))
             sugerida = res.classe_sistema
             if not entra_no_inbox(sugerida, s.classe_status, s.classe_confirmada,
-                                  s.prioridade_norm):
+                                  s.prioridade_norm, s.classe_vigente):
                 continue
-            atual = classe_referencia(s.classe_status, s.classe_confirmada, s.prioridade_norm)
+            atual = classe_referencia(s.classe_status, s.classe_confirmada, s.prioridade_norm,
+                                      s.classe_vigente)
             dist = distancia(sugerida, atual)
             gatilho = next((m.ref for m in res.motivos if m.fonte == "evento" and m.ref), None)
             editado = ((s.editado_por, s.editado_em)

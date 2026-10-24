@@ -300,7 +300,7 @@ Documentado à parte. Este fluxo só depende do **contrato**:
   3. detecta pacientes sem evento há N dias → gera recontato (C-04);
   4. passa pela trava (C-11) e pelo verificador (C-12).
 - Não passa pelo regulador. Eventos que **mudam a classe** não esperam o job: vão direto ao regulador (importante para A1).
-- **Implementado (US-16, D-75)** como disparo manual: `POST /admin/atualizacao-diaria` avança a data de referência simulada e republica (passos 1, 2 e 4). Passo 3 = US-17.
+- **Implementado (US-16, D-76)** como disparo manual: `POST /admin/atualizacao-diaria` avança a data de referência simulada e republica (passos 1, 2 e 4). Passo 3 = US-17.
 
 ### C-14 · Ciclo de aprendizado (offline)
 Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + procedimento → classe), nunca a fórmula de tempo/prazo.

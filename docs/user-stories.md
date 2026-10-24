@@ -222,7 +222,7 @@ Como **sistema**, quero recalcular o % do prazo de todos uma vez por dia, para a
 - **Front:** botão "Rodar atualização diária".
 - **Depende de:** US-10
 
-> **Status: back implementado** (branch `feat/US-16-atualizacao-diaria`, D-75): relógio simulado, data em `fila_publicada.data_referencia`, fila e detalhe usam a mesma. Recontato (passo 3 do C-13) é a US-17; botão no front pendente.
+> **Status: back implementado** (branch `feat/US-16-atualizacao-diaria`, D-76): relógio simulado, data em `fila_publicada.data_referencia`, fila e detalhe usam a mesma. Recontato (passo 3 do C-13) é a US-17; botão no front pendente.
 
 #### US-17 · Recontato de quem está sem eventos — **P2** · Back
 Como **equipe administrativa**, quero ser avisada de quem está sem eventos há N dias, para não confundir silêncio com estabilidade (I-08).

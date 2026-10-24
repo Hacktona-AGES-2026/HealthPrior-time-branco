@@ -30,6 +30,11 @@ class JustificativaObrigatoriaError(DomainError):
     status_http = 422
 
 
+class DecisaoInvalidaError(DomainError):
+    codigo = "DECISAO_INVALIDA"
+    status_http = 422
+
+
 class EventoInvalidoError(DomainError):
     codigo = "EVENTO_INVALIDO"
     status_http = 422

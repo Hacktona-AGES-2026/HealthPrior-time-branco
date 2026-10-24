@@ -28,6 +28,7 @@ from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
+    SqlDecisaoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
     SqlPendenciaRepository,
@@ -110,14 +111,23 @@ def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> Expo
     return ExportarFilaPublicada(SqlFilaRepository(session), ExportadorCsv(), settings.output_dir)
 
 
+# US-15
 def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEvento:
     return RegistrarEvento(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
-                           get_scorer(), pendencias=None)
+                           get_scorer(), SqlPendenciaRepository(session),
+                           SqlUnidadeDeTrabalho(session))
 
 
+# US-13/14
 def get_decidir(session: Session = Depends(get_session),
-                gerar_fila: GerarFila = Depends(get_gerar_fila)) -> DecidirClasse:
-    return DecidirClasse(SqlSolicitacaoRepository(session), decisoes=None, gerar_fila=gerar_fila)
+                data: date = Depends(get_data_referencia),
+                publicar: PublicarFila = Depends(get_publicar_fila)) -> DecidirClasse:
+    # Mesma data da fila (US-16): `editado_em` e o envelhecimento do score editado partem dela.
+    return DecidirClasse(
+        solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
+        decisoes=SqlDecisaoRepository(session), scorer=get_scorer(data),
+        uow=SqlUnidadeDeTrabalho(session), publicar=publicar, fila=SqlFilaRepository(session),
+        relogio=lambda: datetime.now(timezone.utc), ref_date=data)
 
 
 # US-20
