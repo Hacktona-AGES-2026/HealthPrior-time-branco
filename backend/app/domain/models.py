@@ -66,6 +66,7 @@ class Solicitacao:
     editado_manualmente: bool = False
     editado_por: str | None = None
     editado_em: datetime | None = None
+    motivo_codificado: MotivoCodificado | None = None
 
 
 @dataclass
