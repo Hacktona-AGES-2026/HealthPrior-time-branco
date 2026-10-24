@@ -9,6 +9,13 @@ export type ResolverPendenciaIn = components["schemas"]["ResolverPendenciaIn"]
 export type ResultadoResolucao = components["schemas"]["ResolverPendenciaOut"]
 
 
+export type Proposta = components["schemas"]["PropostaDetalheOut"]
+export type CasoOrigem = components["schemas"]["CasoOrigemOut"]
+export type ImpactoProposta = components["schemas"]["ImpactoOut"]
+export type ListaPropostas = components["schemas"]["PropostasOut"]
+export type StatusProposta = Proposta["status"]
+export type ResultadoProposta = components["schemas"]["DecidirPropostaOut"]
+
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export class ErroApi extends Error {
@@ -66,4 +73,36 @@ export async function resolverPendencia(pendenciaId: string, corpo: ResolverPend
   }
   if (!resposta.ok) throw await lerErro(resposta)
   return (await resposta.json()) as ResultadoResolucao
+}
+
+/** US-19 · GET /propostas, com os casos de origem e, nas pendentes, o impacto simulado (shadow run). */
+export async function listarPropostas(status: StatusProposta, sinal?: AbortSignal): Promise<ListaPropostas> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/propostas?status=${status}`, { signal: sinal })
+  } catch (e) {
+    if (sinal?.aborted) throw e
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (!resposta.ok) throw await lerErro(resposta)
+  return (await resposta.json()) as ListaPropostas
+}
+
+/** US-19 · POST /propostas/{id}/decidir. Aprovar abre a versão N+1 das regras; rejeitar exige a observação. */
+export async function decidirProposta(
+  propostaId: string,
+  corpo: { decisao: "aprovar" | "rejeitar"; usuario_id: string; observacao?: string },
+): Promise<ResultadoProposta> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/propostas/${encodeURIComponent(propostaId)}/decidir`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    })
+  } catch {
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (!resposta.ok) throw await lerErro(resposta)
+  return (await resposta.json()) as ResultadoProposta
 }

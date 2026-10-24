@@ -95,3 +95,20 @@ class DataReferenciaInvalidaError(DomainError):
 
     codigo = "DATA_REFERENCIA_INVALIDA"
     status_http = 422
+
+
+class PropostaNaoEncontradaError(DomainError):
+    codigo = "PROPOSTA_NAO_ENCONTRADA"
+    status_http = 404
+
+
+class PropostaJaDecididaError(DomainError):
+    """Só proposta `pendente` vai ao comitê; descartada (I-01) ou já decidida não."""
+
+    codigo = "PROPOSTA_JA_DECIDIDA"
+    status_http = 409
+
+
+class DecisaoPropostaInvalidaError(DomainError):
+    codigo = "DECISAO_INVALIDA"
+    status_http = 422

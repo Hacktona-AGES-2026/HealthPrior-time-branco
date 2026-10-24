@@ -181,6 +181,21 @@ class PropostaRegraTable(SQLModel, table=True):
     observacao: Optional[str] = None
 
 
+class RegraAprendidaTable(SQLModel, table=True):
+    """US-19: regra aprovada pelo comitê. Cada aprovação abre a versão N+1; `ativa=False` reverte."""
+
+    __tablename__ = "regras_aprendidas"
+
+    regra_id: str = Field(primary_key=True)  # o proposta_id que a originou
+    procedimento_id: str = Field(index=True)
+    classe_de: str
+    classe_para: str
+    versao: int = Field(index=True)
+    aprovada_por: str
+    aprovada_em: datetime
+    ativa: bool = True
+
+
 class FilaPublicadaTable(SQLModel, table=True):
     __tablename__ = "fila_publicada"
 

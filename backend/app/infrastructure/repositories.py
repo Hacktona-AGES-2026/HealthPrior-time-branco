@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.aprendizado import PropostaRegra
+from app.domain.regras_aprendidas import RegraAprendida
 from app.domain.enums import (
     AcaoDecisao,
     Classe,
@@ -40,6 +41,7 @@ from app.infrastructure.tables import (
     PendenciaTable,
     ProcedimentoTable,
     PropostaRegraTable,
+    RegraAprendidaTable,
     SolicitacaoTable,
 )
 
@@ -301,14 +303,52 @@ class SqlPropostaRepository:
         consulta = select(PropostaRegraTable).order_by(PropostaRegraTable.proposta_id)
         if status:
             consulta = consulta.where(PropostaRegraTable.status == status)
-        return [PropostaRegra(
-            proposta_id=t.proposta_id, procedimento_id=t.procedimento_id,
-            motivo=MotivoCodificado(t.motivo), classe_de=Classe(t.classe_de),
-            classe_para=Classe(t.classe_para), direcao=t.direcao, n_casos=t.n_casos,
-            n_reguladores=t.n_reguladores, consistencia=t.consistencia,
-            casos=[c for c in t.casos.split(",") if c], status=t.status,
-            motivo_descarte=t.motivo_descarte,
-        ) for t in self._s.execute(consulta).scalars()]
+        return [_para_proposta(t) for t in self._s.execute(consulta).scalars()]
+
+    def obter(self, proposta_id: str) -> PropostaRegra | None:
+        t = self._s.get(PropostaRegraTable, proposta_id)
+        return _para_proposta(t) if t else None
+
+    def registrar_decisao(self, proposta_id: str, status: str, por: str, em: datetime,
+                          observacao: str | None) -> None:
+        t = self._s.get(PropostaRegraTable, proposta_id)
+        t.status, t.decidida_por, t.decidida_em, t.observacao = status, por, em, observacao
+        self._s.flush()
+
+
+def _para_proposta(t: PropostaRegraTable) -> PropostaRegra:
+    return PropostaRegra(
+        proposta_id=t.proposta_id, procedimento_id=t.procedimento_id,
+        motivo=MotivoCodificado(t.motivo), classe_de=Classe(t.classe_de),
+        classe_para=Classe(t.classe_para), direcao=t.direcao, n_casos=t.n_casos,
+        n_reguladores=t.n_reguladores, consistencia=t.consistencia,
+        casos=[c for c in t.casos.split(",") if c], status=t.status,
+        motivo_descarte=t.motivo_descarte, decidida_por=t.decidida_por,
+        decidida_em=t.decidida_em, observacao=t.observacao)
+
+
+class SqlRegraRepository:
+    """US-19: regras aprendidas em vigor (versionadas)."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def listar_ativas(self) -> list[RegraAprendida]:
+        consulta = (select(RegraAprendidaTable).where(RegraAprendidaTable.ativa)
+                    .order_by(RegraAprendidaTable.versao, RegraAprendidaTable.regra_id))
+        return [RegraAprendida(t.regra_id, t.procedimento_id, Classe(t.classe_de),
+                               Classe(t.classe_para), t.versao)
+                for t in self._s.execute(consulta).scalars()]
+
+    def proxima_versao(self) -> int:
+        return (self._s.execute(select(func.max(RegraAprendidaTable.versao))).scalar() or 0) + 1
+
+    def adicionar(self, regra: RegraAprendida, por: str, em: datetime) -> None:
+        self._s.add(RegraAprendidaTable(
+            regra_id=regra.regra_id, procedimento_id=regra.procedimento_id,
+            classe_de=regra.classe_de.value, classe_para=regra.classe_para.value,
+            versao=regra.versao, aprovada_por=por, aprovada_em=em))
+        self._s.flush()
 
 
 class SqlCargaRepository:
