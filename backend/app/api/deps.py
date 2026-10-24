@@ -193,7 +193,7 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session),
 
 # US-18
 def criar_classificador_motivo() -> ClassificadorMotivoLLM | None:
-    """LLM só com chave e LLM ligado; senão None (os `outro` ficam fora do agrupamento, D-95)."""
+    """LLM só com chave e LLM ligado; senão None (os `outro` ficam fora do agrupamento, D-99)."""
     if not (settings.llm_enabled and settings.openrouter_api_key):
         return None
     return ClassificadorMotivoLLM(settings.openrouter_api_key, settings.llm_model,

@@ -1,4 +1,4 @@
-"""US-18 · Seed do ciclo de aprendizado (D-94).
+"""US-18 · Seed do ciclo de aprendizado (D-98).
 
 Grava ~33 decisões sintéticas (DEC-SEED-001..) no log real, sobre pacientes reais ativos e não
 oncológicos, para a demo ter propostas de regra a revisar. Cinco padrões cobrem os caminhos do

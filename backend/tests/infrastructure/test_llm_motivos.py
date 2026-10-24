@@ -1,4 +1,4 @@
-"""Classificador de motivo (D-95) com httpx.MockTransport: sem rede."""
+"""Classificador de motivo (D-99) com httpx.MockTransport: sem rede."""
 import httpx
 
 from app.domain.enums import MotivoCodificado

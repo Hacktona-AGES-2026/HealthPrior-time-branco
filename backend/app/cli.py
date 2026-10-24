@@ -224,7 +224,7 @@ def _data_referencia(session: Session):
 
 
 def cmd_seed_aprendizado() -> None:
-    """US-18 (D-94): grava as decisões de exemplo no log real. Não altera solicitações."""
+    """US-18 (D-98): grava as decisões de exemplo no log real. Não altera solicitações."""
     criar_tabelas()
     with Session(engine) as session:
         gravadas = SemearAprendizado(

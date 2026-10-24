@@ -1,4 +1,4 @@
-"""Classificador de motivo por LLM (Jev via OpenRouter) para decisões com motivo `outro` (D-95).
+"""Classificador de motivo por LLM (Jev via OpenRouter) para decisões com motivo `outro` (D-99).
 
 Mesmo endpoint e padrão do `ExtratorSinaisLLM`: uma pergunta `choice` cujos critérios são os
 motivos codificados (menos `outro`) mais "nenhum". O LLM só APONTA o motivo; quem agrupa e propõe

@@ -147,7 +147,7 @@ class VerificadorFila(Protocol):
 
 
 class ClassificadorMotivo(Protocol):
-    """Mapeia uma justificativa livre para um motivo codificado (exceto `outro`), ou None (D-95)."""
+    """Mapeia uma justificativa livre para um motivo codificado (exceto `outro`), ou None (D-99)."""
 
     def classificar(self, texto: str) -> MotivoCodificado | None: ...
 

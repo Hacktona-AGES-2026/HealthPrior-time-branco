@@ -1,14 +1,14 @@
 # US-18 · Agrupar justificativas em propostas (C-14)
 
-Branch `feat/US-18-aprendizado`. Decisões D-94..D-99 em `DECISOES.md`.
+Branch `feat/US-18-aprendizado`. Decisões D-98..D-103 em `DECISOES.md`.
 
 ## O que foi feito
 | Camada | Arquivo | O quê |
 |---|---|---|
 | domain | `app/domain/aprendizado.py` | `ParametrosAprendizado`, `CasoAprendizado`, `PropostaRegra`, `direcao`, `proposta_id`, `agrupar` (puro: janela, volume, reguladores distintos, consistência, descarte I-01) |
 | domain | `app/domain/ports.py` | `DecisaoRepository.listar_todas`, `ClassificadorMotivo`, `PropostaRepository` |
-| application | `app/application/gerar_propostas.py` | `GerarPropostas`: monta casos (D-97), reclassifica `outro` (D-95), agrupa, grava (D-99) |
-| application | `app/application/semear_aprendizado.py` | `SemearAprendizado`: 33 decisões sintéticas em 5 padrões (D-94) |
+| application | `app/application/gerar_propostas.py` | `GerarPropostas`: monta casos (D-101), reclassifica `outro` (D-99), agrupa, grava (D-103) |
+| application | `app/application/semear_aprendizado.py` | `SemearAprendizado`: 33 decisões sintéticas em 5 padrões (D-98) |
 | application | `app/application/decidir.py` | a decisão passa a gravar `procedimento_id` |
 | infrastructure | `tables.py`, `repositories.py` | `PropostaRegraTable`, `SqlPropostaRepository`, `listar_todas`; **removida a 2ª `SqlDecisaoRepository` duplicada** (sobra de merge, não gravava `procedimento_id`); `proximo_id` ignora `DEC-SEED-%` |
 | infrastructure | `llm_motivos.py` | `ClassificadorMotivoLLM` (Jev/OpenRouter, cache próprio) |
