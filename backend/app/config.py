@@ -42,6 +42,7 @@ class Settings:
     twilio_account_sid: str
     twilio_from: str
     twilio_api_key_sid: str
+    twilio_sms_template: str
     twilio_auth_token: str = field(repr=False)
     twilio_api_key_secret: str = field(repr=False)
     fatores_enabled: bool
@@ -76,6 +77,7 @@ def _load() -> Settings:
         twilio_account_sid=os.getenv("TWILIO_ACCOUNT_SID", "").strip(),
         twilio_from=os.getenv("TWILIO_FROM", "").strip(),
         twilio_api_key_sid=os.getenv("TWILIO_API_KEY_SID", "").strip(),
+        twilio_sms_template=os.getenv("TWILIO_SMS_TEMPLATE", "").strip(),
         twilio_auth_token=os.getenv("TWILIO_AUTH_TOKEN", "").strip(),
         twilio_api_key_secret=os.getenv("TWILIO_API_KEY_SECRET", "").strip(),
         # Fatores de comorbidade e idade/IRR no score (domain/fatores.py).

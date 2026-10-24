@@ -34,7 +34,9 @@ class NotificadorTwilio:
 
     def __init__(self, account_sid: str, auth_token: str, remetente: str,
                  client: httpx.Client | None = None, timeout: float = 15.0,
-                 api_key_sid: str = "", api_key_secret: str = ""):
+                 api_key_sid: str = "", api_key_secret: str = "", modelo: str = ""):
+        # Conta de teste enviando ao Brasil: só aceita modelos pré-definidos; o Body é o NOME do modelo.
+        self._modelo = modelo
         # O endereço usa sempre o Account SID (AC...); a senha pode ser o Auth Token ou uma API Key (SK... + secret).
         self._sid, self._from = account_sid, remetente
         self._usuario, self._token = (api_key_sid, api_key_secret) if api_key_sid else (account_sid, auth_token)
@@ -49,12 +51,12 @@ class NotificadorTwilio:
         para = destino if not whatsapp or destino.lower().startswith("whatsapp:") else f"whatsapp:{destino}"
         try:
             r = self._client.post(url, auth=(self._usuario, self._token),
-                                  data={"To": para, "From": self._from, "Body": texto if whatsapp else sem_acentos(texto)})
+                                  data={"To": para, "From": self._from, "Body": self._modelo or (texto if whatsapp else sem_acentos(texto))})
         except httpx.HTTPError as e:
             return ResultadoEnvio(False, f"falha de rede: {e.__class__.__name__}")
         corpo = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
         if r.status_code in (200, 201):
-            return ResultadoEnvio(True, corpo.get("sid"))
+            return ResultadoEnvio(True, f"{corpo.get('sid')} (modelo {self._modelo})" if self._modelo else corpo.get("sid"))
         # o erro do Twilio traz código e mensagem; nunca a credencial
         return ResultadoEnvio(False, f"Twilio {r.status_code}: {corpo.get('message') or r.text[:120]}")
 
@@ -66,5 +68,6 @@ def criar_notificador() -> NotificadorSimulado | NotificadorTwilio:
             and settings.twilio_from and settings.notifica_destino):
         return NotificadorTwilio(settings.twilio_account_sid, settings.twilio_auth_token, settings.twilio_from,
                                  api_key_sid=settings.twilio_api_key_sid,
-                                 api_key_secret=settings.twilio_api_key_secret)
+                                 api_key_secret=settings.twilio_api_key_secret,
+                                 modelo=settings.twilio_sms_template)
     return NotificadorSimulado()

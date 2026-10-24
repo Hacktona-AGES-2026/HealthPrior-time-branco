@@ -20,6 +20,12 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
 3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
 4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
 
+## SMS ao Brasil na conta de teste
+A conta de teste só envia SMS ao Brasil com **modelos pré-definidos**; texto livre volta `400: Invalid template name`.
+Defina `TWILIO_SMS_TEMPLATE=sms_event_notifications` (ou outro modelo da sua conta): o Body enviado passa a ser o nome do
+modelo, e o Twilio entrega o texto dele. A tela Notificações continua mostrando o texto de verdade que seria enviado.
+Em conta paga (ou com o remetente aprovado) deixe a variável vazia e o texto genérico sai como está.
+
 ## WhatsApp (sandbox do Twilio)
 O remetente **não** é o seu número: é o número do sandbox do Twilio. O destino é o seu.
 1. No console do Twilio: **Messaging**, depois **Try it out**, depois **Send a WhatsApp message**. Aparecem o número do sandbox (em geral `+1 415 523 8886`) e um código de adesão (`join palavra-palavra`).

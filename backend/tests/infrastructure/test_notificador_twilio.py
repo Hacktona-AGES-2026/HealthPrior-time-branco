@@ -46,6 +46,18 @@ def test_account_sid_com_cara_de_api_key_da_um_erro_claro_sem_chamar_a_rede():
     assert r.ok is False and "Account SID" in r.detalhe and "segredo" not in r.detalhe
 
 
+def test_modelo_da_conta_de_teste_vai_como_body_no_lugar_do_texto():
+    vistos = {}
+
+    def handler(request):
+        vistos["form"] = dict(httpx.QueryParams(request.content.decode()))
+        return httpx.Response(201, json={"sid": "SMm"})
+
+    t = NotificadorTwilio("ACtest", "segredo", "+15005550006", cliente(handler), modelo="sms_event_notifications")
+    r = t.enviar("+5511999990002", "[DEMO] texto livre")
+    assert vistos["form"]["Body"] == "sms_event_notifications" and "modelo sms_event_notifications" in r.detalhe
+
+
 def test_whatsapp_prefixa_o_destino_e_mantem_os_acentos():
     vistos = {}
 
