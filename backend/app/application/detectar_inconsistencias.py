@@ -1,7 +1,7 @@
 """US-05 · Inconsistências não bloqueantes (C-05/C-06, PRE-10..PRE-15).
 
 O paciente segue ativo: o achado vira alerta em `alertas` (PRE-10..15) e, em PRE-10..13, também uma
-pendência não bloqueante (D-36). Idempotente: refaz só os alertas e as pendências automáticas
+pendência não bloqueante (D-46). Idempotente: refaz só os alertas e as pendências automáticas
 dessas regras, sem tocar nos dados originais nem em alertas de outras regras. Não confirma a
 transação (ver UnidadeDeTrabalho): a carga confirma tudo junto.
 """
