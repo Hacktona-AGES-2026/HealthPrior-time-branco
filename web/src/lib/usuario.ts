@@ -1,5 +1,5 @@
 /**
- * Autor gravado no log. Não há login nem seletor de persona/usuário (D-12, D-100: US-23 cortada).
+ * Autor gravado no log. Não há login nem seletor de persona/usuário (D-12, D-107: US-23 cortada).
  * Autor fixo por papel: decisões do regulador saem como `reg-01`; resoluções de pendência como `adm-01`.
  * Para testar autores diferentes, defina `localStorage["hp.usuario"]` (vale para os dois).
  */
