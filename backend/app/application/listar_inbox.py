@@ -91,7 +91,7 @@ class ListarInbox:
 
     def _ja_avaliada(self, solicitacao_id: str, sugerida: Classe) -> bool:
         """O regulador já decidiu sobre esta mesma sugestão (editou ou manteve): não volta ao inbox
-        até a sugestão mudar (D-76)."""
+        até a sugestão mudar (D-77)."""
         if self._decisoes is None:
             return False
         decisoes = self._decisoes.listar_por_solicitacao(solicitacao_id)

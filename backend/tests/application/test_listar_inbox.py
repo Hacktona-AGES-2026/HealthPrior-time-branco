@@ -143,7 +143,7 @@ def test_evento_gatilho_e_editado_anteriormente():
 
 def test_sugestao_ja_avaliada_nao_volta_ao_inbox():
     # Regulador editou para B recusando a sugestão D: o paciente sai do inbox; volta se a
-    # sugestão mudar (D-76).
+    # sugestão mudar (D-77).
     from app.domain.enums import AcaoDecisao
     from app.domain.models import Decisao
 

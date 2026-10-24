@@ -171,4 +171,7 @@ class FilaPublicadaTable(SQLModel, table=True):
     justificativa: str
     editado_manualmente: bool = False
     versao_regras: str
-    publicada_em: datetime
+    publicada_em: datetime  # relógio real (quando foi publicada)
+    # US-16: data de referência usada no cálculo (dias em fila, % do prazo). Nasce em HP_REF_DATE e
+    # só avança pela atualização diária (relógio simulado da demo). Coluna nova: recriar o banco.
+    data_referencia: date

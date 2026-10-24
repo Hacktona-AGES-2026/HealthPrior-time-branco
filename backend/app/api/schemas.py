@@ -75,6 +75,7 @@ class PublicacaoOut(BaseModel):
     por_camada: dict[int, int]
     versao_regras: str
     saida_verificador: str
+    data_referencia: date  # US-16: data usada no cálculo (avança na atualização diária)
 
 
 # ---------- fila ----------

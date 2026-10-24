@@ -67,15 +67,18 @@ class SwalisRegras:
         return ResultadoScore(c.classe, prazo, pct, pct, motivos, self.versao_regras)
 
 
-def criar_swalis(apenas_cache: bool = True) -> SwalisRegras:
+def criar_swalis(apenas_cache: bool = True, ref_date: date | None = None) -> SwalisRegras:
     """Composição a partir da configuração: LLM se habilitado e houver chave ou cache.
 
     `apenas_cache=True` (padrão, usado na geração da fila) não chama a rede: a saída é
     reproduzível. Só `extrair-sinais` chama o LLM e congela o cache.
+    `ref_date` é a data do % do prazo (padrão `HP_REF_DATE`); a atualização diária (US-16)
+    passa a mesma data que dá ao `GerarFila`.
     """
     if settings.llm_enabled and (settings.openrouter_api_key or settings.llm_cache_path.is_file()):
         from app.infrastructure.llm_openrouter import ExtratorSinaisLLM
 
         return SwalisRegras(ExtratorSinaisLLM(settings.openrouter_api_key, settings.llm_model,
-                                              settings.llm_cache_path, apenas_cache=apenas_cache))
-    return SwalisRegras()
+                                              settings.llm_cache_path, apenas_cache=apenas_cache),
+                            ref_date)
+    return SwalisRegras(ref_date=ref_date)

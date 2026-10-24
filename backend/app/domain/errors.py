@@ -55,3 +55,10 @@ class FilaNaoPublicadaError(DomainError):
 
     def __init__(self, mensagem: str = "Nenhuma fila publicada ainda. Rode a publicação."):
         super().__init__(mensagem)
+
+
+class DataReferenciaInvalidaError(DomainError):
+    """US-16: a data simulada não pode voltar para antes da data oficial do dataset."""
+
+    codigo = "DATA_REFERENCIA_INVALIDA"
+    status_http = 422
