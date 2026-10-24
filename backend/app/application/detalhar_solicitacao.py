@@ -126,6 +126,8 @@ def _score(sol: Solicitacao, res: ResultadoScore, ref_date: date) -> ScoreDetalh
         prazo = PRAZO_MAXIMO_DIAS[sol.classe_medico]
         pct = round(100 * (ref_date - sol.data_entrada_fila).days / prazo, 1)
     score_efetivo = sol.score_medico if sol.score_medico is not None else res.score_sistema
+    if sol.score_medico is None and sol.classe_medico is not None:
+        score_efetivo = round(pct * res.fator_contexto, 1)  # fatores valem com a classe do regulador
     return ScoreDetalhe(
         classe_sistema=res.classe_sistema, score_sistema=res.score_sistema,
         classe_medico=sol.classe_medico, score_medico=sol.score_medico,

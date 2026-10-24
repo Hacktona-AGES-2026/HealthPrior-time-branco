@@ -113,3 +113,29 @@ def test_montar_justificativa_multiplos_motivos():
     assert t.startswith("Camada 2: urgente (CID de complicação K40.3). "
                         "Sintomas: dor EVA 7; limitação funcional grave.")
     assert t.endswith("10 dias em fila, 16.7% do prazo.")
+
+
+class ScorerComFatores:
+    """Mesmo % do prazo para todos; o fator de contexto vem por solicitação."""
+
+    versao_regras = "falso-fatores"
+
+    def __init__(self, fatores: dict[str, float], classe: Classe = Classe.A1):
+        self.fatores, self.classe = fatores, classe
+
+    def calcular(self, solicitacao, eventos):
+        pct, f = 200.0, self.fatores.get(solicitacao.solicitacao_id, 1.0)
+        return ResultadoScore(self.classe, 15, pct, round(pct * f, 1), [], self.versao_regras, f)
+
+
+def test_fator_desempata_mesma_classe_e_mesmo_tempo():
+    linhas = por_id(montar_fila([sol("S1"), sol("S2")], {}, ScorerComFatores({"S2": 1.15}), REF))
+    assert linhas["S2"].posicao < linhas["S1"].posicao
+    assert linhas["S2"].score_efetivo == 230.0 and linhas["S2"].pct_prazo_consumido == 200.0
+
+
+def test_fator_vale_com_a_classe_do_regulador():
+    s = sol("S1", classe_medico=Classe.B)
+    [linha] = montar_fila([s], {}, ScorerComFatores({"S1": 1.1}), REF)
+    dias = (REF - s.data_entrada_fila).days
+    assert linha.score_efetivo == round(round(100 * dias / 60, 1) * 1.1, 1)

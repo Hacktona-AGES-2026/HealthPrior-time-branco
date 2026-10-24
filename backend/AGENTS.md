@@ -24,7 +24,7 @@ pytest -q                              # testes (inclui guarda de arquitetura)
 pytest -q -n 4                         # idem em paralelo (pytest-xdist; um banco por worker, como na CI)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
-Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`, `OPENROUTER_API_KEY` (só no `.env` da raiz), `HP_LLM_MODEL` (padrão `typesafe/jev-1.14`), `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
+Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`, `OPENROUTER_API_KEY` (só no `.env` da raiz), `HP_LLM_MODEL` (padrão `typesafe/jev-1.14`), `HP_LLM_ENABLED`, `HP_LLM_CACHE`, `HP_FATORES_ENABLED` (padrão `true`), `HP_IRR_PATH` (padrão `score/references/irr_nacional_cid_idade_2019_2023.csv`).
 
 ## Arquitetura (Clean Architecture enxuta)
 
@@ -38,6 +38,7 @@ app/
     cid.py             normalização e classificação de CID (I-09)
     urgencia.py        sinais de urgência (camada 2)
     swalis.py          SWALIS por regras: eixos progressão × sintoma (docs/swalis.md)
+    fatores.py         fatores do score: comorbidade (Charlson) × idade/IRR (D-103)
     texto.py           busca de termos com negação
     ranking.py         trava da regra de ouro (US-08)
     preprocessing/     regras PRE-xx (US-02..05)
@@ -56,6 +57,7 @@ app/
     csv_loader.py      leitura do dataset (CSV -> registros tipados; valores originais)
     swalis_stub.py     SWALIS provisório (não usado mais; referência)
     swalis_regras.py   SwalisRegras (C-07) + criar_swalis() a partir da config
+    tabela_irr.py      tabela nacional de IRR (CSV de score/references) para os fatores
     llm_openrouter.py  extrator de sinais por LLM (Jev/OpenRouter) com cache em JSON
     verificador.py     chama src/verificar_fila_priorizada.py
     exportador.py      escreve fila_priorizada.csv

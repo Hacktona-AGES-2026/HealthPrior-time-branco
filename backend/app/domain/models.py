@@ -46,6 +46,7 @@ class Solicitacao:
     asa: int | None = None
     distancia_hospital_km: int | None = None
     comorbidades: str | None = None
+    cid_secundario: str | None = None
     hba1c_ultima: float | None = None
     # normalizados (PRE-01..PRE-06)
     cid_norm: str = ""
@@ -110,6 +111,8 @@ class ResultadoScore:
     score_sistema: float
     motivos: list[Motivo]
     versao_regras: str
+    # Comorbidade × idade/mortalidade (domain/fatores.py). score_sistema = % do prazo × fator.
+    fator_contexto: float = 1.0
 
 
 @dataclass

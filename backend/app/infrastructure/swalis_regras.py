@@ -2,7 +2,8 @@
 
 Pontos do texto: palavra-chave com negação + Jev (frase citada, validada no domínio). As regras
 de `domain/swalis.py` cruzam os pontos e decidem a classe; cada motivo diz de onde veio.
-O score dentro da classe continua sendo o % do prazo consumido.
+O score dentro da classe é o % do prazo consumido × fatores de comorbidade e idade/IRR
+(domain/fatores.py), quando a tabela de IRR está disponível.
 """
 from __future__ import annotations
 
@@ -10,8 +11,9 @@ from datetime import date
 
 from app.config import settings
 from app.domain.enums import PRAZO_MAXIMO_DIAS
+from app.domain.fatores import calcular_fatores, chave_irr
 from app.domain.models import Evento, Motivo, ResultadoScore, Solicitacao
-from app.domain.ports import ExtratorSinais
+from app.domain.ports import ExtratorSinais, TabelaIrr
 from app.domain.swalis import (
     VERSAO_REGRAS,
     ClassificacaoSwalis,
@@ -20,16 +22,23 @@ from app.domain.swalis import (
     sinais_por_palavra_chave,
     validar_sinal_llm,
 )
+from app.infrastructure.tabela_irr import TabelaIrrCsv
 
 _FONTES = ("justificativa_clinica", "observacoes")
+VERSAO_FATORES = "fatores-1"
 
 
 class SwalisRegras:
-    def __init__(self, extrator: ExtratorSinais | None = None, ref_date: date | None = None):
+    def __init__(self, extrator: ExtratorSinais | None = None, ref_date: date | None = None,
+                 tabela_irr: TabelaIrr | None = None):
         self.extrator = extrator
         self._ref = ref_date or settings.ref_date
+        # Com a tabela, o score ganha os fatores de comorbidade e idade (domain/fatores.py).
+        self.tabela_irr = tabela_irr
         modelo = getattr(extrator, "modelo", None)
         self.versao_regras = f"{VERSAO_REGRAS}+llm:{modelo}" if modelo else VERSAO_REGRAS
+        if tabela_irr is not None:
+            self.versao_regras += f"+{VERSAO_FATORES}"
 
     def sinais(self, solicitacao: Solicitacao) -> list[SinalTexto]:
         sinais: list[SinalTexto] = []
@@ -64,7 +73,18 @@ class SwalisRegras:
         # Pontos incertos do Jev: não mudam a classe, vão para o regulador revisar.
         motivos += [Motivo(f"revisar:{s.categoria.value}", s.trecho, s.fonte, ref=f"{s.confianca:.2f}")
                     for s in c.revisar]
-        return ResultadoScore(c.classe, prazo, pct, pct, motivos, self.versao_regras)
+        fator = 1.0
+        if self.tabela_irr is not None:
+            chave = chave_irr(solicitacao.cid_principal, solicitacao.idade)
+            f = calcular_fatores(solicitacao.cid_principal, solicitacao.idade,
+                                 solicitacao.comorbidades, solicitacao.cid_secundario,
+                                 self.tabela_irr.consultar(*chave) if chave else None)
+            fator = f.valor
+            motivos += [Motivo("fator_comorbidade", f.comorbidade.descricao, "regra",
+                               ref=f"{f.comorbidade.valor:.2f}"),
+                        Motivo("fator_idade", f.idade.descricao, "regra", ref=f"{f.idade.valor:.3f}")]
+        return ResultadoScore(c.classe, prazo, pct, round(pct * fator, 1), motivos,
+                              self.versao_regras, fator)
 
 
 def criar_swalis(apenas_cache: bool = True, ref_date: date | None = None) -> SwalisRegras:
@@ -75,10 +95,12 @@ def criar_swalis(apenas_cache: bool = True, ref_date: date | None = None) -> Swa
     `ref_date` é a data do % do prazo (padrão `HP_REF_DATE`); a atualização diária (US-16)
     passa a mesma data que dá ao `GerarFila`.
     """
+    tabela = (TabelaIrrCsv(settings.irr_path)
+              if settings.fatores_enabled and settings.irr_path.is_file() else None)
     if settings.llm_enabled and (settings.openrouter_api_key or settings.llm_cache_path.is_file()):
         from app.infrastructure.llm_openrouter import ExtratorSinaisLLM
 
         return SwalisRegras(ExtratorSinaisLLM(settings.openrouter_api_key, settings.llm_model,
                                               settings.llm_cache_path, apenas_cache=apenas_cache),
-                            ref_date)
-    return SwalisRegras(ref_date=ref_date)
+                            ref_date, tabela)
+    return SwalisRegras(ref_date=ref_date, tabela_irr=tabela)

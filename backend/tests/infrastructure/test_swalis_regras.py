@@ -114,3 +114,45 @@ def test_geracao_usa_so_cache(tmp_path):
     ext = ExtratorSinaisLLM("chave", "m", tmp_path / "c.json", apenas_cache=True,
                             client=httpx.Client(transport=httpx.MockTransport(lambda r: 1 / 0)))
     assert ext.extrair("texto sem cache", "observacoes") == []
+
+
+class _TabelaFalsa:
+    def __init__(self, celulas):
+        self.celulas = celulas
+
+    def consultar(self, cid_3, faixa_idade):
+        return self.celulas.get((cid_3, faixa_idade))
+
+
+def _sol_fatores(**kw):
+    from datetime import date
+
+    from app.domain.models import Solicitacao
+    base = dict(solicitacao_id="S1", paciente_id="P", procedimento_id="PR", cid_principal="C18.7",
+                data_entrada_fila=date(2026, 9, 23), idade=75, comorbidades="ICC; DRC",
+                intensidade_dor_eva=4, limitacao_funcional="leve")
+    base.update(kw)
+    return Solicitacao(**base)
+
+
+def test_fatores_multiplicam_o_score_e_ficam_na_trilha():
+    from datetime import date
+
+    from app.domain.fatores import CelulaIrr
+    tabela = _TabelaFalsa({("C18", "70-79"): CelulaIrr(4.0, 17966)})
+    sem = SwalisRegras(ref_date=date(2026, 10, 23)).calcular(_sol_fatores(), [])
+    com = SwalisRegras(ref_date=date(2026, 10, 23), tabela_irr=tabela).calcular(_sol_fatores(), [])
+    assert sem.fator_contexto == 1.0 and sem.score_sistema == sem.pct_prazo_consumido
+    # Charlson 3 (ICC 1 + DRC 2) -> 1,10; IRR 4 -> 1,15
+    assert com.fator_contexto == pytest.approx(1.10 * 1.15)
+    assert com.pct_prazo_consumido == sem.pct_prazo_consumido  # o % do prazo não muda
+    assert com.score_sistema == round(sem.pct_prazo_consumido * 1.10 * 1.15, 1)
+    assert {m.sinal for m in com.motivos} >= {"fator_comorbidade", "fator_idade"}
+    assert com.classe_sistema == sem.classe_sistema  # fator não muda a classe
+    assert com.versao_regras.endswith("+fatores-1")
+
+
+def test_tabela_irr_csv_do_repo():
+    from app.infrastructure.tabela_irr import TabelaIrrCsv
+    celula = TabelaIrrCsv(settings.irr_path).consultar("C18", "70-79")
+    assert celula is not None and celula.obitos == 17966 and celula.irr == pytest.approx(5.92, abs=0.01)
