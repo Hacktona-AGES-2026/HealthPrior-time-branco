@@ -5,7 +5,10 @@
 - Sintomas (`motivos_sintomas`: dor > 3, limitação moderada/grave) NÃO definem camada (D-27):
   aparecem na justificativa e são critério do SWALIS para a classe (B/C/D).
 
-A regra de ouro não depende desta separação: todo oncológico já está na camada 1.
+A regra de ouro depende de uma inclusão (D-108): a camada 2 divide o bloco prioritário com os
+oncológicos e pode passar um deles, então todo sinal daqui tem que ser também urgência para o
+verificador oficial (`src/verificar_fila_priorizada.py`): mesmos CIDs, termos de alarme e tipos
+de evento de piora. Não acrescente sinal que o verificador não conheça.
 """
 from __future__ import annotations
 

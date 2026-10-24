@@ -43,6 +43,8 @@ flowchart LR
 ```
 
 ### 2.1 Camadas (`domain/ranking.py`)
+> **Revisto por D-108:** as camadas 1 e 2 agora formam um bloco só, ordenado pelo score (`definir_bloco`); a chave virou **(bloco ↑, score ↓, entrada ↑, id ↑)** e o teste de propriedade garante só que a camada 3 não invade o bloco. A inclusão "camada 2 ⊆ urgente para o verificador" é travada por `tests/infrastructure/test_trava_dataset.py`. O texto abaixo é o desenho original (D-06).
+
 - `definir_camada`: oncológico (CID `C*`) → **1**; senão urgente → **2**; senão **3**.
 - `ordenar_fila`: chave **(camada ↑, score efetivo ↓, data de entrada ↑, solicitacao_id ↑)**. Posições `1..n` sem buracos. `ValueError` se houver `solicitacao_id` repetido. Não altera a entrada.
 - Garantia testada por propriedade (300 itens aleatórios): nenhum oncológico depois de não oncológico; nenhuma camada 2 depois de camada 3.

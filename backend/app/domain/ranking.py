@@ -1,11 +1,14 @@
 """Trava da regra de ouro (C-11, US-08).
 
 Regra de ouro (I-01): nenhum paciente oncológico pode ficar abaixo de um
-paciente sem urgência clínica. A fila é ordenada em três camadas que não se
-invadem: a camada 1 (oncológicos) vem antes da 2 (urgentes não oncológicos),
-que vem antes da 3 (demais). Dentro de cada camada, a ordem é pelo score
-efetivo (maior primeiro), depois pela entrada mais antiga e, por fim, pelo
-identificador da solicitação, de modo que a ordem seja sempre determinística.
+paciente sem urgência clínica. Cada paciente recebe uma camada (1 = oncológico,
+2 = urgente não oncológico, 3 = demais), mas a fila tem só dois blocos (D-108,
+revisa D-06): o bloco prioritário junta as camadas 1 e 2, e o bloco das demais
+(camada 3) vem abaixo e nunca invade o de cima. Assim um urgente pode passar um
+oncológico, o que a regra permite: todo sinal da camada 2 também é urgência para
+o verificador oficial. Dentro de cada bloco, a ordem é pelo score efetivo (maior
+primeiro), depois pela entrada mais antiga e, por fim, pelo identificador da
+solicitação, de modo que a ordem seja sempre determinística.
 """
 from __future__ import annotations
 
@@ -26,10 +29,15 @@ def definir_camada(item: ItemRanking) -> Camada:
     return Camada.DEMAIS
 
 
+def definir_bloco(camada: Camada) -> int:
+    """Bloco de ordenação: 1 = prioritário (camadas 1 e 2), 2 = demais (camada 3)."""
+    return 2 if camada == Camada.DEMAIS else 1
+
+
 def ordenar_fila(itens: list[ItemRanking]) -> list[ItemFila]:
     """Ordena a fila aplicando a trava da regra de ouro (I-01).
 
-    Chave de ordenação: camada crescente, score efetivo decrescente, data de
+    Chave de ordenação: bloco crescente, score efetivo decrescente, data de
     entrada na fila crescente e solicitacao_id crescente. Devolve as posições
     1..n sem buracos. Não altera os itens recebidos.
 
@@ -44,7 +52,7 @@ def ordenar_fila(itens: list[ItemRanking]) -> list[ItemFila]:
     ordenados = sorted(
         itens,
         key=lambda item: (
-            definir_camada(item),
+            definir_bloco(definir_camada(item)),
             -item.score_efetivo,
             item.data_entrada_fila,
             item.solicitacao_id,
