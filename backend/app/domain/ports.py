@@ -8,6 +8,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
+from app.domain.fatores import CelulaIrr
 from app.domain.models import (
     Correcao,
     Decisao,
@@ -129,6 +130,12 @@ class SwalisScorer(Protocol):
     versao_regras: str
 
     def calcular(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ResultadoScore: ...
+
+
+class TabelaIrr(Protocol):
+    """Tabela nacional de mortalidade SIM/IBGE por CID-3 × faixa etária (domain/fatores.py)."""
+
+    def consultar(self, cid_3: str, faixa_idade: str) -> CelulaIrr | None: ...
 
 
 class ExtratorSinais(Protocol):

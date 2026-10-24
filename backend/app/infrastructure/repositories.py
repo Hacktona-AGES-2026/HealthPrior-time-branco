@@ -58,6 +58,7 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         prioridade_regulacao=t.prioridade_regulacao, flag_oncologico=t.flag_oncologico,
         flag_diabetico=t.flag_diabetico, flag_piora_clinica=t.flag_piora_clinica,
         asa=t.asa, distancia_hospital_km=t.distancia_hospital_km, comorbidades=t.comorbidades,
+        cid_secundario=t.cid_secundario,
         hba1c_ultima=t.hba1c_ultima, piora_recalculada=t.piora_recalculada,
         cid_norm=t.cid_norm, nome_norm=t.nome_norm or "", oncologico=t.oncologico,
         municipio_norm=t.municipio_norm, prioridade_norm=t.prioridade_norm,

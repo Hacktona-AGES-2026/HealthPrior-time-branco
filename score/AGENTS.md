@@ -32,7 +32,7 @@ score/
 
 ## Convenções locais
 
-- Os módulos não ordenam nem modificam a fila; apenas geram fatores auditáveis.
+- Estes scripts não ordenam a fila; o backend aplica os mesmos fatores no score (`backend/app/domain/fatores.py`, D-103). Mudou uma regra aqui? Mude lá também.
 - O CID principal não entra no multiplicador de comorbidade.
 - Idade não entra no multiplicador de comorbidade, pois já compõe o IRR de mortalidade.
 - O JEV/LLM configurado no projeto permanece alerta explicável e não altera classe ou score sem decisão documentada.

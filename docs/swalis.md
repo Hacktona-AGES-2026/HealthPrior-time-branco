@@ -92,6 +92,13 @@ também para as frases apontadas pelo Jev. Testado nas 10 hérnias K40.9 com "Se
   Troque `VERSAO_PROMPT` e rode `cd backend && python -m app.cli extrair-sinais` (887 textos, ~40 s, centavos).
 - A geração da fila lê **só o cache**: saída reproduzível, sem rede. Falha do modelo cai para palavra-chave.
 
+## Score
+
+`score = % do prazo × fator de comorbidade × fator de idade/IRR` (D-103, `domain/fatores.py`). O % do
+prazo é `100 × dias na fila / prazo da classe`. Cada fator vai de 1,00 a 1,15 e só desempata dentro da
+urgência: com o mesmo tempo de espera, nenhum fator inverte classes vizinhas (1,15² < 21/15). A classe
+não muda. Justificativa de cada valor: `docs/score-e-literatura.md`.
+
 ## Resultados (2026-10-24)
 
 **Dataset da entrega** (941 solicitações):

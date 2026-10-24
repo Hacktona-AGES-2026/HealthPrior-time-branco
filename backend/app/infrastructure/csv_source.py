@@ -64,6 +64,9 @@ def carregar_do_csv(data_dir: Path) -> tuple[list[Solicitacao], dict[str, list[E
             observacoes=_txt(r.get("observacoes")) or "",
             prioridade_regulacao=prioridade,
             flag_oncologico=_txt(r.get("flag_oncologico")),
+            idade=_inteiro(r.get("idade")),
+            comorbidades=_txt(r.get("comorbidades")),
+            cid_secundario=_txt(r.get("cid_secundario")),
             cid_norm=normalizar_cid(cid),
             oncologico=is_oncologico(cid),  # sempre pelo CID, nunca pela flag
             prioridade_norm=normalizar_prioridade(prioridade),

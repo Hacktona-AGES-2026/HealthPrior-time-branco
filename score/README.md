@@ -1,8 +1,11 @@
 # Fatores de score: mortalidade e comorbidade
 
 Esta pasta produz dois fatores explicáveis para cada solicitação da fila. Eles
-não ordenam a fila e não alteram `score_sistema`; são insumos auditáveis para
-uma composição posterior.
+são insumos auditáveis. **Desde a D-103 do `DECISOES.md`, o backend aplica os dois fatores no score da
+fila** (`backend/app/domain/fatores.py`, mesma regra destes scripts, com duas correções: IRR de célula
+com menos de 20 óbitos vale 1,00 e metástase substitui tumor no Charlson). Composição usada:
+`score = % do prazo × multiplicador_comorbidade × multiplicador_idade_mortalidade`, **sem** o teto de 100
+(o % do prazo passa de 100 para quem estourou o prazo).
 
 ```text
 score externo (JEV) ─┐
