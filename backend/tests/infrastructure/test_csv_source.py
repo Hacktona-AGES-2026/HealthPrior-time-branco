@@ -40,3 +40,11 @@ def test_historico_pronto_socorro(dados):
 def test_orfaos_fora_do_dict(dados):
     ids = {s.solicitacao_id for s in dados[0]}
     assert set(dados[1]) <= ids
+
+
+def test_duplicados_seguem_a_regra_do_banco_com_origem(dados):
+    # D-30: EVT-000712/713 diferem só na origem e não são duplicados
+    marcados = [e for lista in dados[1].values() for e in lista if e.duplicado_de]
+    assert len(marcados) == 6
+    ev = {e.evento_id: e for lista in dados[1].values() for e in lista}
+    assert ev["EVT-000713"].duplicado_de is None
