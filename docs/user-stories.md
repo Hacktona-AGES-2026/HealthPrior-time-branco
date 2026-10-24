@@ -470,6 +470,8 @@ Erros:
 - `422 {"erro": "ONCOLOGICO_REBAIXADO", "mensagem": "Oncológico não pode ficar abaixo de paciente sem urgência."}`
 - `422 {"erro": "JUSTIFICATIVA_OBRIGATORIA", "mensagem": "…"}`
 - `404 {"erro": "SOLICITACAO_NAO_ENCONTRADA", "mensagem": "…"}`
+- `422 {"erro": "DECISAO_INVALIDA", "mensagem": "…"}`: `editar` sem classe nem score, ou score inválido
+- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-94); `editar` e `manter` valem para qualquer solicitação
 
 ### 5.5 `POST /eventos`
 Request:
