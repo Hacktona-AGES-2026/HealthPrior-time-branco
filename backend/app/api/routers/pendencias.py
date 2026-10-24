@@ -18,6 +18,8 @@ def _para_out(p: Pendencia) -> schemas.PendenciaOut:
     return schemas.PendenciaOut(
         pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra, titulo=p.titulo,
         bloqueante=p.bloqueante, acao_sugerida=p.acao_sugerida, status=p.status, aberta_em=p.aberta_em,
+        resolvido_por=p.resolvido_por, resolvido_em=p.resolvido_em, resolucao=p.resolucao,
+        observacao=p.observacao,
         evidencias=[schemas.EvidenciaOut(fonte=m.fonte, ref=m.ref, texto=m.evidencia) for m in p.evidencias],
     )
 

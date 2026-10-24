@@ -54,6 +54,9 @@ def test_a_resolvida_sai_da_lista_de_abertas_e_aparece_em_resolvidas(api, sessio
     assert api.get("/pendencias").json()["total"] == abertas - 1
     resolvidas = api.get("/pendencias", params={"status": "resolvida"}).json()["itens"]
     assert [i["solicitacao_id"] for i in resolvidas] == ["SOL-2024-00076"]
+    # a lista de resolvidas diz quem, quando e como (C-06)
+    assert (resolvidas[0]["resolvido_por"], resolvidas[0]["resolucao"]) == ("adm-01", "reativar")
+    assert resolvidas[0]["resolvido_em"] is not None
 
 
 def test_observacao_e_opcional_fora_de_confirmar_saida(api, session):

@@ -67,7 +67,9 @@ def test_formato_do_contrato(api):
     item = por_solicitacao(listar(api), "SOL-2025-00053", "PRE-10")  # "NUMERO NAO EXISTE"
 
     assert set(item) == {"pendencia_id", "solicitacao_id", "regra", "titulo", "bloqueante",
-                         "evidencias", "acao_sugerida", "status", "aberta_em"}
+                         "evidencias", "acao_sugerida", "status", "aberta_em",
+                         "resolvido_por", "resolvido_em", "resolucao", "observacao"}
+    assert (item["resolvido_por"], item["resolvido_em"], item["resolucao"], item["observacao"]) == (None,) * 4
     assert (item["titulo"], item["bloqueante"], item["aberta_em"]) == ("Contato perdido", False, "2026-10-23")
     assert item["acao_sugerida"] and item["pendencia_id"].startswith("PEN-")
     assert set(item["evidencias"][0]) == {"fonte", "ref", "texto"}

@@ -271,6 +271,11 @@ class PendenciaOut(BaseModel):
     acao_sugerida: str
     status: StatusPendencia
     aberta_em: date
+    # preenchidos depois de resolvida (US-07); ficam null enquanto a pendência está aberta
+    resolvido_por: Optional[str] = None
+    resolvido_em: Optional[datetime] = None
+    resolucao: Optional[str] = None
+    observacao: Optional[str] = None
 
 
 class PendenciasOut(BaseModel):
