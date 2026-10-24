@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import FileResponse
 
 from app.api import mocks, schemas
-from app.api.deps import get_gerar_fila
-from app.application.gerar_fila import GerarFila
+from app.api.deps import get_exportar_fila_publicada
+from app.application.publicar_fila import ExportarFilaPublicada
 from app.config import settings
 
 router = APIRouter(prefix="/fila", tags=["fila"])
@@ -27,8 +27,7 @@ def listar_fila(
 
 
 @router.get("/export")
-def exportar_fila(gerar_fila: GerarFila = Depends(get_gerar_fila)):
-    """US-09: gera a fila a partir do banco e devolve o CSV (independe de HP_USE_MOCKS)."""
-    resultado = gerar_fila.executar(settings.output_dir / "fila_priorizada.csv")
-    return FileResponse(resultado.caminho_csv, media_type="text/csv",
-                        filename="fila_priorizada.csv")
+def exportar_fila(exportar: ExportarFilaPublicada = Depends(get_exportar_fila_publicada)):
+    """US-10: devolve só a fila publicada (409 FILA_NAO_PUBLICADA se ainda não houver)."""
+    caminho = exportar.executar()
+    return FileResponse(caminho, media_type="text/csv", filename="fila_priorizada.csv")

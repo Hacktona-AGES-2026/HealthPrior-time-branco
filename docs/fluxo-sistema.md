@@ -219,9 +219,9 @@ Os problemas se dividem em três tipos:
 | PRE-24 | Evento órfão (solicitação fora da fila) | 9 casos. EVT-000287 → SOL-2023-00941: "Registro de solicitacao removida da fila." | Evento não é aplicado; pendência para verificar ID |
 | PRE-25 | Fontes contraditórias | SOL-2026-00305: call center diz "desistiu"; observação diz "operou pelo convenio" | Pendência com **as duas evidências lado a lado** |
 
-> Exceção de segurança: **um oncológico nunca é suspenso automaticamente** por PRE-21/22/23 sem confirmação humana registrada (ver `I-02`). Fica ativo com a pendência aberta e o alerta `saida_a_confirmar` (D-45).
+> Exceção de segurança: **um oncológico nunca é suspenso automaticamente** por PRE-21/22/23 sem confirmação humana registrada (ver `I-02`). Fica ativo com a pendência aberta e o alerta `saida_a_confirmar` (D-52).
 >
-> Observação e call center que dizem coisas diferentes sobre a saída viram **PRE-25**, não PRE-21/22/23 (D-43). Na carga atual: PRE-20 = 22, PRE-21 = 1, PRE-22 = 2, PRE-23 = 10, PRE-24 = 9, PRE-25 = 12; 41 suspensas.
+> Observação e call center que dizem coisas diferentes sobre a saída viram **PRE-25**, não PRE-21/22/23 (D-50). Na carga atual: PRE-20 = 22, PRE-21 = 1, PRE-22 = 2, PRE-23 = 10, PRE-24 = 9, PRE-25 = 12; 41 suspensas.
 
 - **CA:**
   - Rodar o pré-processamento duas vezes sobre o mesmo dado produz o mesmo resultado (idempotente).
@@ -287,6 +287,8 @@ Documentado à parte. Este fluxo só depende do **contrato**:
 - A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida pela camada 1 (todo oncológico no topo), qualquer que seja a camada 2. Por isso a camada 2 usa só sinais clínicos (D-27), e não o complemento completo da definição do verificador.
 
 ### C-12 · Verificador e publicação
+> **Implementado (US-09/US-10).** Decisões D-34..D-43; registros em `docs/implementacao/US-09-gerar-fila-banco.md` e `US-10-verificador-portao.md`.
+
 - Antes de publicar, roda `verificar_fila_priorizada.py`.
 - **Passa** → publica `fila_priorizada.csv`.
 - **Falha** → **não publica**, mantém a fila anterior e alerta a equipe técnica (não o regulador). Publicar uma fila errada é pior do que manter a de ontem.
@@ -328,7 +330,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-21) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
 | `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-28/D-29) |
-| `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-40); `saida_a_confirmar` em oncológico com achado bloqueante (D-45) |
+| `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-47); `saida_a_confirmar` em oncológico com achado bloqueante (D-52) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
 | `status_fila` | enum | `ativa`, `suspensa`, `removida` |
