@@ -22,7 +22,7 @@ from app.domain.texto import frases
 log = logging.getLogger(__name__)
 
 URL = "https://openrouter.ai/api/alpha/decisions"
-VERSAO_PROMPT = "pontos-v4-decisoes"
+VERSAO_PROMPT = "pontos-v5-decisoes"
 # Guarda no cache tudo a partir desta probabilidade; o domínio decide o que conta ou vai a revisar.
 PROB_MINIMA = 0.4
 
@@ -40,17 +40,17 @@ CRITERIOS = {
     CategoriaSinal.PERDA_FUNCAO.value: "risco de perda IRREVERSÍVEL de órgão ou função se esperar: rim com "
                                        "hidronefrose e função caindo, glaucoma agudo, dano neurológico ou "
                                        "atrofia progressiva",
-    CategoriaSinal.CANCER_CONFIRMADO.value: "câncer/neoplasia maligna confirmada por biópsia ou "
-                                            "anatomopatológico",
-    CategoriaSinal.SUSPEITA_MALIGNIDADE.value: "suspeita de câncer ainda não confirmada: perda de peso, "
+    CategoriaSinal.CANCER_CONFIRMADO.value: "câncer/neoplasia maligna DO PRÓPRIO PACIENTE confirmada "
+                                            "por biópsia ou anatomopatológico",
+    CategoriaSinal.SUSPEITA_MALIGNIDADE.value: "suspeita de câncer DO PRÓPRIO PACIENTE ainda não confirmada: perda de peso, "
                                                "crescimento rápido, linfonodo suspeito, marcador subindo",
     CategoriaSinal.DOR_INTENSA.value: "dor intensa, incapacitante ou em repouso",
     CategoriaSinal.SINTOMA_GRAVE.value: "incapacidade importante: acamado, dependente de terceiros, quedas "
                                         "de repetição, úlcera de pressão, não consegue andar",
     CategoriaSinal.SINTOMA_MODERADO.value: "dor ou limitação moderada: dor aos esforços, sintomas que "
                                            "atrapalham atividades, baixa visão por catarata",
-    "nenhum": "nada disso, só dado administrativo/histórico, ou o achado está negado "
-              "(sem, nega, nunca, ausência de, descarta)",
+    "nenhum": "nada disso, só dado administrativo/histórico, antecedente familiar (mãe, pai, irmã…), "
+              "ou o achado está negado (sem, nega, nunca, ausência de, descarta)",
 }
 
 class ExtratorSinaisLLM:

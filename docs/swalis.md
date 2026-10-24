@@ -25,6 +25,9 @@ regras), `domain/texto.py` (frases e negação), `infrastructure/swalis_regras.p
 - **O Jev só sobe, nunca baixa:** como o eixo é o máximo, sem o Jev a classe é a das regras; com ele,
   só pode ficar igual ou maior.
 - **Quem decide é a tabela** e a classe continua `sugerida_nao_confirmada` até o regulador (I-04, I-05).
+  Leitura da I-05 adotada (D-53): o Jev aponta e cita; "nunca decide classe sozinho" vale porque a
+  classe sai da tabela **e** só vale depois de o regulador confirmar. Por isso a UI deve mostrar a origem
+  ("Jev p=…") ao lado de cada ponto.
 - Sem chave e sem cache, roda só com campos + palavra-chave (o comportamento anterior).
 
 ## Pontos
@@ -34,7 +37,7 @@ regras), `domain/texto.py` (frases e negação), `infrastructure/swalis_regras.p
 | `obstrucao` | progressão 3 | encarcer, estrangul, suboclus | obstrução/risco de estrangulamento agora, hérnia irredutível, retenção urinária aguda |
 | `risco_vida` | progressão 3 | colangite, icter, melena, sepse, transfund, síncope… | sangramento ativo/transfusão, sepse, colangite, angina instável, insuficiência respiratória, compressão de via aérea |
 | `perda_funcao` | progressão 3 | hidronefrose, perda de função, glaucoma facomórfico, dano neurológico | risco de perda irreversível de órgão/função |
-| `cancer_confirmado` | progressão 2 | — | câncer confirmado por biópsia/AP |
+| `cancer_confirmado` | progressão 2 | — | câncer **do próprio paciente** confirmado por biópsia/AP (antecedente familiar = `nenhum`) |
 | `suspeita_malignidade` | progressão 1 | perda ponderal, disfagia, rouquidão, crescimento rápido… | suspeita de câncer ainda não confirmada |
 | `dor_intensa` | sintoma 2 | — | dor intensa, incapacitante ou em repouso |
 | `sintoma_grave` | sintoma 2 | acamad, úlcera de pressão, quedas de repetição | acamado, dependente, quedas, não anda |
@@ -96,9 +99,9 @@ também para as frases apontadas pelo Jev. Testado nas 10 hérnias K40.9 com "Se
 | | A1 | A2 | B | C | D |
 |---|---|---|---|---|---|
 | Só regras (campos + palavra-chave) | 84 | 168 | 199 | 250 | 240 |
-| Regras + pontos do Jev | 98 | 166 | 226 | 328 | 123 |
+| Regras + pontos do Jev | 102 | 166 | 225 | 326 | 122 |
 
-144 classes mudaram, todas para cima (D→C 99, C→B 17, D→B 13, para A1 14). 257 solicitações têm ponto a
+150 classes mudaram, todas para cima (nenhuma desceu; conferido nas 941). 272 solicitações têm ponto a
 revisar. Verificador oficial OK. Exemplos de subida para A1: SOL-2026-00773 (lesões coronárias >70% em
 3 vasos, D→A1), SOL-2024-00181 (hérnia irredutível, D→A1), SOL-2026-00250 (câncer com lesão
 subestenosante, A2→A1). Discutível: SOL-2025-00283 ("HB 7,8" em hemorroidas → risco_vida).
@@ -107,8 +110,8 @@ subestenosante, A2→A1). Discutível: SOL-2025-00283 ("HB 7,8" em hemorroidas �
 
 | | Detecta o achado | Classe certa |
 |---|---|---|
-| Só palavra-chave | 1/24 (4%) | 8/36 (22%) |
-| Palavra-chave + Jev | 21/24 (88%) | 32/36 (89%) |
+| Só palavra-chave | 1/24 (4%) | 9/36 (25%) |
+| Palavra-chave + Jev | 21/24 (88%) | 33/36 (92%) |
 
 As regras de palavra-chave estão ajustadas aos textos sintéticos (a lista veio do verificador, escrita
 para os templates); o Jev é o que generaliza. Erros do Jev: "recebeu 2 bolsas de sangue", "emagreceu 12 kg",
