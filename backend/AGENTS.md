@@ -16,6 +16,7 @@ python -m app.cli init-db              # cria as tabelas
 python -m app.cli carga                # US-01 + US-02 (carga e normalização, mesma transação)
 python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
 python -m app.cli flags                # US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
+python -m app.cli bloqueantes          # US-04: recalcula achados bloqueantes e suspensões (sem recarregar)
 python -m app.cli inconsistencias      # US-05: recalcula alertas e pendências não bloqueantes (sem recarregar)
 python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e publica (exit 1 se reprovar)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
@@ -46,10 +47,13 @@ app/
     carga_inicial.py   US-01 (+ normalização na mesma transação, D-20)
     normalizar.py      US-02
     recalcular_flags.py US-03 (PRE-05..08; roda na carga, mesma transação, D-32)
+    resolver_pendencia.py US-07 (POST /pendencias/{id}/resolver: confirma a resolução e só então republica a fila, D-91)
+    listar_pendencias.py US-06 (GET /pendencias: filtros bloqueante, regra e status; D-84)
+    detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-83)
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
-    decidir.py         US-13/14
+    decidir.py         US-13 (aprovar); US-14 (editar/manter)
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.
     db.py, tables.py   Postgres/SQLModel (tabelas espelham fluxo-sistema.md §8)
@@ -67,7 +71,7 @@ app/
     deps.py            composição: único lugar que instancia implementações concretas
     errors.py          DomainError -> {"erro","mensagem"}
     routers/           um arquivo por recurso
-  cli.py             comandos de linha (carga, normalizar, flags, inconsistencias, gerar-fila, gerar-fila-csv, decisoes)
+  cli.py             comandos de linha (carga, normalizar, flags, inconsistencias, bloqueantes, gerar-fila, gerar-fila-csv, decisoes)
   config.py          configuração (REF_DATE fixa = 2026-10-23)
 tests/               espelha app/ ; test_arquitetura.py protege a regra de dependência
 ```
@@ -90,6 +94,7 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
 - Transação: repositórios não confirmam; o caso de uso chama `UnidadeDeTrabalho.confirmar()/desfazer()` (carga + normalização entram juntas ou não entram).
 - Flags (US-03): `oncologico` pelo CID (nunca pela flag) e `piora_recalculada` pelos eventos; eventos recebem `duplicado_de`/`historico` (nunca são apagados). As flags originais ficam intactas e cada divergência vai para `correcoes_log` (PRE-05/06).
+- Inconsistências bloqueantes (US-04): cada achado vira pendência bloqueante; enquanto estiver aberta, a solicitação fica `suspensa` com `motivo_status` = PRE-xx e sai da fila. **Oncológico nunca é suspenso** (I-02): fica `ativa` com o alerta `saida_a_confirmar`. A pendência manda: resolvida por pessoa não suspende de novo, e achado que some reativa só a suspensão automática; `removida` nunca é tocada (D-82).
 - Inconsistências não bloqueantes (US-05): o paciente segue `ativa`; o achado vira alerta em `alertas` (PRE-10..15) e, em PRE-10..13, uma pendência aberta (`pendencias`, uma por solicitação e regra). Reprocessar não duplica, encerra a que deixou de valer e nunca reabre a que uma pessoa resolveu (D-51).
 - Regra nova de pré-processamento: função pura em `domain/preprocessing/` + teste em `tests/domain/`; coluna nova na tabela; log só para mudança de valor visível (D-18).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).

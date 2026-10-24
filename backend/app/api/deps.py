@@ -12,8 +12,10 @@ from app.application.atualizacao_diaria import AtualizacaoDiaria
 from app.application.carga_inicial import CargaInicial
 from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
+from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
+from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
@@ -21,6 +23,7 @@ from app.application.listar_fila import ListarFila
 from app.application.listar_inbox import ListarInbox
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
+from app.application.resolver_pendencia import ResolverPendencia
 from app.config import settings
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.db import get_session
@@ -63,8 +66,11 @@ def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
     inconsistencias = DetectarInconsistencias(
         SqlSolicitacaoRepository(session), SqlEventoRepository(session),
         SqlPendenciaRepository(session), settings.ref_date)
+    bloqueantes = DetectarBloqueantes(
+        SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+        SqlPendenciaRepository(session), settings.ref_date)
     return CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                        SqlUnidadeDeTrabalho(session), flags, inconsistencias)
+                        SqlUnidadeDeTrabalho(session), flags, inconsistencias, bloqueantes)
 
 
 def _gerar_fila_em(session: Session, data: date) -> GerarFila:
@@ -109,6 +115,21 @@ def get_atualizacao_diaria(session: Session = Depends(get_session)) -> Atualizac
 
 def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> ExportarFilaPublicada:
     return ExportarFilaPublicada(SqlFilaRepository(session), ExportadorCsv(), settings.output_dir)
+
+
+def get_listar_pendencias(session: Session = Depends(get_session)) -> ListarPendencias:
+    return ListarPendencias(SqlPendenciaRepository(session))
+
+
+def get_resolver_pendencia(session: Session = Depends(get_session),
+                           publicar: PublicarFila = Depends(get_publicar_fila)) -> ResolverPendencia:
+    solicitacoes, eventos = SqlSolicitacaoRepository(session), SqlEventoRepository(session)
+    correcoes = SqlCorrecaoRepository(session)
+    return ResolverPendencia(
+        pendencias=SqlPendenciaRepository(session), solicitacoes=solicitacoes, eventos=eventos,
+        correcoes=correcoes, uow=SqlUnidadeDeTrabalho(session), publicar=publicar,
+        relogio=lambda: datetime.now(timezone.utc),
+        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes))
 
 
 # US-15
