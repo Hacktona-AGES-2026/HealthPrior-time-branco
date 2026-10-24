@@ -13,6 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.aprendizado import PropostaRegra
+from app.domain.notificacoes import Notificacao
 from app.domain.regras_aprendidas import RegraAprendida, RegraRegistrada
 from app.domain.enums import (
     AcaoDecisao,
@@ -40,6 +41,7 @@ from app.infrastructure.tables import (
     FilaPublicadaTable,
     PendenciaTable,
     ProcedimentoTable,
+    NotificacaoTable,
     PropostaRegraTable,
     RegraAprendidaTable,
     SolicitacaoTable,
@@ -372,6 +374,47 @@ class SqlRegraRepository:
             classe_de=regra.classe_de.value, classe_para=regra.classe_para.value,
             versao=regra.versao, aprovada_por=por, aprovada_em=em))
         self._s.flush()
+
+
+class SqlNotificacaoRepository:
+    """Notificações ao paciente (demo)."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def proximo_id(self) -> str:
+        return f"NTF-{(self._s.execute(select(func.count(NotificacaoTable.notificacao_id))).scalar() or 0) + 1:05d}"
+
+    def adicionar(self, n: Notificacao) -> None:
+        self._s.add(NotificacaoTable(
+            notificacao_id=n.notificacao_id, solicitacao_id=n.solicitacao_id, motivo=n.motivo,
+            texto=n.texto, canal=n.canal, status=n.status, criada_em=n.criada_em or datetime.now(timezone.utc)))
+        self._s.flush()
+
+    def existe_pendente(self, solicitacao_id: str, motivo: str) -> bool:
+        return self._s.execute(select(NotificacaoTable.notificacao_id).where(
+            NotificacaoTable.solicitacao_id == solicitacao_id, NotificacaoTable.motivo == motivo,
+            NotificacaoTable.status == "pendente").limit(1)).first() is not None
+
+    def pendentes(self, limite: int) -> list[Notificacao]:
+        consulta = (select(NotificacaoTable).where(NotificacaoTable.status == "pendente")
+                    .order_by(NotificacaoTable.criada_em, NotificacaoTable.notificacao_id).limit(limite))
+        return [_para_notificacao(t) for t in self._s.execute(consulta).scalars()]
+
+    def registrar_envio(self, notificacao_id: str, status: str, em: datetime, detalhe: str | None) -> None:
+        t = self._s.get(NotificacaoTable, notificacao_id)
+        t.status, t.enviada_em, t.detalhe, t.tentativas = status, em, detalhe, t.tentativas + 1
+        self._s.flush()
+
+    def listar(self, limite: int = 100) -> list[Notificacao]:
+        consulta = (select(NotificacaoTable)
+                    .order_by(NotificacaoTable.criada_em.desc(), NotificacaoTable.notificacao_id.desc()).limit(limite))
+        return [_para_notificacao(t) for t in self._s.execute(consulta).scalars()]
+
+
+def _para_notificacao(t: NotificacaoTable) -> Notificacao:
+    return Notificacao(t.notificacao_id, t.solicitacao_id, t.motivo, t.texto, t.canal, t.status,
+                       t.criada_em, t.enviada_em, t.tentativas, t.detalhe)
 
 
 class SqlCargaRepository:

@@ -14,6 +14,7 @@ const PaginaInbox = lazy(() => import("@/components/inbox/PaginaInbox"))
 const PaginaPacientes = lazy(() => import("@/components/pacientes/PaginaPacientes"))
 const PaginaAnalise = lazy(() => import("@/components/analise/PaginaAnalise"))
 const PaginaSwalis = lazy(() => import("@/components/swalis/PaginaSwalis"))
+const PaginaNotificacoes = lazy(() => import("@/components/notificacoes/PaginaNotificacoes"))
 const PaginaPropostas = lazy(() => import("@/components/propostas/PaginaPropostas"))
 
 function Conteudo() {
@@ -29,6 +30,7 @@ function Conteudo() {
         {pagina === "analise" && <PaginaAnalise />}
         {pagina === "swalis" && <PaginaSwalis />}
         {pagina === "propostas" && <PaginaPropostas />}
+        {pagina === "notificacoes" && <PaginaNotificacoes />}
       </div>
     </Suspense>
   )

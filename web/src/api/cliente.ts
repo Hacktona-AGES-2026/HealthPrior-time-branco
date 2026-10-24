@@ -21,6 +21,10 @@ export type StatusProposta = Proposta["status"]
 export type ResultadoProposta = components["schemas"]["DecidirPropostaOut"]
 export type ResultadoReversao = components["schemas"]["ReverterRegraOut"]
 
+export type Notificacao = components["schemas"]["NotificacaoOut"]
+export type ListaNotificacoes = components["schemas"]["NotificacoesOut"]
+export type ResultadoEnvios = components["schemas"]["EnviosOut"]
+
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export class ErroApi extends Error {
@@ -153,4 +157,29 @@ export async function aprovarProposta(solicitacaoId: string, reguladorId: string
   }
   if (!resposta.ok) throw await lerErro(resposta)
   return (await resposta.json()) as ResultadoDecisao
+}
+
+/** Notificações ao paciente (demo): o que foi enfileirado e enviado, e o canal configurado. */
+export async function listarNotificacoes(sinal?: AbortSignal): Promise<ListaNotificacoes> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/notificacoes`, { signal: sinal })
+  } catch (e) {
+    if (sinal?.aborted) throw e
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (!resposta.ok) throw await lerErro(resposta)
+  return (await resposta.json()) as ListaNotificacoes
+}
+
+/** Envia as pendentes pelo canal configurado (no máximo o limite por rodada). */
+export async function enviarNotificacoes(): Promise<ResultadoEnvios> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/notificacoes/enviar`, { method: "POST" })
+  } catch {
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (!resposta.ok) throw await lerErro(resposta)
+  return (await resposta.json()) as ResultadoEnvios
 }

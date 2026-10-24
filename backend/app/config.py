@@ -1,6 +1,6 @@
 """Configuração central. Valores podem ser sobrescritos por variáveis de ambiente (prefixo HP_)."""
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
@@ -33,6 +33,15 @@ class Settings:
     llm_enabled: bool
     llm_cache_path: Path
     recontato_dias: int
+    # Notificações ao paciente (demo). Canal real só com HP_NOTIFICA_CANAL=twilio e as credenciais no .env.
+    notifica_canal: str
+    notifica_destino: str  # número da demo: nunca o do paciente
+    notifica_limite_envio: int  # no máximo, por rodada de envio
+    notifica_min_posicoes: int  # só avisa quem mudou tantas posições
+    notifica_max_por_publicacao: int
+    twilio_account_sid: str
+    twilio_from: str
+    twilio_auth_token: str = field(repr=False)
     fatores_enabled: bool
     irr_path: Path
 
@@ -57,6 +66,14 @@ def _load() -> Settings:
         llm_cache_path=Path(os.getenv("HP_LLM_CACHE", REPO_ROOT / "data" / "processed" / "cache_llm.json")),
         # Q-04 (provisório): dias sem evento até pedir o recontato (C-04).
         recontato_dias=int(os.getenv("HP_RECONTATO_DIAS", "180")),
+        notifica_canal=os.getenv("HP_NOTIFICA_CANAL", "simulado").strip().lower(),
+        notifica_destino=os.getenv("HP_NOTIFICA_DESTINO", "").strip(),
+        notifica_limite_envio=int(os.getenv("HP_NOTIFICA_LIMITE_ENVIO", "5")),
+        notifica_min_posicoes=int(os.getenv("HP_NOTIFICA_MIN_POSICOES", "20")),
+        notifica_max_por_publicacao=int(os.getenv("HP_NOTIFICA_MAX_POR_PUBLICACAO", "3")),
+        twilio_account_sid=os.getenv("TWILIO_ACCOUNT_SID", "").strip(),
+        twilio_from=os.getenv("TWILIO_FROM", "").strip(),
+        twilio_auth_token=os.getenv("TWILIO_AUTH_TOKEN", "").strip(),
         # Fatores de comorbidade e idade/IRR no score (domain/fatores.py).
         fatores_enabled=os.getenv("HP_FATORES_ENABLED", "true").lower() == "true",
         irr_path=Path(os.getenv("HP_IRR_PATH", REPO_ROOT / "score" / "references"

@@ -1,0 +1,24 @@
+# Notificações ao paciente (demonstração)
+
+Avisa por SMS (Twilio, **conta de teste**) quando o paciente muda de posição, quando a situação muda e quando
+está muito tempo sem evento (recontato). **Só para demonstração**: o destino é sempre um número da demo.
+
+## Como funciona
+- **Fila de saída:** a mudança grava a notificação (tabela `notificacoes`, status `pendente`) na mesma transação; um passo à parte envia.
+- **Gatilhos:**
+  - *posição:* depois de cada publicação da fila, quem mudou `HP_NOTIFICA_MIN_POSICOES` ou mais, as maiores mudanças primeiro, até `HP_NOTIFICA_MAX_POR_PUBLICACAO`;
+  - *situação:* decisão do regulador confirmada (aprovar/editar/manter) e resolução de pendência **bloqueante**;
+  - *recontato:* pendências `REC-01` abertas na atualização diária (no máximo o mesmo limite).
+- **Texto genérico** (`domain/notificacoes.py`): sem classe, score nem posição exata, só "subiu" ou "desceu". Prefixo `[DEMO SOL-xxxx]` diz de qual paciente seria.
+- **Segurança da demo:** canal `simulado` por padrão (nada sai). O Twilio só liga com `HP_NOTIFICA_CANAL=twilio` **e** credenciais **e** `HP_NOTIFICA_DESTINO`. Há limite de envios por rodada. Falha de envio não derruba a decisão nem a publicação: fica `falhou` e pode ser reenviada.
+- **Conta de teste do Twilio:** só entrega a números verificados e acrescenta um aviso de "trial" à mensagem; o corpo sai sem acentos (cabe em SMS GSM-7).
+
+## Ligar o Twilio
+1. Crie a conta de teste em twilio.com, verifique o número do celular da apresentação e anote o Account SID, o Auth Token e o número de origem.
+2. No `.env` da raiz (não commitado; veja `.env.example`): `HP_NOTIFICA_CANAL=twilio`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, `HP_NOTIFICA_DESTINO`.
+3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
+4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
+
+## Limites conhecidos
+- Não é produção: não há consentimento do paciente, opt-out, nem telefone do paciente usado (LGPD).
+- WhatsApp não está implementado (exige a API oficial e modelos aprovados).

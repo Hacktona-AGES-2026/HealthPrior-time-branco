@@ -66,7 +66,8 @@ class DecidirClasse:
     def __init__(self, solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
                  decisoes: DecisaoRepository, scorer: SwalisScorer, uow: UnidadeDeTrabalho,
                  publicar: Publicador, fila: FilaRepository, relogio: Callable[[], datetime],
-                 ref_date: date):
+                 ref_date: date, notificar=None):
+        self._notificar = notificar  # NotificarMudancas (demo)
         self._solicitacoes = solicitacoes
         self._eventos = eventos
         self._decisoes = decisoes
@@ -85,6 +86,8 @@ class DecidirClasse:
         except Exception:
             self._uow.desfazer()
             raise
+        if self._notificar is not None:
+            self._notificar.evento(c.solicitacao_id, "situacao")
         publicada = self._republicar()
         # sem republicar, a fila publicada é a anterior: a posição não mudou
         nova = _posicao(self._fila, c.solicitacao_id) if publicada else anterior
