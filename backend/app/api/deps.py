@@ -17,6 +17,7 @@ from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
+from app.application.resolver_pendencia import ResolverPendencia
 from app.config import settings
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.db import get_session
@@ -80,6 +81,17 @@ def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> Expo
 
 def get_listar_pendencias(session: Session = Depends(get_session)) -> ListarPendencias:
     return ListarPendencias(SqlPendenciaRepository(session))
+
+
+def get_resolver_pendencia(session: Session = Depends(get_session),
+                           publicar: PublicarFila = Depends(get_publicar_fila)) -> ResolverPendencia:
+    solicitacoes, eventos = SqlSolicitacaoRepository(session), SqlEventoRepository(session)
+    correcoes = SqlCorrecaoRepository(session)
+    return ResolverPendencia(
+        pendencias=SqlPendenciaRepository(session), solicitacoes=solicitacoes, eventos=eventos,
+        correcoes=correcoes, uow=SqlUnidadeDeTrabalho(session), publicar=publicar,
+        relogio=lambda: datetime.now(timezone.utc),
+        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes))
 
 
 def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEvento:

@@ -45,6 +45,7 @@ app/
     carga_inicial.py   US-01 (+ normalização na mesma transação, D-20)
     normalizar.py      US-02
     recalcular_flags.py US-03 (PRE-05..08; roda na carga, mesma transação, D-32)
+    resolver_pendencia.py US-07 (POST /pendencias/{id}/resolver: confirma a resolução e só então republica a fila, D-66)
     listar_pendencias.py US-06 (GET /pendencias: filtros bloqueante, regra e status; D-59)
     detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-58)
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)

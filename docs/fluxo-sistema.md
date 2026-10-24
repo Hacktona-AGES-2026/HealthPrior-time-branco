@@ -234,6 +234,7 @@ Os problemas se dividem em três tipos:
 - **Saídas da resolução:**
   - volta ao pré-processamento e segue o fluxo normal; ou
   - sai da fila **com motivo registrado** (nunca deletada).
+  - Na prática (US-07, D-62..D-66): `confirmar_saida` e `fundir` tiram a solicitação da fila (`removida`, motivo = regra); `reativar` e `descartar` a devolvem, se nenhuma outra pendência bloqueante seguir aberta. A fila é recalculada e publicada depois de confirmar a resolução.
 - **Entrega do hackathon:** suspensos ficam **fora** do `fila_priorizada.csv` e são listados no `DECISOES.md` com o motivo.
 - **Por quê:** Inglaterra (14% das saídas sem motivo registrado), Portugal e Nova Zelândia (remoções administrativas maquiando indicadores). Regra de design: **sinalizar, não apagar**.
 - **Achado para o pitch:** não há **nenhum óbito** registrado numa fila com mediana de 268 dias. Isso é um sinal de que a informação não está chegando.

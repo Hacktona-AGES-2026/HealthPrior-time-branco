@@ -570,6 +570,14 @@ export interface components {
              * Format: date
              */
             aberta_em: string;
+            /** Resolvido Por */
+            resolvido_por?: string | null;
+            /** Resolvido Em */
+            resolvido_em?: string | null;
+            /** Resolucao */
+            resolucao?: string | null;
+            /** Observacao */
+            observacao?: string | null;
         };
         /** PendenciaResumoOut */
         PendenciaResumoOut: {
@@ -632,8 +640,12 @@ export interface components {
         };
         /** ResolverPendenciaOut */
         ResolverPendenciaOut: {
-            status_fila: components["schemas"]["StatusFila"];
-            /** Fila Publicada */
+            /** @description da solicitação da pendência; null quando não há (PRE-24, evento órfão) */
+            status_fila?: components["schemas"]["StatusFila"] | null;
+            /**
+             * Fila Publicada
+             * @description false: o verificador reprovou e a fila anterior segue publicada (I-07)
+             */
             fila_publicada: boolean;
         };
         /** ResultadoTabelaOut */
@@ -1033,13 +1045,22 @@ export interface operations {
                     "application/json": components["schemas"]["Erro"];
                 };
             };
-            /** @description Validation Error */
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Unprocessable Entity */
             422: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
+                    "application/json": components["schemas"]["Erro"];
                 };
             };
         };

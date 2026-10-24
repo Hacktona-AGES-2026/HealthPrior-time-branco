@@ -510,6 +510,12 @@ Erros: `404 SOLICITACAO_NAO_ENCONTRADA` (vira pendência de evento órfão quand
 ```
 `resolucao`: `"confirmar_saida" | "fundir" | "reativar" | "descartar"`. Resposta `200`: `{ "status_fila": "removida", "fila_publicada": true }`.
 
+- `status_fila` é o da solicitação da pendência depois de resolver, ou `null` quando não há solicitação (PRE-24, evento órfão).
+- `fila_publicada = false`: a resolução valeu, mas o verificador reprovou (ou a publicação falhou) e a fila anterior segue publicada (I-07).
+- `observacao` é obrigatória em `confirmar_saida`. Cada regra aceita só algumas resoluções (D-62); `fundir_com` é a solicitação que permanece (padrão: a mais antiga das duas duplicadas).
+- Erros: `404 PENDENCIA_NAO_ENCONTRADA`, `409 PENDENCIA_JA_RESOLVIDA`, `422 RESOLUCAO_INVALIDA`, `422 OBSERVACAO_OBRIGATORIA`.
+- Depois de resolvida, a pendência traz `resolvido_por`, `resolvido_em`, `resolucao` e `observacao` em `GET /pendencias?status=resolvida|descartada` (`null` enquanto aberta).
+
 ### Endpoints secundários (contrato livre, definir ao implementar)
 `GET /fila/export`, `GET /metricas/comparacao`, `POST /admin/carga`, `POST /admin/atualizacao-diaria`, `POST /aprendizado/gerar-propostas`, `GET /propostas`, `POST /propostas/{id}/decidir`.
 
