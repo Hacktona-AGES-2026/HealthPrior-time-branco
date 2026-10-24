@@ -30,3 +30,9 @@ Priorização inteligente da fila cirúrgica (Desafio 1 · 9ª Hackatona de Enge
 python src/score_mortalidade.py                      # gera data/processed/score_mortalidade.csv
 python src/verificar_fila_priorizada.py fila_priorizada.csv
 ```
+
+## Documentação e desenvolvimento com IA
+
+- Fluxo do sistema: [`docs/fluxo-sistema.md`](docs/fluxo-sistema.md)
+- Decisões e exclusões (entregável): [`DECISOES.md`](DECISOES.md)
+- Instruções para agentes de IA (Claude Code, Cursor, Codex, Copilot): [`AGENTS.md`](AGENTS.md)

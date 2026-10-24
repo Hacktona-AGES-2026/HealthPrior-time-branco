@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+
+# Ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Claude Code (preferências pessoais)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# SO / editores
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Cache de LLM local (commite apenas o cache da demo, se decidido)
+.cache/

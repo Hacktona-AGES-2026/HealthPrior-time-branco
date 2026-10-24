@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      
+      "Bash(python *)",
+      "Bash(python3 *)",
+      "Bash(pytest *)",
+      "Bash(pip install *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git checkout -b *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(head *)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./src/verificar_fila_priorizada.py)",
+      "Edit(./data/fila_cirurgica.csv)",
+      "Edit(./data/eventos_clinicos.csv)",
+      "Edit(./data/procedimentos.csv)",
+      "Edit(./data/referencias/**)",
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)"
+    ]
+  }
+}
