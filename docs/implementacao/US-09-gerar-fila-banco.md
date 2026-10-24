@@ -46,9 +46,9 @@ flowchart LR
 
 | ID | Decisão | Motivo |
 |---|---|---|
-| D-28 | Separar **gerar** (US-09, `GerarFila`) de **publicar** (US-10, `PublicarFila`). `GerarFila` não conhece verificador nem repositório da fila | Responsabilidade única; cada parte testável; a US-10 não reescreve a US-09 |
-| D-29 | `LinhaFila` mora no **domínio** e a porta `FilaRepository` usa `list[LinhaFila]` | O repositório da fila publicada precisa da justificativa, e o domínio não pode importar a aplicação |
-| D-30 | Nesta US, `GET /fila/export` **gera a fila na hora** a partir do banco | Entregar o endpoint já funcional; na US-10 ele passa a servir só a fila **publicada** (que passou no verificador) |
+| D-34 | Separar **gerar** (US-09, `GerarFila`) de **publicar** (US-10, `PublicarFila`). `GerarFila` não conhece verificador nem repositório da fila | Responsabilidade única; cada parte testável; a US-10 não reescreve a US-09 |
+| D-35 | `LinhaFila` mora no **domínio** e a porta `FilaRepository` usa `list[LinhaFila]` | O repositório da fila publicada precisa da justificativa, e o domínio não pode importar a aplicação |
+| D-36 | Nesta US, `GET /fila/export` **gera a fila na hora** a partir do banco | Entregar o endpoint já funcional; na US-10 ele passa a servir só a fila **publicada** (que passou no verificador) |
 
 Decisões menores (subagente, revisadas pelo lead):
 - `SqlEventoRepository.listar_todos` ordena por (solicitação, data, evento_id); `listar_por_solicitacao` por (data, evento_id). Implementados aqui porque a US-09 precisa — **atenção ao merge com a US-03**, que também pode mexer em eventos.

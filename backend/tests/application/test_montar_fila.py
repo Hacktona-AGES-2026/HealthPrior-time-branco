@@ -88,6 +88,13 @@ def test_classe_editada_recalcula_o_pct_com_o_prazo_da_classe_decidida():
     assert "prazo 15 dias" in l.justificativa and "66.7% do prazo" in l.justificativa
 
 
+def test_cid_oncologico_vai_para_camada_1_mesmo_com_oncologico_desatualizado():
+    # I-09: `oncologico` ainda não recalculado (False) não pode esconder o C61
+    s = [sol("A", "C61", onco=False), sol("B", "K40.9")]
+    l = por_id(montar_fila(s, {}, ScorerFalso({"A": 0, "B": 90}), REF))
+    assert l["A"].camada == 1 and l["A"].posicao == 1
+
+
 def test_suspensa_nao_aparece():
     s = [sol("A"), sol("B", status_fila=StatusFila.SUSPENSA)]
     assert [l.solicitacao_id for l in montar_fila(s, {}, ScorerFalso({}), REF)] == ["A"]

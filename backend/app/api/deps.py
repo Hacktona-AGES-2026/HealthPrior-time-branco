@@ -8,6 +8,7 @@ from sqlmodel import Session
 from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
 from app.application.normalizar import Normalizar
+from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.config import settings
@@ -30,8 +31,10 @@ def get_scorer():
 
 def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
     normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+    flags = RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                            SqlCorrecaoRepository(session))
     return CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                        SqlUnidadeDeTrabalho(session))
+                        SqlUnidadeDeTrabalho(session), flags)
 
 
 def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:

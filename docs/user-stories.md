@@ -133,7 +133,7 @@ Como **sistema**, quero ordenar a fila por camadas, para que nenhum oncológico 
 - **Depende de:** US-03 (+ SWALIS ou stub)
 
 #### US-09 · Gerar `fila_priorizada.csv` — **P0** · Back
-> **Status: ✅ implementada** (branch `feat/US-09-gerar-fila-banco`): `python -m app.cli gerar-fila` e `GET /fila/export` a partir do banco. Registro: `docs/implementacao/US-09-gerar-fila-banco.md` (D-28..D-30). O `gerar-fila-csv` (sem banco, D-26) continua como alternativa.
+> **Status: ✅ implementada** (branch `feat/US-09-gerar-fila-banco`): `python -m app.cli gerar-fila` e `GET /fila/export` a partir do banco. Registro: `docs/implementacao/US-09-gerar-fila-banco.md` (D-34..D-36). O `gerar-fila-csv` (sem banco, D-26) continua como alternativa.
 
 Como **equipe**, quero gerar o CSV de entrega com justificativa legível por paciente.
 - **CA**
