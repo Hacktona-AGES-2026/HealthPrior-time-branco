@@ -22,7 +22,6 @@ from app.infrastructure.repositories import (
     SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.swalis_stub import SwalisStub
-from app.infrastructure.verificador import VerificadorOficial
 
 
 def get_scorer():
@@ -40,10 +39,8 @@ def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:
         solicitacoes=SqlSolicitacaoRepository(session),
         eventos=SqlEventoRepository(session),
         scorer=get_scorer(),
-        verificador=VerificadorOficial(),
-        fila=None,  # TODO(US-09): SqlFilaRepository
         exportador=ExportadorCsv(),
-        output_dir=settings.output_dir,
+        ref_date=settings.ref_date,
     )
 
 

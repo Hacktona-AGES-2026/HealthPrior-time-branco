@@ -41,6 +41,15 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
     )
 
 
+def _evento_para_entidade(t: EventoTable) -> Evento:
+    return Evento(
+        evento_id=t.evento_id, solicitacao_id=t.solicitacao_id, paciente_id=t.paciente_id,
+        data_evento=t.data_evento, tipo_evento=t.tipo_evento, resultado=t.resultado,
+        valor_numerico=t.valor_numerico, descricao=t.descricao or "", origem=t.origem,
+        duplicado_de=t.duplicado_de, historico=t.historico, orfao=t.orfao,
+    )
+
+
 class SqlSolicitacaoRepository:
     def __init__(self, session: Session):
         self._s = session
@@ -82,10 +91,14 @@ class SqlEventoRepository:
         self._s = session
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = (select(EventoTable).where(EventoTable.solicitacao_id == solicitacao_id)
+                    .order_by(EventoTable.data_evento, EventoTable.evento_id))
+        return [_evento_para_entidade(t) for t in self._s.exec(consulta).scalars()]
 
     def listar_todos(self) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = select(EventoTable).order_by(
+            EventoTable.solicitacao_id, EventoTable.data_evento, EventoTable.evento_id)
+        return [_evento_para_entidade(t) for t in self._s.exec(consulta).scalars()]
 
     def adicionar(self, evento: Evento) -> None:
         raise NotImplementedError("US-01")

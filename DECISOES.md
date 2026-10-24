@@ -34,6 +34,9 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-25 | 2026-10-24 | Desempate na camada: score desc, entrada mais antiga, solicitacao_id | Ordem determinística; 80+ aguarda Q-10 | Desempate por idade | US-08 |
 | D-26 | 2026-10-24 | CSV provisório gerado direto do dataset (sem banco) com SWALIS stub: `python -m app.cli gerar-fila-csv` | Garantir a entrega das 14h sem depender da US-01 | Esperar a US-01 | US-08/09/10 |
 | D-27 | 2026-10-24 | **Revisa D-22.** Camada 2 = só sinais clínicos (CID de complicação, evento de piora na espera, biópsia positiva, alarme no texto). Dor > 3 e limitação moderada/grave viram "sintomas": aparecem na justificativa e ficam para o SWALIS (classe), sem definir camada | Com D-22, 320 dos 526 da camada 2 (61%) estavam lá só por sintoma e competiam com quem piorou; dor é autorrelatada e já é critério da classe SWALIS. A regra de ouro não muda (camada 1). Resultado: camada 2 de 526 → 206; PS/internação recente na 1ª metade de 50% → 100% | Manter D-22; 4 camadas (onco / clínico / sintomático / demais) | US-08 |
+| D-28 | 2026-10-24 | Separar gerar (US-09, `GerarFila`) de publicar (US-10, `PublicarFila`) | Responsabilidade única; cada parte testável | Um caso de uso só com tudo | US-09/10 |
+| D-29 | `LinhaFila` no domínio; `FilaRepository` usa `list[LinhaFila]` | Repositório precisa da justificativa; domínio não importa aplicação | Novo tipo duplicado na infraestrutura | US-09 |
+| D-30 | `GET /fila/export` gera a fila na hora (US-09); na US-10 passa a servir só a fila publicada | Endpoint funcional já; segurança vem com a US-10 | Esperar a US-10 | US-09 |
 
 ## Solicitações fora da fila
 
