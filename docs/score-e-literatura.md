@@ -15,15 +15,19 @@
 ## 1. A fórmula
 
 ```
-score = peso_da_classe × dias_na_fila
+score = peso_da_classe × dias_na_fila × fator_de_comorbidade × fator_de_idade
 
-dias_na_fila   = 23/10/2026 − data_de_entrada_na_fila
-peso_da_classe = 100 / prazo_da_classe
-prazo_da_classe:  A1 = 15 dias · A2 = 21 · B = 60 · C = 180 · D = 360
+dias_na_fila         = 23/10/2026 − data_de_entrada_na_fila
+peso_da_classe       = 100 / prazo_da_classe
+prazo_da_classe      = A1 15 dias · A2 21 · B 60 · C 180 · D 360
+fator_de_comorbidade = 1,00 a 1,15 pelo índice de Charlson (§6.1)
+fator_de_idade       = 1,00 a 1,15 pela mortalidade do CID na faixa etária, IRR (§6.2)
 ```
 
-Juntando: **score = 100 × dias_na_fila / prazo_da_classe**, ou seja, o **% do prazo já consumido**.
-100% significa que o paciente esperou tudo o que a classe tolera.
+A parte `peso_da_classe × dias_na_fila` = **100 × dias_na_fila / prazo_da_classe** é o **% do prazo já
+consumido** (100% = o paciente esperou tudo o que a classe tolera). Os dois fatores diferenciam pacientes da
+**mesma classe com o mesmo tempo**: sem eles, 239 pacientes empatavam e eram desempatados pelo número da
+solicitação; com eles, 71. Os fatores nunca mudam a classe nem a camada (D-103).
 
 **Peso por dia de espera** (quanto o score sobe a cada dia):
 
@@ -87,10 +91,10 @@ ordem da fila = 1º camada (1 antes de 2 antes de 3)
 
 - **Edição do regulador:** se o regulador editou a classe, vale a classe dele; se editou o score, vale o
   score dele.
-- **Fatores de comorbidade e idade** (calculados, **ainda não ligados** à ordem; §6):
-  score_ajustado = score × fator_de_comorbidade × fator_de_idade, com cada fator entre 1,00 e 1,15.
+- **Fatores de comorbidade e idade:** valem também com a classe do regulador; um score editado pelo
+  regulador não leva fator (o número dele é final).
 - **Relação com o SWALIS publicado:** o score do artigo é dias_na_fila × 360 / prazo_da_classe = 3,6 × o
-  nosso score [R1]. A ordem é a mesma.
+  nosso % do prazo [R1]. Os fatores são o nosso acréscimo para desempatar dentro da classe.
 
 ### 1.3 Exemplo: SOL-2023-00010 (C18.7, adenocarcinoma de sigmoide)
 
@@ -102,7 +106,10 @@ ordem da fila = 1º camada (1 antes de 2 antes de 3)
 | Prazo da classe | 21 dias |
 | Peso da classe | 100 / 21 = 4,762 por dia |
 | Dias na fila | 1.318 |
-| Score | 4,762 × 1.318 = **6.276%** do prazo |
+| % do prazo | 4,762 × 1.318 = 6.276,2% |
+| Fator de comorbidade | 1,00 (nenhuma comorbidade Charlson no cadastro) |
+| Fator de idade | 1,123 (C18 na faixa de 60–69 anos: IRR 3,11, 17.389 óbitos) |
+| Score | 6.276,2 × 1,00 × 1,123 = **7.046,9** |
 | Camada | 1 (câncer) |
 
 Resultado: posição 1. Na fila por prioridade manual estava na posição 606.
@@ -257,8 +264,9 @@ buscamos estudo específico para elas, e o documento não afirma nada além diss
 
 ## 6. Fatores contextuais: comorbidade e idade/mortalidade
 
-**Estado no código:** os dois fatores são calculados (`score/`) e ficam em `data/processed/`, mas **ainda
-não multiplicam o score da fila**. As justificativas abaixo valem para quando forem ligados.
+**Estado no código:** os dois fatores multiplicam o score da fila (`backend/app/domain/fatores.py`,
+D-103). No dataset: 846 pacientes andam (mediana de 4 posições, máximo 34), nenhuma classe ou camada
+muda e o verificador oficial aprova.
 
 ### 6.1 Comorbidade (Charlson)
 
@@ -321,9 +329,9 @@ ajusta a ordem **dentro** da urgência e nunca substitui a classe. Com qualquer 
 
 | Ponto | Problema | Correção proposta |
 |---|---|---|
-| IRR sem limiar mínimo de óbitos | O CDC/NCHS não publica taxa com menos de 20 óbitos: o erro relativo passa de 23% [R12]. Na tabela, 107 de 357 células têm menos de 20 óbitos, e 26 pacientes recebem fator > 1 vindo delas | Fator 1,00 quando a célula tiver menos de 20 óbitos |
-| Hierarquia do Charlson | Pela regra do índice, metástase substitui "tumor" e diabetes com complicação substitui sem complicação [R11]; o código soma os dois | Aplicar a hierarquia (0 casos no dataset hoje) |
-| Teto `min(100, …)` da composição do `score/README.md` | O score da fila passa de 100 (6.276% no exemplo); o teto empataria todos os atrasados | Multiplicar o % do prazo **sem** teto; a garantia do §6.3 já limita o efeito |
+| IRR sem limiar mínimo de óbitos | O CDC/NCHS não publica taxa com menos de 20 óbitos: o erro relativo passa de 23% [R12]. Na tabela, 107 de 357 células têm menos de 20 óbitos, e 26 pacientes recebem fator > 1 vindo delas | **Corrigido na D-103** |
+| Hierarquia do Charlson | Pela regra do índice, metástase substitui "tumor" e diabetes com complicação substitui sem complicação [R11]; o código soma os dois | **Corrigido na D-103** |
+| Teto `min(100, …)` da composição do `score/README.md` | O score da fila passa de 100 (6.276% no exemplo); o teto empataria todos os atrasados | **Corrigido na D-103** |
 | Vesícula sem colecistite em C | A colelitíase com dor moderada vai para C (180 dias), mas o risco de internação de emergência quase triplica depois de 20 semanas (140 dias) [R17]. Na fila, 32 dos 42 pacientes com K80 em C/D já passaram de 140 dias | Levar ao regulador/mentores: cólica biliar em B (60 dias) ou C com prazo de 140 dias. O CID sozinho não muda a classe hoje |
 | Prazos A1 e A2 | Diferentes do artigo (8 e 30 dias) | Manter a tabela oficial (é a régua da banca) e dizer "adaptado do SWALIS" |
 

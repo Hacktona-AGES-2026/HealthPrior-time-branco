@@ -121,10 +121,11 @@ Estes parâmetros só geram alerta ou pendência.
 
 ---
 
-## 6. Fatores de comorbidade e mortalidade (não ordenam a fila)
+## 6. Fatores de comorbidade e mortalidade
 
-`score/` e `src/score_mortalidade.py` geram arquivos em `data/processed/` e **não estão ligados à
-ordenação** (`score/decisoes.md` D-21). Mesmo assim, como podem aparecer no pitch, foram auditados.
+Os multiplicadores de `score/` **entram no score da fila** desde a D-103 (`backend/app/domain/fatores.py`,
+com as correções X-09, X-10 e X-11). `src/score_mortalidade.py` (Elixhauser, sobrevida em 10 anos)
+continua só informativo.
 
 | Parâmetro | Valor | Onde | O que faz | Justificativa | Fonte | Status |
 |---|---|---|---|---|---|---|
@@ -187,13 +188,13 @@ Precisam de validação com os mentores (HSL) ou ficam declarados como escolha d
 | X-06 | Leucemia com peso de linfoma no Elixhauser | 9 pontos | [R9]: o Elixhauser não tem categoria de leucemia | Soma 9 pontos que o índice não prevê | Tirar C91–C95 do `linfoma` no Elixhauser (no Charlson continuam valendo 2, como malignidade) |
 | X-07 | I25 / "cardiopatia isquêmica" como infarto | 1 ponto | [R5]: infarto do miocárdio | Superestima (doença isquêmica crônica ≠ infarto) | Mapear só I21/I22/I25.2 ou texto "infarto" |
 | X-08 | Todo diabetes como "sem complicação" | 1 ponto | [R5]: com lesão de órgão-alvo = 2 | Subestima (0 casos no dataset hoje) | Ler o 4º caractere do CID (E1x.2–E1x.5) |
-| X-09 | IRR sem limiar mínimo de óbitos | `score/decisoes.md` D-09 | [R12]: < 20 óbitos = taxa não confiável | 26 pacientes recebem fator > 1 de células instáveis | Exigir ≥ 20 óbitos na célula ou cair para fator neutro |
-| X-10 | Hierarquia do Charlson não aplicada | tumor + metástase = 8 | [R11]: metástase substitui malignidade (6) | 0 casos no dataset | Aplicar a hierarquia antes de somar |
-| X-11 | Teto `min(100, …)` da composição proposta | `score/README.md` | — (incompatibilidade interna) | O score da fila é % do prazo e passa de 100; o teto empataria todos os atrasados | Não usar o teto se os fatores forem ligados ao % do prazo (`score-e-literatura.md` §4.4) |
+| X-09 | IRR sem limiar mínimo de óbitos | `score/decisoes.md` D-09 | [R12]: < 20 óbitos = taxa não confiável | 26 pacientes recebem fator > 1 de células instáveis | **Corrigido na D-103** |
+| X-10 | Hierarquia do Charlson não aplicada | tumor + metástase = 8 | [R11]: metástase substitui malignidade (6) | 0 casos no dataset | **Corrigido na D-103** |
+| X-11 | Teto `min(100, …)` da composição proposta | `score/README.md` | — (incompatibilidade interna) | O score da fila é % do prazo e passa de 100; o teto empataria todos os atrasados | **Corrigido na D-103** |
 
 Nenhum parâmetro contradiz a regra de ouro (I-01): ela não depende de peso, só da camada 1 pelo CID,
 e o verificador oficial continua sendo o portão (I-07). X-04 contraria uma decisão (D-03), não uma
-invariante. X-05..X-11 estão em módulos que não ordenam a fila.
+invariante. X-05..X-08 estão em módulos que não ordenam a fila; X-09..X-11 foram corrigidos na D-103.
 
 ---
 
