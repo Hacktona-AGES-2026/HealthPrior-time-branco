@@ -128,6 +128,35 @@ class SqlSolicitacaoRepository:
         )
         self._s.expire_all()  # o update em lote não sincroniza os objetos já carregados
 
+    def atualizar_data_entrada(self, solicitacao: Solicitacao) -> None:
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id)
+                        .values(data_entrada_fila=solicitacao.data_entrada_fila))
+        self._s.expire_all()
+
+    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id).values(
+                classe_status=solicitacao.classe_status.value,
+                classe_confirmada=solicitacao.classe_confirmada.value if solicitacao.classe_confirmada else None,
+                classe_medico=solicitacao.classe_medico.value if solicitacao.classe_medico else None,
+                score_medico=solicitacao.score_medico, editado_manualmente=solicitacao.editado_manualmente,
+                editado_por=solicitacao.editado_por, editado_em=solicitacao.editado_em))
+        self._s.expire_all()
+
+    def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
+        if not solicitacoes:
+            return
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela).where(tabela.c.solicitacao_id == bindparam("b_id"))
+            .values(status_fila=bindparam("status_fila"), motivo_status=bindparam("motivo_status")),
+            [{"b_id": s.solicitacao_id, "status_fila": s.status_fila.value, "motivo_status": s.motivo_status}
+             for s in solicitacoes],
+        )
+        self._s.expire_all()
+
     def salvar_alertas(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
             return
@@ -180,6 +209,16 @@ class SqlEventoRepository:
     def salvar_varios(self, eventos: list[Evento]) -> None:
         raise NotImplementedError("US-01")
 
+    def mover(self, de_solicitacao_id: str, para_solicitacao_id: str) -> list[str]:
+        tabela = EventoTable.__table__
+        ids = list(self._s.execute(select(tabela.c.evento_id).where(tabela.c.solicitacao_id == de_solicitacao_id)
+                                   .order_by(tabela.c.evento_id)).scalars())
+        if ids:
+            self._s.execute(update(tabela).where(tabela.c.solicitacao_id == de_solicitacao_id)
+                            .values(solicitacao_id=para_solicitacao_id))
+            self._s.expire_all()
+        return ids
+
     def atualizar_marcas(self, eventos: list[Evento]) -> None:
         if not eventos:
             return
@@ -187,11 +226,52 @@ class SqlEventoRepository:
         self._s.execute(
             update(tabela)
             .where(tabela.c.evento_id == bindparam("b_id"))
-            .values(duplicado_de=bindparam("duplicado_de"), historico=bindparam("historico")),
-            [{"b_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico}
-             for e in eventos],
+            .values(duplicado_de=bindparam("duplicado_de"), historico=bindparam("historico"),
+                    orfao=bindparam("orfao")),
+            [{"b_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico,
+              "orfao": e.orfao} for e in eventos],
         )
         self._s.expire_all()
+
+
+def _para_decisao(t: DecisaoTable) -> Decisao:
+    return Decisao(
+        decisao_id=t.decisao_id, solicitacao_id=t.solicitacao_id, regulador_id=t.regulador_id,
+        acao=AcaoDecisao(t.acao), data=t.data,
+        classe_sugerida=Classe(t.classe_sugerida) if t.classe_sugerida else None,
+        classe_decidida=Classe(t.classe_decidida) if t.classe_decidida else None,
+        score_decidido=t.score_decidido,
+        motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
+        justificativa=t.justificativa, versao_regras=t.versao_regras, procedimento_id=t.procedimento_id,
+    )
+
+
+class SqlDecisaoRepository:
+    """Log de decisões do regulador (C-09/C-10): só acrescenta."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def proximo_id(self) -> str:
+        ultimo = self._s.execute(select(func.max(DecisaoTable.decisao_id))).scalar()
+        return f"DEC-{(int(ultimo.split('-')[1]) + 1) if ultimo else 1:04d}"
+
+    def adicionar(self, decisao: Decisao) -> None:
+        self._s.add(DecisaoTable(
+            decisao_id=decisao.decisao_id, solicitacao_id=decisao.solicitacao_id,
+            procedimento_id=decisao.procedimento_id, regulador_id=decisao.regulador_id,
+            acao=decisao.acao.value, data=decisao.data,
+            classe_sugerida=decisao.classe_sugerida.value if decisao.classe_sugerida else None,
+            classe_decidida=decisao.classe_decidida.value if decisao.classe_decidida else None,
+            score_decidido=decisao.score_decidido,
+            motivo_codificado=decisao.motivo_codificado.value if decisao.motivo_codificado else None,
+            justificativa=decisao.justificativa, versao_regras=decisao.versao_regras))
+        self._s.flush()
+
+    def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]:
+        consulta = (select(DecisaoTable).where(DecisaoTable.solicitacao_id == solicitacao_id)
+                    .order_by(DecisaoTable.data, DecisaoTable.decisao_id))
+        return [_para_decisao(t) for t in self._s.exec(consulta).scalars()]
 
 
 class SqlCargaRepository:
@@ -238,7 +318,12 @@ class SqlCorrecaoRepository:
         self._s = session
 
     def adicionar_varias(self, correcoes: list[Correcao]) -> None:
-        raise NotImplementedError("US-03")
+        self._s.add_all(
+            CorrecaoTable(solicitacao_id=c.solicitacao_id, campo=c.campo, original=c.original,
+                          novo=c.novo, regra=c.regra)
+            for c in correcoes
+        )
+        self._s.flush()
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Correcao]:
         consulta = (select(CorrecaoTable).where(CorrecaoTable.solicitacao_id == solicitacao_id)
@@ -258,17 +343,17 @@ class SqlCorrecaoRepository:
 
 
 def _para_pendencia(t: PendenciaTable) -> Pendencia:
+    """Table -> entidade. As evidências voltam no formato gravado por `_evidencias_json`."""
     evidencias = [
         Motivo(sinal=e.get("sinal") or "", evidencia=e["texto"], fonte=e["fonte"], ref=e.get("ref"),
                data=date.fromisoformat(e["data"]) if e.get("data") else None)
         for e in json.loads(t.evidencias_json or "[]")
     ]
     return Pendencia(
-        pendencia_id=t.pendencia_id, solicitacao_id=t.solicitacao_id, regra=t.regra,
-        titulo=t.titulo, bloqueante=t.bloqueante, evidencias=evidencias,
-        acao_sugerida=t.acao_sugerida or "", status=StatusPendencia(t.status),
-        aberta_em=t.aberta_em, resolvido_por=t.resolvido_por, resolvido_em=t.resolvido_em,
-        resolucao=t.resolucao,
+        pendencia_id=t.pendencia_id, solicitacao_id=t.solicitacao_id, regra=t.regra, titulo=t.titulo,
+        bloqueante=t.bloqueante, evidencias=evidencias, acao_sugerida=t.acao_sugerida or "",
+        status=StatusPendencia(t.status), aberta_em=t.aberta_em, resolvido_por=t.resolvido_por,
+        resolvido_em=t.resolvido_em, resolucao=t.resolucao, observacao=t.observacao,
     )
 
 
@@ -285,11 +370,21 @@ class SqlPendenciaRepository:
         self._s = session
 
     def obter(self, pendencia_id: str) -> Pendencia | None:
-        raise NotImplementedError("US-06")
+        linha = self._s.get(PendenciaTable, pendencia_id)
+        return _para_pendencia(linha) if linha is not None else None
 
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
-        raise NotImplementedError("US-06")
+        # D-77: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
+        consulta = select(PendenciaTable).order_by(
+            PendenciaTable.bloqueante.desc(), PendenciaTable.aberta_em, PendenciaTable.pendencia_id)
+        if bloqueante is not None:
+            consulta = consulta.where(PendenciaTable.bloqueante == bloqueante)
+        if regra is not None:
+            consulta = consulta.where(PendenciaTable.regra == regra)
+        if status is not None:
+            consulta = consulta.where(PendenciaTable.status == status)
+        return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Pendencia]:
         consulta = (select(PendenciaTable).where(PendenciaTable.solicitacao_id == solicitacao_id)
@@ -297,17 +392,29 @@ class SqlPendenciaRepository:
         return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
-        """Abre uma pendência nova (id vazio ganha PEN-xxxx). Resolver existente: TODO(US-07)."""
+        """Pendência nova (id vazio ganha PEN-xxxx) ou, se já existe, só o desfecho (status, quem, quando,
+        resolução, observação); o achado não muda."""
         p = pendencia
-        if p.pendencia_id and self._s.get(PendenciaTable, p.pendencia_id) is not None:
-            raise NotImplementedError("US-07: atualizar pendência existente")
-        if not p.pendencia_id:
-            p.pendencia_id = f"PEN-{self._proximo_numero():04d}"
-        self._s.add(PendenciaTable(
-            pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
-            titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
-            acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
+        linha = self._s.get(PendenciaTable, p.pendencia_id) if p.pendencia_id else None
+        if linha is None:
+            if not p.pendencia_id:
+                p.pendencia_id = f"PEN-{self._proximo_numero():04d}"
+            self._s.add(PendenciaTable(
+                pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
+                titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
+                acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
+            self._s.flush()
+            return
+        linha.status = pendencia.status.value
+        linha.resolvido_por, linha.resolvido_em = pendencia.resolvido_por, pendencia.resolvido_em
+        linha.resolucao, linha.observacao = pendencia.resolucao, pendencia.observacao
         self._s.flush()
+
+    def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:
+        linhas = self._s.execute(
+            select(PendenciaTable.solicitacao_id, PendenciaTable.regra)
+            .where(PendenciaTable.regra.in_(regras), PendenciaTable.status == "aberta")).all()
+        return {(sid, regra) for sid, regra in linhas}
 
     def sincronizar(self, regras: tuple[str, ...], pendencias: list[Pendencia]) -> ResultadoSincronizacao:
         existentes = {(t.solicitacao_id, t.regra): t for t in self._s.execute(

@@ -1,7 +1,7 @@
 """PRE-10..PRE-25 (US-04, US-05): detecção de inconsistências.
 
 Cada regra devolve uma lista de Achado. Nada é apagado (I-03).
-Oncológico nunca é suspenso sem confirmação humana (I-02).
+Oncológico nunca é suspenso sem confirmação humana (I-02): quem decide suspender é o caso de uso.
 """
 from __future__ import annotations
 
@@ -17,6 +17,20 @@ PRE_CANCER_ESCONDIDO = "PRE-12"
 PRE_DIABETES_FORA_DO_CADASTRO = "PRE-13"
 PRE_JUSTIFICATIVA_VAZIA = "PRE-14"
 PRE_CAMPO_VAZIO = "PRE-15"
+
+PRE_DUPLICATA = "PRE-20"
+PRE_OPEROU_FORA = "PRE-21"
+PRE_OPEROU_CONVENIO = "PRE-22"
+PRE_DESISTENCIA = "PRE-23"
+PRE_EVENTO_ORFAO = "PRE-24"
+PRE_FONTES_CONTRADITORIAS = "PRE-25"
+
+# Bloqueantes (US-04): suspendem a solicitação, exceto oncológico (I-02). PRE-24 é de evento.
+REGRAS_BLOQUEANTES = (PRE_DUPLICATA, PRE_OPEROU_FORA, PRE_OPEROU_CONVENIO, PRE_DESISTENCIA,
+                      PRE_EVENTO_ORFAO, PRE_FONTES_CONTRADITORIAS)
+REGRAS_DE_SOLICITACAO = tuple(r for r in REGRAS_BLOQUEANTES if r != PRE_EVENTO_ORFAO)
+# Oncológico não é suspenso (I-02): fica ativo com este alerta até alguém confirmar.
+ALERTA_SAIDA_A_CONFIRMAR = "saida_a_confirmar"
 
 REGRAS_NAO_BLOQUEANTES = (PRE_CONTATO_PERDIDO, PRE_SEM_TELEFONE, PRE_CANCER_ESCONDIDO,
                           PRE_DIABETES_FORA_DO_CADASTRO, PRE_JUSTIFICATIVA_VAZIA, PRE_CAMPO_VAZIO)
@@ -47,15 +61,91 @@ _RE_JUSTIFICATIVA_GENERICA = re.compile(
 )
 _CAMPOS_DE_COMPLETUDE = ("prioridade_regulacao", "intensidade_dor_eva", "asa", "distancia_hospital_km")
 
+# PRE-21/22/23: o que cada fonte diz sobre a saída do paciente (D-78).
+_SAIDA_NA_OBSERVACAO = (
+    ("operou_fora", PRE_OPEROU_FORA, re.compile(r"outro servico|operou em outro|operou fora")),
+    ("operou_convenio", PRE_OPEROU_CONVENIO, re.compile(r"operou pelo convenio|cirurgia pelo convenio")),
+    ("desistencia", PRE_DESISTENCIA, re.compile(r"desistiu|nao deseja mais|solicita retirada da fila")),
+)
+_SAIDA_NO_EVENTO = {  # contato_telefonico / resultado
+    "informou_cirurgia_outro_servico": ("operou_fora", PRE_OPEROU_FORA),
+    "desistiu": ("desistencia", PRE_DESISTENCIA),
+}
+_TEXTO_DA_SAIDA = {
+    PRE_OPEROU_FORA: ("Operou em outro serviço", "Ligar para confirmar a cirurgia em outro serviço"),
+    PRE_OPEROU_CONVENIO: ("Operou pelo convênio", "Confirmar com a família se o paciente operou pelo convênio"),
+    PRE_DESISTENCIA: ("Desistência", "Ligar para confirmar a desistência"),
+    PRE_FONTES_CONTRADITORIAS: ("Fontes contraditórias", "Ligar para confirmar o motivo da saída"),
+}
+
 
 def detectar_bloqueantes(
     solicitacao: Solicitacao,
     eventos: list[Evento],
     outras_do_paciente: list[Solicitacao],
 ) -> list[Achado]:
-    """TODO(US-04): PRE-20 duplicata, PRE-21/22 operou fora, PRE-23 desistência,
-    PRE-24 evento órfão, PRE-25 fontes contraditórias."""
-    raise NotImplementedError("US-04: detectar_bloqueantes")
+    """PRE-20 duplicata, PRE-21/22/23 saída da fila e PRE-25 fontes contraditórias.
+
+    `eventos` são os desta solicitação, já marcados por `marcar_eventos` (US-03);
+    `outras_do_paciente`, as outras solicitações do mesmo paciente. PRE-24 é por evento
+    (`detectar_eventos_orfaos`). Só detecta: suspender ou não (I-02) é do caso de uso.
+    """
+    achados = (_duplicata(solicitacao, outras_do_paciente), _saida_da_fila(solicitacao, eventos))
+    return [a for a in achados if a is not None]
+
+
+def detectar_eventos_orfaos(eventos: list[Evento], solicitacoes_existentes: set[str]) -> dict[str, Achado]:
+    """PRE-24: evento cuja solicitação não existe. Não é aplicado. Um achado por ID referenciado."""
+    por_id: dict[str, list[Evento]] = {}
+    for e in eventos:
+        if e.solicitacao_id not in solicitacoes_existentes:
+            por_id.setdefault(e.solicitacao_id, []).append(e)
+    return {
+        sid: Achado(PRE_EVENTO_ORFAO, True, "Evento de solicitação fora da fila",
+                    [Motivo("evento_orfao", e.descricao, "evento", e.evento_id, e.data_evento) for e in evs],
+                    f"Verificar o ID {sid}: a solicitação não existe na fila")
+        for sid, evs in por_id.items()
+    }
+
+
+def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
+    """PRE-20 (D-10, D-79): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
+    com a data de entrada que já tem (a fusão dos eventos é da resolução, US-07)."""
+    anteriores = [o for o in outras
+                  if o.solicitacao_id != s.solicitacao_id and o.paciente_id == s.paciente_id
+                  and o.procedimento_id == s.procedimento_id
+                  and (o.data_entrada_fila, o.solicitacao_id) < (s.data_entrada_fila, s.solicitacao_id)]
+    if not anteriores:
+        return None
+    mantida = min(anteriores, key=lambda o: (o.data_entrada_fila, o.solicitacao_id))
+    evidencias = [
+        Motivo("duplicata", f"{x.solicitacao_id}: entrada em {x.data_entrada_fila.isoformat()}, CID {x.cid_principal}",
+               "solicitacao", x.solicitacao_id, x.data_entrada_fila)
+        for x in (mantida, s)
+    ]
+    return Achado(PRE_DUPLICATA, True, "Solicitação duplicada", evidencias,
+                  f"Fundir com {mantida.solicitacao_id}, mantendo a data de entrada mais antiga "
+                  f"({mantida.data_entrada_fila.isoformat()})")
+
+
+def _saida_da_fila(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
+    """PRE-21/22/23 (D-78): a observação ou o call center diz que o paciente saiu. Se as fontes dizem
+    coisas diferentes (ou uma só diz duas), é PRE-25, com as duas evidências lado a lado."""
+    sinais: list[tuple[str, Motivo]] = []
+    observacao = _chave(s.observacoes)
+    for tipo, regra, padrao in _SAIDA_NA_OBSERVACAO:
+        if padrao.search(observacao):
+            sinais.append((regra, Motivo(tipo, s.observacoes, "observacoes")))
+    for e in _validos(eventos):
+        saida = _SAIDA_NO_EVENTO.get(e.resultado or "") if e.tipo_evento == "contato_telefonico" else None
+        if saida:
+            sinais.append((saida[1], Motivo(saida[0], e.descricao, "evento", e.evento_id, e.data_evento)))
+    regras = {regra for regra, _ in sinais}
+    if not regras:
+        return None
+    regra = next(iter(regras)) if len(regras) == 1 else PRE_FONTES_CONTRADITORIAS
+    titulo, acao = _TEXTO_DA_SAIDA[regra]
+    return Achado(regra, True, titulo, [m for _, m in sinais], acao)
 
 
 def _chave(texto: str | None) -> str:
