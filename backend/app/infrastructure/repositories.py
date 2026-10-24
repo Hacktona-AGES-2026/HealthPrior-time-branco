@@ -182,18 +182,22 @@ class SqlCargaRepository:
 
     def _upsert(self, tabela: type, registros: list[dict]) -> ResultadoTabela:
         resultado = ResultadoTabela(lido=len(registros))
+        if not registros:
+            return resultado
         pk = tabela.__table__.primary_key.columns.keys()[0]
+        # Um statement só, executado em lote (executemany): o SQLAlchemy compila uma vez e
+        # agrupa as linhas. Com `.values(lote)` ele compilava um bind param por célula (~50 mil).
+        stmt = insert(tabela.__table__)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=[pk],
+            set_={c: stmt.excluded[c] for c in registros[0] if c != pk},
+        )
         for i in range(0, len(registros), TAMANHO_LOTE):
             lote = registros[i : i + TAMANHO_LOTE]
             ids = [r[pk] for r in lote]
             existentes = set(self._s.exec(select(tabela.__table__.c[pk]).where(
                 tabela.__table__.c[pk].in_(ids))).scalars())
-            stmt = insert(tabela).values(lote)
-            stmt = stmt.on_conflict_do_update(
-                index_elements=[pk],
-                set_={c: stmt.excluded[c] for c in lote[0] if c != pk},
-            )
-            self._s.execute(stmt)
+            self._s.execute(stmt, lote)
             resultado.atualizados += len(existentes)
             resultado.inseridos += len(ids) - len(existentes)
         return resultado

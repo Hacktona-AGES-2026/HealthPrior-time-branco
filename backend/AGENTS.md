@@ -21,6 +21,7 @@ python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e pub
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
 python -m app.cli extrair-sinais       # SWALIS: pré-aquece o cache do LLM e mostra as classes
 pytest -q                              # testes (inclui guarda de arquitetura)
+pytest -q -n 4                         # idem em paralelo (pytest-xdist; um banco por worker, como na CI)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
 Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`, `OPENROUTER_API_KEY` (só no `.env` da raiz), `HP_LLM_MODEL` (padrão `typesafe/jev-1.14`), `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
