@@ -1,3 +1,4 @@
+import { DetalheApiPaciente } from "@/components/shared/detalhe/DetalheApi"
 import { daApi } from "@/data/adaptador"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 import type { Paciente } from "@/data/tipos"
@@ -61,6 +62,11 @@ export function PacienteDetalhe({ paciente: p }: { paciente: Paciente }) {
         <Etapa pronto={etapa >= 3} rotulo="Montando evolução no tempo" altura={310} className="@lg:col-span-2">
           <GraficoEvolucao p={p} />
         </Etapa>
+        {api && (
+          <div className="@lg:col-span-2">
+            <DetalheApiPaciente key={p.solicitacao_id} p={p} />
+          </div>
+        )}
         {/* Cascata, confiança, eventos, parâmetros da IA e histórico ainda não vêm da API (US-21). */}
         {!api && (
           <>

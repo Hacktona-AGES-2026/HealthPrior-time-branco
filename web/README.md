@@ -17,7 +17,7 @@ npm run build
 - Sem API, o front cai nos dados de exemplo de `src/data` e mostra um aviso.
 - Ações: **Aprovar** → `POST /decisoes` (`aprovar`); **Rejeitar** → `POST /decisoes` (`editar`, com classe, motivo codificado e justificativa); **Registrar evento** → `POST /eventos`. Depois de cada ação a fila é recarregada.
 - Página **Inbox**: propostas do SWALIS que aguardam um profissional (classe atual → sugerida).
-- Com dados da API, a ficha esconde o que a API ainda não expõe (confiança, ASA, HbA1c, pré-operatório, gráficos da IA, histórico).
+- Ficha com dados da API: `GET /solicitacoes/{id}` mostra a explicação, os motivos do SWALIS (com origem: palavra-chave ou Jev p=…), a linha do tempo de eventos, as decisões do regulador e as pendências. O que a API não expõe (confiança, ASA, HbA1c, pré-operatório, gráficos da IA) fica escondido.
 
 ## Atalhos
 

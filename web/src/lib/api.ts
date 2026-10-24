@@ -136,3 +136,24 @@ export const listarInbox = () => pedir<{ total: number; itens: ItemInboxApi[] }>
 export const decidir = (d: DecisaoIn) => pedir<DecisaoOut>("/decisoes", { method: "POST", body: JSON.stringify(d) })
 
 export const registrarEvento = (e: EventoIn) => pedir<EventoOut>("/eventos", { method: "POST", body: JSON.stringify(e) })
+
+export type DetalheApi = {
+  solicitacao_id: string
+  posicao: number | null
+  camada: number | null
+  camada_motivo: string | null
+  explicacao: string
+  score: {
+    classe_sistema: Classe | null
+    classe_medico: Classe | null
+    classe_status: string
+    versao_regras: string | null
+    motivos: MotivoApi[]
+  }
+  eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean }[]
+  decisoes: { decisao_id: string; data: string; regulador_id: string; acao: string; classe_decidida: Classe | null; motivo_codificado: string | null; justificativa: string | null }[]
+  pendencias: { pendencia_id: string; regra: string; bloqueante: boolean; status: string }[]
+  alertas: string[]
+}
+
+export const obterDetalhe = (id: string) => pedir<DetalheApi>(`/solicitacoes/${encodeURIComponent(id)}`)
