@@ -1,7 +1,16 @@
 # Notificações ao paciente (demonstração)
 
-Avisa por SMS (Twilio, **conta de teste**) quando o paciente muda de posição, quando a situação muda e quando
-está muito tempo sem evento (recontato). **Só para demonstração**: o destino é sempre um número da demo.
+Avisa o paciente quando muda de posição, quando a situação muda e quando está muito tempo sem evento (recontato).
+**Só para demonstração**: nada vai para o telefone de um paciente de verdade.
+
+## Para a demo: ntfy (3 passos, funciona em qualquer máquina com internet)
+1. **Celular:** instale o app **ntfy** e assine um tópico difícil de adivinhar (no servidor público, o nome do tópico é o único controle de acesso). Ex.: `healthprior-demo-x7k29q`.
+2. **`.env` da raiz** (na máquina onde o back roda): `HP_NOTIFICA_CANAL=ntfy` e `NTFY_TOPIC=healthprior-demo-x7k29q`.
+3. **Dispare:** aprove ou edite um caso no Inbox. O push chega no celular e a mesma mensagem aparece na tela **Notificações**.
+
+Teste a assinatura sem espaço depois da barra: `curl -d "oi" ntfy.sh/healthprior-demo-x7k29q`.
+Sem `HP_NOTIFICA_CANAL` (ou com `simulado`) nada sai: a tela Notificações mostra o que seria enviado.
+**Opcionais, desligados por padrão:** Twilio (SMS/WhatsApp de teste) e WhatsApp pelo WAHA; veja as seções abaixo.
 
 ## Como funciona
 - **Fila de saída:** a mudança grava a notificação (tabela `notificacoes`, status `pendente`) na mesma transação; um passo à parte envia.
