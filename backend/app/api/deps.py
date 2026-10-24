@@ -14,6 +14,7 @@ from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
+from app.application.listar_fila import ListarFila
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.config import settings
@@ -82,6 +83,11 @@ def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEv
 def get_decidir(session: Session = Depends(get_session),
                 gerar_fila: GerarFila = Depends(get_gerar_fila)) -> DecidirClasse:
     return DecidirClasse(SqlSolicitacaoRepository(session), decisoes=None, gerar_fila=gerar_fila)
+
+
+# US-20
+def get_listar_fila(session: Session = Depends(get_session)) -> ListarFila:
+    return ListarFila(SqlFilaRepository(session), SqlSolicitacaoRepository(session))
 
 
 # US-22
