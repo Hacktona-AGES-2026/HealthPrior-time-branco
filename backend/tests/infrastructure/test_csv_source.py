@@ -32,6 +32,18 @@ def test_duplicados_marcados(dados):
     assert ev["EVT-000051"].duplicado_de == "EVT-000050"
 
 
+def test_duplicata_so_com_conteudo_igual_incluindo_origem(dados):
+    """Mesma regra do banco (D-30): são 6, e EVT-000712/713 (origens diferentes) são 2 atendimentos."""
+    todos = {e.evento_id: e for lista in dados[1].values() for e in lista}
+    assert sum(1 for e in todos.values() if e.duplicado_de) == 6
+    assert todos["EVT-000712"].duplicado_de is None
+    assert todos["EVT-000713"].duplicado_de is None
+
+
+def test_155_eventos_historicos(dados):
+    assert sum(e.historico for lista in dados[1].values() for e in lista) == 155
+
+
 def test_historico_pronto_socorro(dados):
     ps = [e for e in dados[1]["SOL-2023-00017"] if e.tipo_evento == "pronto_socorro"]
     assert ps and all(e.historico for e in ps)
@@ -41,10 +53,3 @@ def test_orfaos_fora_do_dict(dados):
     ids = {s.solicitacao_id for s in dados[0]}
     assert set(dados[1]) <= ids
 
-
-def test_duplicados_seguem_a_regra_do_banco_com_origem(dados):
-    # D-30: EVT-000712/713 diferem só na origem e não são duplicados
-    marcados = [e for lista in dados[1].values() for e in lista if e.duplicado_de]
-    assert len(marcados) == 6
-    ev = {e.evento_id: e for lista in dados[1].values() for e in lista}
-    assert ev["EVT-000713"].duplicado_de is None

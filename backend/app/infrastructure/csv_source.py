@@ -38,8 +38,9 @@ def _numero(valor) -> float | None:
 def carregar_do_csv(data_dir: Path) -> tuple[list[Solicitacao], dict[str, list[Evento]]]:
     """Lê fila_cirurgica.csv e eventos_clinicos.csv e devolve entidades de domínio.
 
-    Duplicados (``duplicado_de``) e históricos (``historico``) são marcados por
-    ``marcar_eventos``, a mesma regra da carga no banco (D-30); órfãos ficam de fora.
+    Eventos duplicados (``duplicado_de``) e anteriores à entrada na fila (``historico``) são
+    marcados por ``marcar_eventos`` do domínio, a mesma regra do caminho via banco (PRE-07/08,
+    D-33); eventos órfãos ficam de fora.
     """
     df_fila = pd.read_csv(data_dir / "fila_cirurgica.csv", dtype=str, keep_default_na=True)
     df_evt = pd.read_csv(data_dir / "eventos_clinicos.csv", dtype=str, keep_default_na=True)
@@ -70,7 +71,7 @@ def carregar_do_csv(data_dir: Path) -> tuple[list[Solicitacao], dict[str, list[E
 
     por_id = {s.solicitacao_id: s for s in solicitacoes}
     eventos: dict[str, list[Evento]] = {}
-    for r in df_evt.to_dict("records"):
+    for r in df_evt.sort_values("evento_id", kind="stable").to_dict("records"):
         sid = r["solicitacao_id"]
         if sid not in por_id:
             continue  # órfão
@@ -85,7 +86,6 @@ def carregar_do_csv(data_dir: Path) -> tuple[list[Solicitacao], dict[str, list[E
             descricao=_txt(r.get("descricao")) or "",
             origem=_txt(r.get("origem")),
         ))
-    # PRE-07/PRE-08 (D-30, D-31): mesma regra da carga no banco, sem apagar nenhum evento.
     for sid, lista in eventos.items():
         marcar_eventos(por_id[sid], lista)
     return solicitacoes, eventos
