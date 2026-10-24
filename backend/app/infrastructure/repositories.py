@@ -5,15 +5,26 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 """
 from __future__ import annotations
 
-from sqlalchemy import bindparam, delete, select, update
+import json
+from datetime import datetime
+
+from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.enums import Classe, ClasseStatus, StatusFila
-from app.domain.models import Correcao, Evento, ResultadoTabela, Solicitacao
+from app.domain.models import (
+    Correcao,
+    Evento,
+    Pendencia,
+    ResultadoSincronizacao,
+    ResultadoTabela,
+    Solicitacao,
+)
 from app.infrastructure.tables import (
     CorrecaoTable,
     EventoTable,
+    PendenciaTable,
     ProcedimentoTable,
     SolicitacaoTable,
 )
@@ -31,11 +42,13 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         intensidade_dor_eva=t.intensidade_dor_eva, limitacao_funcional=t.limitacao_funcional,
         justificativa_clinica=t.justificativa_clinica or "", observacoes=t.observacoes or "",
         prioridade_regulacao=t.prioridade_regulacao, flag_oncologico=t.flag_oncologico,
-        flag_piora_clinica=t.flag_piora_clinica, piora_recalculada=t.piora_recalculada,
+        flag_diabetico=t.flag_diabetico, flag_piora_clinica=t.flag_piora_clinica,
+        asa=t.asa, distancia_hospital_km=t.distancia_hospital_km, comorbidades=t.comorbidades,
+        hba1c_ultima=t.hba1c_ultima, piora_recalculada=t.piora_recalculada,
         cid_norm=t.cid_norm, nome_norm=t.nome_norm or "", oncologico=t.oncologico,
         municipio_norm=t.municipio_norm, prioridade_norm=t.prioridade_norm,
         status_fila=StatusFila(t.status_fila), motivo_status=t.motivo_status,
-        classe_status=ClasseStatus(t.classe_status),
+        classe_status=ClasseStatus(t.classe_status), alertas=json.loads(t.alertas_json),
         classe_medico=Classe(t.classe_medico) if t.classe_medico else None,
         score_medico=t.score_medico, editado_manualmente=t.editado_manualmente,
         editado_por=t.editado_por, editado_em=t.editado_em,
@@ -85,6 +98,18 @@ class SqlSolicitacaoRepository:
              for s in solicitacoes],
         )
         self._s.expire_all()  # o update em lote não sincroniza os objetos já carregados
+
+    def salvar_alertas(self, solicitacoes: list[Solicitacao]) -> None:
+        if not solicitacoes:
+            return
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela).where(tabela.c.solicitacao_id == bindparam("b_id"))
+            .values(alertas_json=bindparam("alertas_json")),
+            [{"b_id": s.solicitacao_id, "alertas_json": json.dumps(s.alertas, ensure_ascii=False)}
+             for s in solicitacoes],
+        )
+        self._s.expire_all()
 
     def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
@@ -185,6 +210,65 @@ class SqlCorrecaoRepository:
             for c in correcoes
         )
         self._s.flush()
+
+
+def _evidencias_json(pendencia: Pendencia) -> str:
+    """Mesmo formato de EvidenciaOut (fonte, ref, texto) + sinal e data da evidência."""
+    return json.dumps(
+        [{"fonte": m.fonte, "ref": m.ref, "texto": m.evidencia, "sinal": m.sinal,
+          "data": m.data.isoformat() if m.data else None} for m in pendencia.evidencias],
+        ensure_ascii=False, sort_keys=True)
+
+
+class SqlPendenciaRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def obter(self, pendencia_id: str) -> Pendencia | None:
+        raise NotImplementedError("US-06")
+
+    def listar(self, bloqueante: bool | None = None, regra: str | None = None,
+               status: str | None = "aberta") -> list[Pendencia]:
+        raise NotImplementedError("US-06")
+
+    def salvar(self, pendencia: Pendencia) -> None:
+        raise NotImplementedError("US-07")
+
+    def sincronizar(self, regras: tuple[str, ...], pendencias: list[Pendencia]) -> ResultadoSincronizacao:
+        existentes = {(t.solicitacao_id, t.regra): t for t in self._s.execute(
+            select(PendenciaTable).where(PendenciaTable.regra.in_(regras))).scalars()}
+        desejadas = {(p.solicitacao_id, p.regra): p for p in pendencias}
+        resultado = ResultadoSincronizacao()
+        proximo = self._proximo_numero()
+
+        for chave in sorted(desejadas):  # ordem fixa: ids iguais em qualquer banco novo
+            p, atual = desejadas[chave], existentes.get(chave)
+            if atual is None:
+                self._s.add(PendenciaTable(
+                    pendencia_id=f"PEN-{proximo:04d}", solicitacao_id=p.solicitacao_id, regra=p.regra,
+                    titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
+                    acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
+                proximo += 1
+                resultado.abertas += 1
+            elif atual.status == "aberta":
+                novos = (p.titulo, _evidencias_json(p), p.acao_sugerida)
+                if (atual.titulo, atual.evidencias_json, atual.acao_sugerida) != novos:
+                    atual.titulo, atual.evidencias_json, atual.acao_sugerida = novos
+                    resultado.atualizadas += 1
+            # resolvida/descartada por uma pessoa: continua como está, mesmo que o achado persista
+
+        for chave, atual in existentes.items():
+            if chave not in desejadas and atual.status == "aberta":
+                atual.status, atual.resolvido_por = "resolvida", "sistema"
+                atual.resolvido_em, atual.resolucao = datetime.utcnow(), "deixou_de_valer"
+                resultado.encerradas += 1
+
+        self._s.flush()
+        return resultado
+
+    def _proximo_numero(self) -> int:
+        ultimo = self._s.execute(select(func.max(PendenciaTable.pendencia_id))).scalar()
+        return int(ultimo.split("-")[1]) + 1 if ultimo else 1
 
 
 class SqlUnidadeDeTrabalho:

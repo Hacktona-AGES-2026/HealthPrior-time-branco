@@ -182,6 +182,15 @@ class ItemFila:
 
 
 @dataclass
+class ResultadoSincronizacao:
+    """O que mudou ao sincronizar as pendências automáticas de um conjunto de regras (US-05)."""
+
+    abertas: int = 0
+    atualizadas: int = 0
+    encerradas: int = 0
+
+
+@dataclass
 class ResultadoTabela:
     """Contagem da carga de uma tabela (US-01)."""
 
