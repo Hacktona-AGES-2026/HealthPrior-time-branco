@@ -1,288 +1,214 @@
-# Score, classificação SWALIS e base na literatura
+# Score: cada parâmetro e sua justificativa
 
-> **Para o pitch e para a banca.** Fórmula exata de cada peça, como a classe SWALIS é decidida e qual
-> referência sustenta cada escolha. Estado do código: `main` em `cd0802e` (24/10/2026).
-> Números: dataset da entrega (941 solicitações), regras + cache do Jev, data de referência 23/10/2026.
-> Auditoria parâmetro a parâmetro (arquivo:linha, status): [`auditoria-parametros.md`](auditoria-parametros.md).
-> Toda referência [Rn] foi conferida; o §7 diz o que foi lido em cada uma.
-
-## 1. Em uma frase
-
-**A classe diz quanto tempo a doença tolera esperar (SWALIS); o score diz quanto desse tempo já foi
-gasto; a camada garante que nenhum câncer fica atrás de quem não tem urgência.**
-
-```
-dados do paciente ──► PONTOS com evidência ──► CLASSE SWALIS (A1..D) ──► PRAZO (dias)
-                                                                         │
-data de entrada ──────────────────────────► DIAS EM FILA ───────────────┤
-                                                                         ▼
-                                            SCORE = % do prazo consumido
-CID C*? sinal clínico de urgência? ──► CAMADA (1, 2, 3)                  │
-                                                                         ▼
-                              ORDEM = camada ↑ · score ↓ · entrada ↑ · id ↑
-```
+> Para cada parâmetro do score: o valor e **por que é esse valor**. A justificativa é de um destes tipos:
+>
+> - **Literatura**: artigo ou diretriz conferido, citado no §6;
+> - **Lógica**: argumento explícito, que dá para conferir com uma conta ou com a definição;
+> - **Regra oficial**: definida pelo desafio (`data/referencias/swalis.csv` e `src/verificar_fila_priorizada.py`),
+>   que é a régua da banca.
+>
+> Nenhum parâmetro está justificado por "preferência". O que ainda não tem justificativa está no §6,
+> com a correção proposta. Código: `main` em `cd0802e`. Números: dataset da entrega (941 solicitações).
 
 ---
 
-## 2. Classificação SWALIS: como a classe é decidida
+## 1. A fórmula completa
 
-### 2.1 De onde vem o método
+```
+1. PONTOS      cada achado do paciente vira um ponto, com a evidência citada (campo, frase ou evento)
+2. EIXOS       progressão = maior nível entre os pontos de progressão  (0 a 3)
+               sintoma    = maior nível entre os pontos de sintoma     (0 a 2)
+3. CLASSE      progressão 3 → A1 · 2 → A2 · 1 → B
+               progressão 0 → sintoma 2 → B · 1 → C · 0 → D
+4. PRAZO       A1 15 · A2 21 · B 60 · C 180 · D 360 dias
+5. SCORE       score = 100 × (23/10/2026 − data_entrada_fila) / prazo        "% do prazo consumido"
+6. CAMADA      1 = CID começa com C · 2 = sinal clínico de urgência · 3 = demais
+7. ORDEM       camada ↑ → score ↓ → data de entrada ↑ → solicitacao_id ↑
+```
 
-O SWALIS (*Surgical Waiting List Info System*) é um projeto financiado pelo Ministério da Saúde da Itália
-em 2001 e publicado por Valente et al. [R1]. A urgência é avaliada por **dois critérios**: presença de
-**progressão rápida** da doença e **grau de dor, disfunção ou incapacidade**. Cada classe tem um tempo
-máximo até o tratamento (MTBT). Ferramentas de priorização do Canadá usam os mesmos ingredientes: o
-instrumento do *Western Canada Waiting List Project* para quadril e joelho soma critérios de dor, função
-e potencial de progressão da doença num escore ponderado [R14].
+Exemplo real: SOL-2023-00010, adenocarcinoma de sigmoide (C18.7).
 
-| Classe | Critério em [R1] | Prazo em [R1] | Prazo no HealthPrior (desafio) |
+- Progressão 2 (câncer pelo CID e biópsia), sintoma 1 (dor EVA 4) → classe A2 → prazo 21 dias.
+- Score = 100 × 1.318 / 21 = 6.276,2%. Camada 1.
+- Resultado: posição 1. Na fila atual (por prioridade manual) estava na posição 606.
+
+---
+
+## 2. Classe SWALIS
+
+### 2.1 Estrutura
+
+| Parâmetro | Valor | Justificativa | Base |
 |---|---|---|---|
-| A1 | progressão rápida evidente, a espera piora o desfecho | 8 dias | **15 dias** |
-| A2 | progressão potencial | 30 dias | **21 dias** |
-| B | dor, disfunção ou incapacidade importantes, sem progressão rápida | 60 dias | 60 dias |
-| C | dor ou disfunção leves | 180 dias | 180 dias |
-| D | sem dor, disfunção ou incapacidade | 360 dias | 360 dias |
+| Classificar por **dois eixos** | progressão × sintoma | O SWALIS define a urgência por dois critérios: presença de progressão rápida da doença, e grau de dor, disfunção ou incapacidade. A ferramenta canadense de fila cirúrgica usa os mesmos ingredientes: dor, função e progressão da doença | Literatura [R1], [R14] |
+| **Tabela** eixo → classe | prog 3→A1, 2→A2, 1→B; sem progressão, sintoma 2→B, 1→C, 0→D | É a definição das classes em [R1]: A1 progressão rápida evidente; A2 progressão potencial; B dor/disfunção importante sem progressão; C leve/moderada; D nenhuma | Literatura [R1] |
+| Eixo = **maior** nível entre os pontos | `max` | Um único achado grave já define a urgência: um paciente com obstrução é A1 mesmo sem dor. Somar pontos faria vários achados leves virarem um grave, o que a definição de [R1] não prevê. O `max` também garante que acrescentar evidência nunca rebaixa a classe | Lógica |
+| Sem ponto nenhum = nível 0 | 0 | Sem evidência de progressão nem de sintoma, a definição de [R1] é exatamente a classe D | Literatura [R1] |
 
-Usamos os prazos da tabela do desafio (`data/referencias/swalis.csv`), que o dicionário de dados chama de
-"adaptado do modelo SWALIS". B, C e D são iguais ao artigo; A1 e A2 foram adaptados (D-80).
+### 2.2 Eixo de progressão
 
-### 2.2 Etapa 1: pontos, cada um com evidência citada
-
-Cada ponto alimenta um eixo num nível. Ele pode vir de três origens, e a justificativa da fila diz qual:
-
-| Origem | O que lê | Como evita erro |
-|---|---|---|
-| **Campo / CID** | CID principal, dor EVA, limitação funcional, eventos (biópsia) | Dado estruturado |
-| **Palavra-chave** | Justificativa clínica e observações | Termos do verificador oficial; **negação** ("sem sinais de encarceramento" não conta), na linha do NegEx [R8] |
-| **Jev (LLM)** | Cada frase do texto: qual dos 8 pontos ela descreve, com probabilidade | Só conta com p ≥ 0,7; 0,4–0,7 vai para o regulador revisar; a citação é a frase literal, conferida no texto e não negada |
-
-| Ponto | Eixo · nível | Exemplos que disparam |
-|---|---|---|
-| `obstrucao` | progressão 3 | encarceramento, estrangulamento, suboclusão, hérnia irredutível |
-| `risco_vida` | progressão 3 | colangite, melena, sepse, transfusão, síncope, angina em repouso |
-| `perda_funcao` | progressão 3 | hidronefrose, glaucoma facomórfico, dano neurológico |
-| CID de obstrução/instabilidade | progressão 3 | K40.0, K40.3, K42.0, K43.0 (hérnia com obstrução), N13.2, I20.0 (angina instável) |
-| câncer pelo CID (C*, exceto C44), biópsia positiva, `cancer_confirmado` | progressão 2 | C18.7 com anatomopatológico |
-| lesão incerta (D37–D48, R91), C44, `suspeita_malignidade` | progressão 1 | perda ponderal, disfagia, PSA em elevação |
-| dor EVA 7–10, limitação grave, I83.2, K80.0, `dor_intensa`, `sintoma_grave` | sintoma 2 | acamado, úlcera de pressão |
-| dor EVA 4–6, limitação moderada, `sintoma_moderado`; dor ou limitação **sem dado** | sintoma 1 | — |
-| dor EVA 0–3 e limitação nenhuma/leve | sintoma 0 | — |
-
-**Os cortes de dor têm base:** em pacientes com dor musculoesquelética crônica, EVA ≤ 3,4 corresponde
-a interferência leve na função, 3,5–6,4 a moderada e ≥ 6,5 a grave [R3]. Na EVA inteira (0–10), isso
-é exatamente 0–3 / 4–6 / 7–10. Os próprios autores avisam que a classificação na prática clínica é
-incerta, então tratamos o corte como critério e não como diagnóstico.
-
-### 2.3 Etapa 2: decisão pela tabela (determinística)
-
-```
-nivel_progressao = MAIOR nível entre os pontos de progressão   (0 a 3; sem ponto = 0)
-nivel_sintoma    = MAIOR nível entre os pontos de sintoma      (0 a 2; sem ponto = 0)
-
-classe = A1  se nivel_progressao = 3
-         A2  se nivel_progressao = 2
-         B   se nivel_progressao = 1
-         B   se nivel_progressao = 0 e nivel_sintoma = 2
-         C   se nivel_progressao = 0 e nivel_sintoma = 1
-         D   se nivel_progressao = 0 e nivel_sintoma = 0
-```
-
-- **Por que o máximo:** um único sinal grave basta (é assim que o SWALIS define A1). Também garante que
-  o Jev **só sobe** a classe: sem ele, a classe é a das regras; com ele, igual ou maior.
-- **Quem decide é a tabela, não o LLM** (I-05). A classe sai como "sugerida, não confirmada" até o
-  regulador (I-04).
-- **Exceção C44** (pele não melanoma): fica em B mesmo com biópsia, porque a tabela do desafio usa
-  "CBC de pele" como exemplo de B.
-
-**Resultado no dataset:** A1 102 · A2 166 · B 225 · C 326 · D 122. Só com regras (sem Jev) seriam
-84 / 168 / 199 / 250 / 240: 150 classes sobem e nenhuma desce (`docs/swalis.md`).
-
----
-
-## 3. Fórmula exata do score
-
-### 3.1 Score da fila (implementado e usado na ordem)
-
-```
-dias_em_fila   = data_referência − data_entrada_fila                 (23/10/2026, nunca "hoje")
-classe         = classe_medico, se o regulador editou; senão a classe SWALIS
-prazo          = {A1: 15, A2: 21, B: 60, C: 180, D: 360}[classe]
-score_sistema  = arredonda(100 × dias_em_fila / prazo, 1 casa)       → "% do prazo consumido"
-score_efetivo  = score_medico, se o regulador editou o score; senão score_sistema
-```
-
-Código: `backend/app/infrastructure/swalis_regras.py:55-56` e `backend/app/application/montar_fila.py:88-113`.
-
-**É o score do SWALIS publicado.** Em [R1] a prioridade é `P(t) = (t − t0) × γ`, com
-`γ = MTBT da classe D / MTBT da classe`. Com D = 360 dias:
-
-```
-P(t) = dias_em_fila × 360 / prazo = 3,6 × score_sistema
-```
-
-Mesma ordem, só muda a escala. O artigo chama essa unidade de "dias de espera ajustados pela
-necessidade". Na prática:
-
-- **Envelhecimento:** o score cresce sozinho todo dia, sem ninguém mexer. Paciente esquecido sobe.
-- **Velocidade por urgência:** uma A2 ganha 4,8 pontos por dia (100/21); uma D, 0,28 (100/360). A A2 sobe
-  ~17 vezes mais rápido.
-- **Equidade entre classes:** 100% significa "estourou o prazo" em qualquer classe. Um paciente D com 400
-  dias (111%) passa na frente de um B com 30 dias (50%), porque o D já estourou o que a própria doença
-  tolera e o B não.
-
-**Exemplos reais:**
-
-| Solicitação | Classe | Dias | Conta | Score |
-|---|---|---|---|---|
-| SOL-2023-00010 (adenocarcinoma de sigmoide, C18.7) | A2 (21 d) | 1.318 | 100 × 1.318 / 21 | **6.276,2%** |
-| SOL-2026-00637 (colangite há 3 semanas, só no texto) | A1 (15 d) | 101 | 100 × 101 / 15 | **673,3%** |
-| SOL-2026-00757 (D37.4 com biópsia positiva) | A2 (21 d) | 72 | 100 × 72 / 21 | **342,9%** |
-
-### 3.2 Camada e ordem final
-
-```
-camada = 1  se o CID normalizado começa com "C"                      (regra de ouro, pelo CID, nunca pela flag)
-         2  se tem sinal clínico de urgência:
-              CID de complicação (I20.0, K40.0, K40.3, K42.0, K43.0, K80.0, N13.2, I83.2)
-              ou evento de piora durante a espera (PS, internação, imagem com progressão,
-                 reavaliação com piora; sem histórico e sem duplicado)
-              ou biópsia positiva
-              ou termo de alarme na justificativa
-         3  demais
-
-ordem = camada crescente → score_efetivo decrescente → data de entrada mais antiga → solicitacao_id
-```
-
-Código: `backend/app/domain/ranking.py:44-52` e `backend/app/domain/urgencia.py:77-92`.
-
-- **Por que camada e não peso:** a regra de ouro é eliminatória. Com camadas, nenhum número consegue
-  colocar um câncer atrás de um paciente sem urgência (D-06). Exemplo: um câncer de pele classe B com
-  15 dias (25%) ficaria atrás de uma hérnia D com 400 dias (111%) se só o score ordenasse.
-- **Desempate pela entrada mais antiga:** em [R1], dentro da mesma classe, quem esperou mais é atendido
-  antes.
-- **Resultado:** camadas 177 / 206 / 558. O SOL-2023-00010 estava na **posição 606** na fila por prioridade
-  manual e agora está na **posição 1**. O verificador oficial passa.
-
----
-
-## 4. Fatores contextuais: comorbidade e idade/mortalidade
-
-> **Status no código:** os dois fatores são calculados por `score/` e ficam em `data/processed/`, com
-> regra e explicação por paciente. **Hoje eles não entram na ordem da fila** (`score/decisoes.md` D-21).
-> Ligá-los ao score exige uma decisão do time (ver §4.4).
-
-### 4.1 Multiplicador de comorbidade
-
-```
-categorias      = categorias Charlson achadas no texto de comorbidades + CID secundário
-                  (sem o CID principal, sem idade; cada categoria conta uma vez)
-charlson_sem_idade = Σ peso(categoria)
-                  IAM 1 · ICC 1 · doença pulmonar crônica 1 · diabetes 1 · doença renal 2
-                  tumor sólido 2 · linfoma/leucemia 2 · metástase 6
-mult_comorbidade = 1,00 se Charlson 0 · 1,03 se 1 · 1,06 se 2 · 1,10 se 3–4 · 1,15 se ≥ 5
-```
-
-Código: `score/apply_comorbidity_multiplier.py:27-120`. No dataset: Charlson 0 = 511, 1 = 331, 2 = 89,
-3 = 7, 4 = 3; multiplicador máximo observado 1,10.
-
-### 4.2 Multiplicador de idade e mortalidade (IRR)
-
-```
-cid_3          = CID principal com 3 caracteres (C18.7 → C18)
-faixa          = 0–17 · 18–39 · 40–49 · 50–59 · 60–69 · 70–79 · 80+
-taxa(cid, f)   = óbitos com causa básica = cid na faixa f / população da faixa f   (SIM 2019–2023 / IBGE)
-taxa_media(cid)= óbitos do cid em todas as idades / população total
-IRR            = taxa(cid, faixa) / taxa_media(cid)
-mult_idade     = 1,00                                    se IRR ausente, 0 ou ≤ 1
-                 min(1,15; 1 + 0,075 × min(log2 IRR; 2))  se IRR > 1
-```
-
-Código: `score/apply_idade_mortality_multiplier.py:64-82`; tabela em
-`score/references/irr_nacional_cid_idade_2019_2023.parquet` (57 CIDs × 7 faixas = 399 células).
-
-Exemplo (tabela do repo): C18 aos 70–79 anos tem taxa de 38,4 por 100 mil contra média de 6,5 do C18 →
-IRR 5,92 → log2 = 2,57, limitado a 2 → **mult_idade = 1,15**. No dataset: 460 pacientes com ajuste,
-326 neutros por IRR ≤ 1, 155 neutros por IRR indisponível ou célula sem óbito.
-
-### 4.3 Base na literatura de cada decisão do `score/decisoes.md`
-
-| Decisão (score/) | O que a literatura diz | Fonte | Status |
+| Parâmetro | Valor | Justificativa | Base |
 |---|---|---|---|
-| D-14/D-18: usar o **Charlson** | Índice prognóstico de mortalidade criado e validado em coortes (mortalidade em 1 ano subiu de 12% com escore 0 para 85% com escore ≥ 5); pesos de 1 a 6 por condição | [R5] | com fonte |
-| Pesos usados (1/1/1/1/2/2/2/6) | Batem com os pesos publicados | [R5], [R11] | com fonte |
-| D-14: **Charlson sem idade** porque a idade já está no IRR | No índice combinado, 1 ponto de comorbidade equivale a ~1 década de idade: idade e comorbidade são somadas como coisas distintas, então usar as duas vezes duplicaria o efeito | [R6] | com fonte |
-| D-15: **não contar o CID principal** como comorbidade | O Elixhauser foi construído para separar comorbidades do motivo principal da internação | [R10] | com fonte |
-| D-17: categoria conta uma vez | Regra de hierarquia do Charlson: metástase substitui "malignidade" e diabetes com complicação substitui sem complicação; a condição mais leve não soma | [R11] | **parcial**: conta uma vez, mas não aplica a hierarquia (tumor + metástase somaria 8, não 6). No dataset: **0 casos**, sem impacto hoje |
-| D-19: **não usar Elixhauser** como multiplicador | Os pesos de van Walraven foram derivados para **morte hospitalar** e têm valores negativos (obesidade −4, depressão −3) | [R7] | com fonte |
-| D-05: usar `CAUSABAS` do SIM | Causa básica é a doença que iniciou a cadeia de eventos que levou à morte, selecionada por regras da OMS/CID-10 | [R13] | com fonte |
-| D-03/D-04: **taxa** (óbitos / população), não contagem | Comparar idades exige taxa por população; IRR é uma razão de taxas | definição; sem referência específica conferida | — |
-| D-09: **sem limiar mínimo de óbitos** | O NCHS (CDC) não publica taxa específica por idade com **menos de 20 óbitos**: o erro padrão relativo passa de 23% | [R12] | **divergente**: 107 das 357 células com IRR têm < 20 óbitos; **26 pacientes** recebem multiplicador > 1 vindo dessas células |
-| D-13/D-20: fator **nunca reduz** (piso 1,00) | Precaução do time: ausência de evidência não é evidência de menor risco (mesma ideia de I-08) | — | sem fonte (regra de produto) |
-| D-12/D-18/D-24: **conversão em 1,00–1,15** (log2, 0,075, faixas, tetos) | O próprio `score/decisoes.md` diz que são "regras de produto, não pesos calibrados" | — | sem fonte (declarado) |
-| D-07: sete faixas etárias | Escolha de interpretabilidade e volume | — | sem fonte |
-| Diabetes do CID secundário sempre "sem complicação" | Charlson dá 2 pontos para diabetes com complicação crônica | [R11] | **divergente**, mas **0 casos** no dataset (nenhum E1x.2–E1x.5) |
+| Obstrução, risco de vida, perda de função → **nível 3 (A1)** | pontos `obstrucao`, `risco_vida`, `perda_funcao` | A1 na tabela oficial é "risco de vida ou de perda de órgão/função", com os exemplos "obstrução com risco de estrangulamento" e "angina instável" | Regra oficial; [R1] |
+| CID de nível 3 | K40.0, K40.3, K42.0, K43.0, N13.2, I20.0 | Pela CID-10 do DATASUS: hérnias **com obstrução**, hidronefrose **com obstrução** por cálculo, **angina instável**. São os exemplos de A1 da tabela oficial. A lista é a de "CID de urgência" do verificador | Regra oficial; CID-10 |
+| Câncer confirmado (CID C\*) → **nível 2 (A2)** | exceto C44 | A tabela oficial dá "neoplasia maligna confirmada" como exemplo de A2 | Regra oficial |
+| Biópsia positiva → **nível 2 (A2)** | qualquer data | A tabela oficial dá "biópsia positiva aguardando cirurgia" como exemplo de A2. Vale mesmo com CID não C, para pegar o câncer escondido (23 casos no dataset) | Regra oficial |
+| C44 (pele não melanoma) → **nível 1 (B)** | mesmo com biópsia | A tabela oficial dá "CBC de pele" como exemplo de **B**. Como a biópsia só confirma o próprio C44, ela não sobe a classe | Regra oficial |
+| Lesão incerta (D37–D48, R91) e suspeita de malignidade → **nível 1 (B)** | — | Na CID-10, D37–D48 é literalmente "neoplasia de comportamento incerto" e R91 é "achado anormal de imagem do pulmão": ainda não é câncer confirmado. A tabela oficial só põe em A2 câncer **confirmado** ou biópsia positiva. Logo a suspeita fica um nível abaixo: B, a classe mais urgente sem confirmação. Quando a biópsia confirmar, o ponto de biópsia sobe para A2 sozinho | Lógica + regra oficial |
 
-### 4.4 Se o time quiser ligar os fatores ao score
+### 2.3 Eixo de sintoma
 
-O `score/README.md` propõe `score_proposto = min(100, score_base × mult_comorbidade × mult_idade)`,
-pensado para um score de 0 a 100. **O score da fila não é 0–100**: é % do prazo, e passa de 100 para
-quem estourou o prazo (SOL-2023-00010 tem 6.276%). Aplicado ao % do prazo, o teto de 100 empataria
-todos os atrasados e apagaria a ordem entre eles. Se for ligar, é preciso uma decisão nova
-(sem o teto, ou multiplicando o prazo), com simulação do impacto e o verificador passando. No dataset
-o produto dos dois fatores chega a 1,265, e 27 pacientes ficam acima de 1,2.
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| Dor EVA 7–10 → **nível 2** | ≥ 7 | Em escala visual analógica, ≥ 6,5 corresponde a interferência **grave** na função. Na escala inteira de 0 a 10, isso é 7 a 10 | Literatura [R3] |
+| Dor EVA 4–6 → **nível 1** | 4 a 6 | 3,5–6,4 = interferência **moderada** [R3]; na escala inteira, 4 a 6 | Literatura [R3] |
+| Dor EVA 0–3 → **nível 0** | ≤ 3 | ≤ 3,4 = interferência **leve** [R3]. É também o corte de "sem urgência" do verificador oficial | Literatura [R3]; regra oficial |
+| Limitação grave → 2 · moderada → 1 · nenhuma/leve → 0 | — | O campo do dataset usa as mesmas palavras das classes: B = disfunção "importante", C = "moderada", D = "sem disfunção relevante". O verificador trata nenhuma/leve como sem urgência | Literatura [R1]; regra oficial |
+| Dor ou limitação **não informada** → nível 1 | 1 | Falta de dado não é ausência de dor. Com nível 0, o paciente poderia ir para D (prazo de 360 dias) por falha de cadastro. Com nível 2, uma lacuna viraria urgência. O nível 1 é o meio da escala: não pune nem infla, e o paciente ganha alerta de cadastro incompleto | Lógica |
+| Varizes com úlcera (I83.2) e colelitíase com colecistite aguda (K80.0) → **nível 2 (B)** | — | Pela CID-10, são complicações da doença de base. A tabela oficial põe "colelitíase com colecistites de repetição" em **B** e "varizes com dor" em C; com úlcera e inflamação é mais que dor, então B | Regra oficial; CID-10 |
 
----
+### 2.4 Leitura do texto clínico
 
-## 5. O que podemos dizer no pitch
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| Termos de alarme | 33 termos (colangite, encarceramento, melena, perda ponderal…) | São os termos que o verificador oficial usa para definir urgência. Cada termo vai para o ponto cuja descrição na tabela oficial ele descreve (ex.: colangite e sepse são "risco de vida") | Regra oficial |
+| Negação | "sem", "nega", "ausência de", "não há", "descarta"… antes do termo | O NegEx mostrou que gatilhos de negação antes do achado, com escopo limitado, identificam achados negados em texto clínico | Literatura [R8] |
+| Escopo da negação | até o fim da oração (pontuação, "mas", "porém", "evoluiu") | O NegEx limita o escopo a até 6 palavras. Usamos a oração porque em "Sem melhora, evoluiu com suboclusão" a negação não pode alcançar a suboclusão. Na dúvida, o erro escolhido é **não** apagar urgência: perder um sinal grave custa mais que revisar um a mais | Literatura [R8] + lógica |
+| Jev conta com **p ≥ 0,7** | 0,7 | O Jev escolhe entre 9 opções (8 pontos + "nenhum"); o acaso daria 0,11. Com p ≥ 0,7, a categoria tem mais probabilidade que todas as outras somadas (> 0,5) e 6 vezes o acaso | Lógica |
+| Jev vai para **revisão humana** com 0,4 ≤ p < 0,7 | 0,4 | Entre 0,4 e 0,7 a categoria é plausível (3,6 vezes o acaso), mas não é maioria. Então não muda a classe e vai para o regulador decidir | Lógica |
+| Jev **só sobe** a classe | consequência do `max` | O LLM aponta e cita a frase; quem decide é a tabela. Sem o Jev a classe é a das regras; com ele, só pode ficar igual ou maior | Lógica |
 
-**Pode dizer (com fonte):**
+**Evidência do projeto (Jev):** em 36 frases reescritas fora do padrão do dataset, a classe certa sobe de
+25% (só palavra-chave) para 92% (palavra-chave + Jev). A amostra é pequena e foi escrita pelo time
+(`docs/swalis.md`).
 
-1. "Usamos o SWALIS, modelo italiano publicado [R1]: dois critérios clínicos, progressão e dor/função,
-   cada classe com um prazo máximo."
-2. "Nosso score é o mesmo do SWALIS: dias esperando ponderados pelo prazo da classe. Todo mundo
-   envelhece, e quem tem doença mais urgente envelhece mais rápido."
-3. "Os cortes de dor 0–3, 4–6 e 7–10 vêm de estudo de validação da escala visual analógica [R3]."
-4. "Ferramentas canadenses de fila cirúrgica usam os mesmos critérios: dor, função e progressão [R14]."
-5. "Comorbidade pelo índice de Charlson [R5], sem contar a idade duas vezes [R6] e sem contar a doença
-   da cirurgia como comorbidade [R10]. Mortalidade por idade com dados oficiais do SIM e do IBGE."
-6. "O LLM não decide: ele aponta a frase, a tabela decide e o regulador confirma."
-7. "O NHS recontata quem espera nas semanas 12, 26 e 52 [R2]; nós geramos recontato para quem fica
-   em silêncio."
-
-**Não dizer (ou dizer com a ressalva):**
-
-- que os prazos são os do artigo: A1 e A2 foram **adaptados** pelo desafio (8→15 e 30→21 dias);
-- que comorbidade e idade já mudam a ordem: **hoje não mudam** (§4);
-- que a conversão em 1,03–1,15 vem da literatura: é **regra de produto**;
-- que o modelo foi validado clinicamente: os dados são **100% sintéticos**.
+**Resultado:** A1 102 · A2 166 · B 225 · C 326 · D 122.
 
 ---
 
-## 6. Limites conhecidos
+## 3. Prazo e score
 
-- **Q-SW4:** a camada não usa os pontos do Jev. Ex.: SOL-2024-00181 (hérnia irredutível, A1 pelo Jev)
-  está na posição 387, camada 3.
-- O score editado pelo regulador (`score_medico`) não envelhece na `main`; a correção está na branch
-  `feat/US-13-14-15-decisoes-eventos` (ainda não mergeada).
-- Parâmetros sem fonte e divergências completas: `auditoria-parametros.md` §7 e §8.
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| Prazo B, C, D | 60, 180, 360 dias | Iguais aos tempos máximos do SWALIS publicado | Literatura [R1]; regra oficial |
+| Prazo A1, A2 | 15, 21 dias | Tabela oficial do desafio. O artigo usa 8 e 30 dias; o desafio adaptou a tabela. A ordem A1 < A2 < B se mantém | Regra oficial |
+| **Score = % do prazo** | `100 × dias / prazo` | É o score do SWALIS: em [R1], P(t) = dias × (prazo de D / prazo da classe) = dias × 360 / prazo = **3,6 × score**. Mesma ordem, só muda a escala. O artigo chama isso de "dias de espera ajustados pela necessidade" | Literatura [R1] |
+| Envelhecimento diário | +100/prazo por dia | O score sobe sozinho: A1 +6,67/dia, A2 +4,76, B +1,67, C +0,56, D +0,28. Quem espera sobe sem depender de ninguém, e quem tem doença mais urgente sobe mais rápido | Literatura [R1] + lógica |
+| 100% = prazo estourado | — | 100% significa o mesmo em qualquer classe: o paciente esperou tudo o que a doença tolera. Por isso dá para comparar classes diferentes pelo mesmo número | Lógica |
+| Data de referência fixa | 23/10/2026 | Mesma entrada → mesma fila. Com a data do relógio, o resultado mudaria a cada execução e não seria auditável | Lógica |
+| Score editado pelo regulador | substitui o do sistema | O médico regulador tem a palavra final. Ele edita o score, e não a posição, porque a posição muda todo dia | Lógica |
 
 ---
 
-## 7. Referências
+## 4. Camada e ordem
 
-R1–R9 são as mesmas da [auditoria](auditoria-parametros.md#9-referências-conferidas).
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| **Camada 1 = CID começa com C** | pelo CID, nunca pela flag | É a regra de ouro do desafio: oncológico pelo CID nunca abaixo de paciente sem urgência. A flag do dataset está errada em 44 casos; o CID é o dado clínico | Regra oficial |
+| **Camadas em vez de peso** | ordem lexicográfica | Prova: o score não tem teto. Uma hérnia D com 1.500 dias tem 416,7%, e um CBC de pele B com 15 dias tem 25%. Qualquer peso finito pode ser superado pelo tempo. Pondo a camada como **primeira** chave da ordenação, todo oncológico fica acima de todo não oncológico, **para qualquer valor de score**. O verificador oficial confirma | Lógica |
+| Camada 2 = sinal clínico de urgência | CID de complicação, piora durante a espera (PS, internação, progressão em imagem, reavaliação com piora), biópsia positiva, termo de alarme | São exatamente os sinais que o verificador oficial usa para dizer que o paciente **tem** urgência | Regra oficial |
+| Dor e limitação **não** definem a camada 2 | — | Dor e limitação já entram na classe (eixo de sintoma, B/C). Usá-las de novo na camada contaria o mesmo dado duas vezes. A camada 2 é para sinais de que o risco **aumentou**. A regra de ouro não muda, porque todo oncológico já está na camada 1 | Lógica |
+| Evento antes da entrada na fila não conta como piora | — | A camada 2 é para piora **durante a espera**; o que veio antes é a história que gerou a indicação | Lógica |
+| Evento duplicado não conta | — | O mesmo atendimento registrado duas vezes não é piora em dobro | Lógica |
+| Dentro da camada: **score decrescente** | — | Ordem do SWALIS por prioridade P(t) | Literatura [R1] |
+| Desempate: **entrada mais antiga** | — | Em [R1], na mesma classe, quem esperou mais é atendido antes | Literatura [R1] |
+| Último desempate: `solicitacao_id` | — | Só garante que duas execuções dão a mesma ordem | Lógica |
 
-| ID | Referência | O que foi conferido |
+**Resultado:** camadas 177 / 206 / 558; verificador oficial aprovado.
+
+---
+
+## 5. Fatores contextuais: comorbidade e idade/mortalidade
+
+**Estado no código:** os dois fatores são calculados (`score/`) e ficam em `data/processed/`, mas **ainda
+não multiplicam o score da fila**. As justificativas abaixo valem para quando forem ligados.
+
+### 5.1 Comorbidade (Charlson)
+
+```
+charlson = soma dos pesos das categorias Charlson achadas em comorbidades + CID secundário
+fator    = 1,00 (0) · 1,03 (1) · 1,06 (2) · 1,10 (3–4) · 1,15 (≥ 5)
+```
+
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| Índice de Charlson | — | Índice de comorbidade validado para prever mortalidade: em 1 ano, 12% com escore 0, 26% com 1–2, 52% com 3–4 e 85% com ≥ 5 | Literatura [R5] |
+| Pesos | IAM 1, ICC 1, pulmonar crônica 1, diabetes 1, renal 2, tumor 2, linfoma/leucemia 2, metástase 6 | São os pesos publicados | Literatura [R5], [R11] |
+| **Sem idade** no Charlson | — | No índice combinado, 1 ponto de comorbidade equivale a cerca de 1 década de idade. A idade já entra no fator de mortalidade, então somá-la aqui contaria a idade duas vezes | Literatura [R6] + lógica |
+| **Sem o CID principal** | — | O Elixhauser separa comorbidades do motivo principal da internação. Aqui o motivo é a doença da cirurgia, que já está na classe | Literatura [R10] + lógica |
+| Cada categoria conta uma vez | — | A mesma doença no texto e no CID secundário é uma doença só | Lógica |
+| Faixas 3–4 e ≥ 5 | — | São as faixas do artigo original (0, 1–2, 3–4, ≥ 5) | Literatura [R5] |
+| Faixas 1 e 2 separadas | 1,03 e 1,06 | O artigo agrupa 1–2; separamos para o fator subir um degrau a cada ponto nas faixas mais comuns (331 pacientes com 1, 89 com 2) | Lógica |
+| Fator **cresce** com o Charlson | 1,00 → 1,15 | A mortalidade cresce com o escore [R5], então o fator tem de crescer junto e parar na faixa máxima (≥ 5) | Literatura [R5] + lógica |
+| Charlson 0 → **1,00** (nunca reduz) | piso 1,00 | Não achar comorbidade no texto não prova que ela não existe. O fator só reconhece risco e nunca dá desconto | Lógica |
+| **Teto 1,15** | máx. 1,15 por fator | Ver o argumento do teto no §5.3 | Lógica |
+
+### 5.2 Idade e mortalidade (IRR)
+
+```
+taxa(cid, faixa) = óbitos com causa básica = cid na faixa / população da faixa     (SIM 2019–2023 / IBGE)
+IRR              = taxa(cid, faixa) / taxa do mesmo cid em todas as idades
+fator            = 1,00                                     se IRR ausente, 0 ou ≤ 1
+                   min(1,15 ; 1 + 0,075 × min(log2 IRR ; 2))  se IRR > 1
+```
+
+| Parâmetro | Valor | Justificativa | Base |
+|---|---|---|---|
+| Causa básica do SIM | `CAUSABAS` | Causa básica é a doença que iniciou a cadeia de eventos que levou à morte, escolhida por regra da OMS/CID-10. Mede quanto aquela doença mata | Literatura [R13] |
+| Taxa (óbitos / população) | — | Comparar faixas etárias exige dividir pela população de cada faixa. Contagem bruta só mostraria qual faixa tem mais gente | Lógica |
+| IRR = taxa da faixa / taxa média do CID | — | Compara o paciente com o próprio CID: diz se, **para essa doença**, a idade dele é de maior risco que a média. Ex.: C18 aos 70–79 anos dá 38,4 contra 6,5 por 100 mil, IRR 5,92 | Lógica |
+| CID com 3 caracteres | C18.7 → C18 | Subcategorias têm poucos óbitos por faixa. Agrupar na categoria dá taxas mais estáveis | Lógica |
+| Faixas 40–49, 50–59, 60–69, 70–79, 80+ | décadas | São as mesmas décadas do ajuste por idade do Charlson (1 ponto por década a partir dos 50) | Literatura [R6] |
+| Faixas 0–17 e 18–39 | — | 0–17 é a idade pediátrica (menor de 18 anos). Em 18–39, **todos** os 51 CIDs da tabela têm IRR ≤ 1, então o fator é 1,00 de qualquer jeito: dividir em décadas não mudaria nenhum paciente (conferido na tabela do repo) | Lógica (dados) |
+| Escala **log2** | — | Razão de taxas é multiplicativa: dobrar o risco tem de valer o mesmo degrau, seja de 1 para 2 ou de 2 para 4. No log2, cada duplicação vale +0,075 | Lógica |
+| Saturação em **IRR 4** | `min(log2 IRR; 2)` | No dataset, o IRR mediano é 1,15 e o percentil 75 é 4,08. Saturar em 4 faz só o quarto de maior risco atingir o teto | Lógica (dados) |
+| **0,075** por duplicação | — | Consequência do teto e da saturação: 0,15 / 2 duplicações = 0,075 | Lógica |
+| IRR ≤ 1 → **1,00** | piso | IRR abaixo de 1 é uma média da população, não uma proteção individual. Reduzir o score por isso puniria o paciente com um dado que não é dele | Lógica |
+
+### 5.3 Por que o teto é 1,15 (vale para os dois fatores)
+
+```
+menor razão entre prazos de classes vizinhas = 21 / 15 = 1,40   (A2 / A1)
+produto máximo dos dois fatores              = 1,15 × 1,15 = 1,3225 < 1,40
+```
+
+Com o mesmo tempo de espera, um paciente da classe menos urgente tem score no máximo 1/1,40 do score
+do paciente da classe vizinha mais urgente. Como os fatores multiplicam no máximo por 1,3225, **eles nunca
+fazem uma classe menos urgente passar uma mais urgente com o mesmo tempo de espera**. Ou seja, o fator
+ajusta a ordem **dentro** da urgência e nunca substitui a classe. Com qualquer teto acima de
+√1,40 ≈ 1,183 por fator, essa garantia deixa de valer.
+
+---
+
+## 6. O que ainda não tem justificativa (e como corrigir)
+
+| Ponto | Problema | Correção proposta |
 |---|---|---|
-| R1 | Valente R, Testi A, Tanfani E, et al. *A model to prioritize access to elective surgery on the basis of clinical urgency and waiting time.* BMC Health Serv Res. 2009;9:1. doi:[10.1186/1472-6963-9-1](https://doi.org/10.1186/1472-6963-9-1) | Texto completo ([PMC2651867](https://pmc.ncbi.nlm.nih.gov/articles/PMC2651867)): classes, MTBT, P(t), critérios |
-| R2 | NHS England. *Validation toolkit and guidance.* v1, 1 dez. 2022 (PR2121_ii). [PDF](https://www.england.nhs.uk/wp-content/uploads/2022/12/B2121ii-validation-toolkit-and-guidance-december-2022.pdf) | Figura 2: contato nas semanas 12/26/52 e depois a cada 12 semanas |
-| R3 | Boonstra AM, Schiphorst Preuper HR, Balk GA, Stewart RE. *Cut-off points for mild, moderate, and severe pain on the visual analogue scale for pain in patients with chronic musculoskeletal pain.* Pain. 2014;155(12):2545–2550. doi:[10.1016/j.pain.2014.09.014](https://doi.org/10.1016/j.pain.2014.09.014) | Resumo: cortes e ressalva dos autores |
-| R5 | Charlson ME, Pompei P, Ales KL, MacKenzie CR. J Chronic Dis. 1987;40(5):373–383. [PubMed 3558716](https://pubmed.ncbi.nlm.nih.gov/3558716/) | Resumo (mortalidade em 1 ano 12% → 85%); pesos em fonte secundária |
-| R6 | Charlson M, Szatrowski TP, Peterson J, Gold J. *Validation of a combined comorbidity index.* J Clin Epidemiol. 1994;47(11):1245–1251 | Resumo: 1 ponto ≈ 1 década de idade |
-| R7 | van Walraven C, Austin PC, Jennings A, Quan H, Forster AJ. Med Care. 2009;47(6):626–633 | Citação; pesos em fonte secundária ([PMC7651966](https://pmc.ncbi.nlm.nih.gov/articles/PMC7651966)) |
-| R8 | Chapman WW, Bridewell W, Hanbury P, Cooper GF, Buchanan BG. J Biomed Inform. 2001;34:301–310 | Resumo: NegEx |
-| R10 | Elixhauser A, Steiner C, Harris DR, Coffey RM. *Comorbidity measures for use with administrative data.* Med Care. 1998;36(1):8–27. [PubMed 9431328](https://pubmed.ncbi.nlm.nih.gov/9431328/) | Resumo: 30 medidas; comorbidades separadas do motivo principal da internação. Regras detalhadas de exclusão não conferidas |
-| R11 | HDR UK Phenotype Library. *Charlson comorbidity index (Charlson 1987)*, PH1658. [Página](https://phenotypes.healthdatagateway.org/phenotypes/PH1658/detail/) | Pesos de 1987 e regras de hierarquia (metástase > malignidade; diabetes com complicação > sem) |
-| R12 | CDC/NCHS. *Health, United States — Statistical reliability*. [Página](https://cdc.gov/nchs/hus/sources-definitions/statistical-reliability.htm); também [presentation standards](https://wonder.cdc.gov/controller/pdf/presentation-standards-mortality-2024.pdf) | Taxas com < 20 óbitos não são apresentadas (erro padrão relativo ≥ 23%); regra vale até os dados de 2022 |
-| R13 | Definição de causa básica do Manual de preenchimento da Declaração de Óbito (Ministério da Saúde), citada em [orientações da Prefeitura de São Paulo](https://www.prefeitura.sp.gov.br/cidade/secretarias/upload/saude/arquivos/mortalidade/Orientacoes_Preenchimento_DO_COVID-19-atualizada_2020.pdf) | Definição e seleção por regras da CID-10/OMS, via resumo de busca. Manual original não aberto |
-| R14 | Conner-Spady BL, Arnett G, McGurran JJ, Noseworthy TW; Steering Committee of the Western Canada Waiting List Project. *Prioritization of patients on scheduled waiting lists: validation of a scoring system for hip and knee arthroplasty.* Can J Surg. 2004;47(1):39–46. [PMC3211810](https://pmc.ncbi.nlm.nih.gov/articles/PMC3211810) | Texto: 7 critérios (dor ao movimento, dor em repouso, marcha, limitação funcional, exame físico, progressão radiográfica, ameaça à autonomia) somados com pesos |
+| IRR sem limiar mínimo de óbitos | O CDC/NCHS não publica taxa com menos de 20 óbitos: o erro relativo passa de 23% [R12]. Na tabela, 107 de 357 células têm menos de 20 óbitos, e 26 pacientes recebem fator > 1 vindo delas | Fator 1,00 quando a célula tiver menos de 20 óbitos |
+| Hierarquia do Charlson | Pela regra do índice, metástase substitui "tumor" e diabetes com complicação substitui sem complicação [R11]; o código soma os dois | Aplicar a hierarquia (0 casos no dataset hoje) |
+| Teto `min(100, …)` da composição do `score/README.md` | O score da fila passa de 100 (6.276% no exemplo); o teto empataria todos os atrasados | Multiplicar o % do prazo **sem** teto; a garantia do §5.3 já limita o efeito |
+| Prazos A1 e A2 | Diferentes do artigo (8 e 30 dias) | Manter a tabela oficial (é a régua da banca) e dizer "adaptado do SWALIS" |
+
+---
+
+## 7. Referências (todas conferidas)
+
+| ID | Referência | O que foi lido |
+|---|---|---|
+| R1 | Valente R, Testi A, Tanfani E, Fato M, Porro I, Santo M, Santori G, Torre G, Ansaldo G. *A model to prioritize access to elective surgery on the basis of clinical urgency and waiting time.* BMC Health Serv Res. 2009;9:1. doi:[10.1186/1472-6963-9-1](https://doi.org/10.1186/1472-6963-9-1) | Texto completo ([PMC2651867](https://pmc.ncbi.nlm.nih.gov/articles/PMC2651867)): classes, prazos 8/30/60/180/360, P(t) = (t − t0) × γ, critérios |
+| R3 | Boonstra AM, Schiphorst Preuper HR, Balk GA, Stewart RE. *Cut-off points for mild, moderate, and severe pain on the visual analogue scale for pain in patients with chronic musculoskeletal pain.* Pain. 2014;155(12):2545–2550. doi:[10.1016/j.pain.2014.09.014](https://doi.org/10.1016/j.pain.2014.09.014) | Resumo: ≤ 3,4 / 3,5–6,4 / ≥ 6,5 (interferência na função) |
+| R5 | Charlson ME, Pompei P, Ales KL, MacKenzie CR. *A new method of classifying prognostic comorbidity in longitudinal studies: development and validation.* J Chronic Dis. 1987;40(5):373–383. [PubMed 3558716](https://pubmed.ncbi.nlm.nih.gov/3558716/) | Resumo: mortalidade em 1 ano 12% / 26% / 52% / 85% para 0 / 1–2 / 3–4 / ≥ 5 |
+| R6 | Charlson M, Szatrowski TP, Peterson J, Gold J. *Validation of a combined comorbidity index.* J Clin Epidemiol. 1994;47(11):1245–1251. doi:[10.1016/0895-4356(94)90129-5](https://doi.org/10.1016/0895-4356(94)90129-5) | Resumo: 1 ponto ≈ 1 década de idade; pontos por década conferidos em fonte secundária |
+| R8 | Chapman WW, Bridewell W, Hanbury P, Cooper GF, Buchanan BG. *A simple algorithm for identifying negated findings and diseases in discharge summaries.* J Biomed Inform. 2001;34:301–310. [PDF](https://www.dbmi.pitt.edu/wp-content/uploads/2022/10/A-simple-algorithm-for-identifying-negated-findings-and-diseases-in-discharge-summaries.pdf) | Resumo: gatilhos de negação com escopo de 1 a 6 palavras |
+| R10 | Elixhauser A, Steiner C, Harris DR, Coffey RM. *Comorbidity measures for use with administrative data.* Med Care. 1998;36(1):8–27. [PubMed 9431328](https://pubmed.ncbi.nlm.nih.gov/9431328/) | Resumo: comorbidades separadas do motivo principal da internação |
+| R11 | HDR UK Phenotype Library. *Charlson comorbidity index (Charlson 1987)*, PH1658. [Página](https://phenotypes.healthdatagateway.org/phenotypes/PH1658/detail/) | Pesos de 1987 e regras de hierarquia |
+| R12 | CDC/NCHS. *Health, United States: statistical reliability.* [Página](https://cdc.gov/nchs/hus/sources-definitions/statistical-reliability.htm) | Taxa com menos de 20 óbitos não é apresentada (erro relativo ≥ 23%) |
+| R13 | Definição de causa básica do Manual de preenchimento da Declaração de Óbito (Ministério da Saúde), reproduzida em [orientação da Prefeitura de São Paulo](https://www.prefeitura.sp.gov.br/cidade/secretarias/upload/saude/arquivos/mortalidade/Orientacoes_Preenchimento_DO_COVID-19-atualizada_2020.pdf) | Definição e seleção pela CID-10/OMS |
+| R14 | Conner-Spady BL, Arnett G, McGurran JJ, Noseworthy TW; Steering Committee of the Western Canada Waiting List Project. *Prioritization of patients on scheduled waiting lists: validation of a scoring system for hip and knee arthroplasty.* Can J Surg. 2004;47(1):39–46. [PMC3211810](https://pmc.ncbi.nlm.nih.gov/articles/PMC3211810) | Texto: critérios de dor, função e progressão somados com pesos |
+
+**Regra oficial do desafio:** `data/referencias/swalis.csv` (classes, prazos e exemplos), `src/verificar_fila_priorizada.py`
+(regra de ouro, CID de urgência, termos de alarme, eventos de piora) e tabelas CID-10 do DATASUS em
+`data/referencias/CID10CSV/`.
+
+Detalhe técnico de cada parâmetro (arquivo:linha) e dos que não fazem parte do score (inbox, alertas):
+[`auditoria-parametros.md`](auditoria-parametros.md).
