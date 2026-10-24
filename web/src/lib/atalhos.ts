@@ -1,7 +1,11 @@
 import { useEffect } from "react"
 import { toast } from "sonner"
+import type { Pagina } from "@/lib/filtros"
 import { useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
+
+/** Ordem visual da sidebar: a tecla 1–9 leva à página na mesma posição. */
+export const PAGINAS_POR_TECLA: Pagina[] = ["fila", "inbox", "pacientes", "swalis", "pendencias", "importar", "notificacoes", "propostas", "analise"]
 
 const ehCampoDeTexto = (alvo: EventTarget | null) => {
   if (!(alvo instanceof HTMLElement)) return false
@@ -49,6 +53,14 @@ export const useAtalhos = (alternarMenu: () => void) => {
       if (tecla === "]") {
         const c = useColunas.getState()
         c.setPainelOculto(!c.painelOculto)
+        return
+      }
+      if (/^[1-9]$/.test(e.key)) {
+        const destino = PAGINAS_POR_TECLA[Number(e.key) - 1]
+        if (destino) {
+          e.preventDefault()
+          s.ir(destino)
+        }
         return
       }
       if (e.key === "?") {

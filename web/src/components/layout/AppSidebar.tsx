@@ -5,26 +5,46 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { formatarContador, useContadores } from "@/components/layout/useContadores"
+import { PAGINAS_POR_TECLA } from "@/lib/atalhos"
 import type { Pagina } from "@/lib/filtros"
 import { useStore } from "@/store/useStore"
 import { useTema } from "@/store/tema"
 
-const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: string }[] = [
-  { id: "fila", rotulo: "Fila", icone: ListOrdered, tecla: "1" },
-  { id: "inbox", rotulo: "Inbox", icone: Inbox, tecla: "2" },
-  { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "3" },
-  { id: "analise", rotulo: "Análise", icone: BarChart3, tecla: "4" },
-  { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
-  { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
-  { id: "propostas", rotulo: "Propostas", icone: Gavel, tecla: "7" },
-  { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "8" },
-  { id: "importar", rotulo: "Importar", icone: FileUp, tecla: "9" },
+type Item = { id: Pagina; rotulo: string; icone: typeof ListOrdered }
+const GRUPOS: { titulo: string; itens: Item[] }[] = [
+  {
+    titulo: "Regulação",
+    itens: [
+      { id: "fila", rotulo: "Fila", icone: ListOrdered },
+      { id: "inbox", rotulo: "Para revisar", icone: Inbox },
+      { id: "pacientes", rotulo: "Pacientes", icone: UserSearch },
+      { id: "swalis", rotulo: "Classes e prazos", icone: BookOpen },
+    ],
+  },
+  {
+    titulo: "Dados e equipe",
+    itens: [
+      { id: "pendencias", rotulo: "Pendências", icone: ClipboardList },
+      { id: "importar", rotulo: "Importar solicitações", icone: FileUp },
+      { id: "notificacoes", rotulo: "Avisos ao paciente", icone: BellRing },
+    ],
+  },
+  {
+    titulo: "Comitê",
+    itens: [
+      { id: "propostas", rotulo: "Propostas de regra", icone: Gavel },
+      { id: "analise", rotulo: "Indicadores", icone: BarChart3 },
+    ],
+  },
 ]
 
 export function AppSidebar() {
@@ -36,6 +56,12 @@ export function AppSidebar() {
   const resolvido = useTema((t) => t.resolvido)
   const setTema = useTema((t) => t.setTema)
   const escuro = resolvido === "dark"
+  const c = useContadores()
+  const contador = (id: Pagina): { n: number; texto: string; atencao: boolean } | null => {
+    const n = id === "inbox" ? c.paraRevisar : id === "pendencias" ? c.pendencias : null
+    if (!n) return null
+    return { n, texto: id === "inbox" ? `${n.toLocaleString("pt-BR")} para revisar` : `${n.toLocaleString("pt-BR")} ${n === 1 ? "pendência aberta" : "pendências abertas"}`, atencao: id === "pendencias" && c.pendenciasBloqueantes }
+  }
 
   return (
     <Sidebar collapsible="icon" className="no-print">
@@ -52,20 +78,39 @@ export function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {ITENS.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${item.tecla})`} onClick={() => { ir(item.id); fechar() }}>
-                    <item.icone aria-hidden />
-                    <span>{item.rotulo}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {GRUPOS.map((g, i) => (
+          <SidebarGroup key={g.titulo} className={i > 0 ? "group-data-[collapsible=icon]:mt-1 group-data-[collapsible=icon]:border-t group-data-[collapsible=icon]:border-sidebar-border" : undefined}>
+            <SidebarGroupLabel className="h-7 text-[11px] text-muted-foreground">{g.titulo}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {g.itens.map((item) => {
+                  const tecla = String(PAGINAS_POR_TECLA.indexOf(item.id) + 1)
+                  const ct = contador(item.id)
+                  return (
+                    <SidebarMenuItem key={item.id}>
+                      <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${tecla})`} onClick={() => { ir(item.id); fechar() }}>
+                        <item.icone aria-hidden />
+                        <span>{item.rotulo}</span>
+                      </SidebarMenuButton>
+                      {ct && (
+                        <>
+                          <SidebarMenuBadge aria-label={ct.texto} className={ct.atencao ? "text-[var(--prazo-limite)]" : "text-muted-foreground"}>
+                            {formatarContador(ct.n)}
+                          </SidebarMenuBadge>
+                          <span
+                            role="img"
+                            aria-label={ct.texto}
+                            className={`pointer-events-none absolute top-1 right-1 hidden size-2 rounded-full group-data-[collapsible=icon]:block ${ct.atencao ? "bg-[var(--prazo-limite)]" : "bg-muted-foreground"}`}
+                          />
+                        </>
+                      )}
+                    </SidebarMenuItem>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
