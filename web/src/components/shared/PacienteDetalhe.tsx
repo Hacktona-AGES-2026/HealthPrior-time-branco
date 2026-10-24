@@ -6,6 +6,7 @@ import { GraficoEspera } from "./detalhe/GraficoEspera"
 import { HistoricoPaciente } from "./detalhe/HistoricoPaciente"
 import { DadosPedido } from "./detalhe/DadosPedido"
 import { QuadroClinico } from "./detalhe/JustificativaMedico"
+import { CalculoScore } from "./detalhe/CalculoScore"
 import { ComoClasse } from "./detalhe/ComoClasse"
 import { Resumo } from "./detalhe/Kpis"
 
@@ -31,6 +32,7 @@ export function PacienteDetalhe({ paciente: p }: { paciente: Paciente }) {
       )}
 
       <ComoClasse p={p} />
+      <CalculoScore p={p} />
 
       <section aria-labelledby="espera" className="space-y-2">
         <h3 id="espera" className="text-sm font-semibold">
