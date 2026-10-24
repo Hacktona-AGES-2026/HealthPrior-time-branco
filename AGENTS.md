@@ -9,7 +9,7 @@ Priorização inteligente da fila de cirurgias eletivas (Desafio 1 · Fin-X · P
 Entrada: dataset sintético (data de referência **23/10/2026**). Saída obrigatória: `fila_priorizada.csv`
 (`solicitacao_id`, `posicao`, `justificativa`), validada por `src/verificar_fila_priorizada.py`.
 
-**Fonte de verdade do comportamento:** `docs/fluxo-sistema.md`. Leia as seções 9 (invariantes), 10 (decisões) e 11 (questões abertas) antes de codar.
+**Fonte de verdade do comportamento:** `docs/fluxo-sistema.md`. **O que construir:** `docs/user-stories.md` (US-xx, prioridades P0/P1/P2, divisão back × front e contrato da API). Leia as seções 9 (invariantes), 10 (decisões) e 11 (questões abertas) antes de codar.
 
 ## Prazos
 
@@ -57,7 +57,11 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 
 ## Stack e comandos
 
-> **A DEFINIR pelo time.** Atualize esta seção assim que decidir; agentes dependem dela.
+- **Back:** Python + **FastAPI** + SQLite (SQLAlchemy/SQLModel) + pandas no pipeline. Pasta `backend/`.
+- **Front:** **React** (Vite + TypeScript). Pasta `frontend/`. Tipos da API gerados do OpenAPI do FastAPI.
+- **Fronteira:** o back é dono de toda regra de negócio; o front só exibe e coleta decisões (ver `docs/user-stories.md` §1 e §5). Sem login: seletor de persona no front.
+
+> Comandos de teste/execução: preencher quando `backend/` e `frontend/` forem criados (e nos `AGENTS.md` de cada pasta).
 
 | O quê | Comando |
 |---|---|
@@ -72,7 +76,7 @@ Dependência mínima de dados: `pandas` (o verificador usa).
 
 ## Como trabalhar (fluxo para agentes)
 
-1. **Entenda a tarefa** e ache o componente (`C-xx`) em `docs/fluxo-sistema.md`. Se não houver, pergunte antes de inventar.
+1. **Entenda a tarefa**: ache a história (`US-xx`) em `docs/user-stories.md` e o componente (`C-xx`) em `docs/fluxo-sistema.md`. Se não houver, pergunte antes de inventar.
 2. **Planeje em poucas linhas** (o que muda, quais arquivos). Para mudanças grandes, mostre o plano antes de codar.
 3. **Implemente o mínimo** que resolve. Sem abstrações "para o futuro".
 4. **Teste com dados reais** do dataset. Os exemplos da §7 do fluxo (ex.: SOL-2023-00010, SOL-2025-00149, PAC-00151) são casos de teste prontos.

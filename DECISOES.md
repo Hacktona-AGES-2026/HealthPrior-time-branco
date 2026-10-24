@@ -17,6 +17,9 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-08 | 2026-10-24 | Aprendizado propõe regras; comitê aprova; versões | Controle humano | Retreino automático | C-14 |
 | D-09 | 2026-10-24 | SWALIS interno documentado à parte | Separação de responsabilidades | — | C-07 |
 | D-10 | 2026-10-24 | Duplicatas fundidas mantendo a data de entrada mais antiga | Favorece o paciente | Manter a mais recente | C-05 |
+| D-11 | 2026-10-24 | Stack: FastAPI + SQLite + pandas no back; React (Vite + TS) no front | Conhecimento do time; rapidez | — | todos |
+| D-12 | 2026-10-24 | Sem login: seletor de persona e de usuário fixo no front | Hackathon; o log ainda registra autores distintos | Autenticação real | US-23 |
+| D-13 | 2026-10-24 | API é a fronteira back × front; back sobe mocks com o contrato final primeiro | Trabalho em paralelo sem retrabalho | Front esperar o back | US-01..US-23 |
 
 ## Solicitações fora da fila
 
