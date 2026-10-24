@@ -5,39 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AcoesDecisao } from "@/components/shared/AcoesDecisao"
 import { formatarPct } from "@/components/shared/Basicos"
+import { motivosClinicos } from "@/lib/motivos"
 import { cn } from "@/lib/utils"
 import { useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
-
-/** Traduz os motivos internos para frases de consultório. Retorna null para o que não ajuda a decidir. */
-function traduzir(texto: string): string[] {
-  const t = texto.trim()
-  if (/^nenhum risco/i.test(t)) return []
-  const frases: string[] = []
-  const dor = t.match(/^dor EVA (\d+)/i)
-  if (dor) {
-    if (Number(dor[1]) > 0) frases.push(`Dor ${dor[1]}/10`)
-    const lim = t.match(/limitação (leve|moderada|grave)/i)
-    if (lim) frases.push(`Limitação ${lim[1].toLowerCase()}`)
-    return frases
-  }
-  const lf = t.match(/^limitação funcional (\w+)/i)
-  if (lf) return lf[1] === "nenhuma" ? [] : [`Limitação ${lf[1]}`]
-  if (/piora durante a espera/i.test(t)) return ["Piorou na espera"]
-  if (/sinal de alarme/i.test(t)) return ["Sinal de alarme"]
-  if (/biópsia positiva com CID não oncológico/i.test(t)) return ["Biópsia positiva; conferir CID"]
-  const neo = t.match(/neoplasia maligna pelo CID (\S+)/i)
-  if (neo) return ["Câncer confirmado"]
-  if (/^biópsia positiva/i.test(t)) return ["Biópsia positiva"]
-  if (/dor não informada/i.test(t)) return ["Dor não informada"]
-  return [t.charAt(0).toUpperCase() + t.slice(1)]
-}
-
-function motivosClinicos(p: Paciente): string[] {
-  const todos = [...p.motivos, ...p.sintomas].flatMap(traduzir)
-  const lista = [...(p.oncologico && !todos.some((f) => f.startsWith("Câncer")) ? ["Oncológico"] : []), ...todos]
-  return [...new Set(lista)].slice(0, 3)
-}
 
 function linhaDados(p: Paciente): string {
   const pos = p.posicao_atual !== p.posicao ? `Posição ${p.posicao} (era ${p.posicao_atual})` : `Posição ${p.posicao}`

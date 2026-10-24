@@ -22,6 +22,7 @@ const mensagemErro = (e: unknown) => (e instanceof ErroApi ? `${e.codigo}: ${e.m
 type Estado = {
   pagina: Pagina
   selecionadoId: string | null
+  fichaId: string | null
   expandidoId: string | null
   sidebarAberta: boolean
   filtros: Filtros
@@ -57,6 +58,7 @@ type Estado = {
   navegarPendente: (direcao: 1 | -1) => void
   abrirNaFila: (id: string) => void
   abrirFicha: (id: string) => void
+  fecharFicha: () => void
 }
 
 const inicialAberta = () => (typeof window === "undefined" ? true : window.innerWidth > 1100)
@@ -111,6 +113,7 @@ export const useStore = create<Estado>((set, get) => {
   return {
     pagina: "fila",
     selecionadoId: null,
+    fichaId: null,
     expandidoId: null,
     sidebarAberta: inicialAberta(),
     filtros: FILTROS_VAZIOS,
@@ -126,7 +129,7 @@ export const useStore = create<Estado>((set, get) => {
       set((s) => ({ versaoDados: s.versaoDados + 1, decisoes: decisoesDaApi() }))
     },
     marcados: [],
-    ir: (pagina) => set({ pagina }),
+    ir: (pagina) => set(pagina === "pacientes" ? { pagina, fichaId: null } : { pagina }),
     selecionar: (id, expandir = true) =>
       set({ selecionadoId: id, expandidoId: id && expandir ? id : null, rejeitando: false }),
     alternarExpandido: (id) =>
@@ -261,6 +264,7 @@ export const useStore = create<Estado>((set, get) => {
       else toast.info("Nenhum caso pendente na lista")
     },
     abrirNaFila: (id) => set({ pagina: "fila", selecionadoId: id, expandidoId: id, rejeitando: false }),
-    abrirFicha: (id) => set({ pagina: "pacientes", selecionadoId: id, rejeitando: false }),
+    abrirFicha: (id) => set({ pagina: "pacientes", fichaId: id, selecionadoId: id, rejeitando: false }),
+    fecharFicha: () => set({ fichaId: null }),
   }
 })

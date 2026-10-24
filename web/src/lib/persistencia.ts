@@ -10,9 +10,11 @@ const aplicarHash = () => {
   if (!PAGINAS.includes(pagina as Pagina)) return
   const idValido = id && PACIENTE_POR_ID[id] ? id : null
   const s = useStore.getState()
-  if (s.pagina !== pagina || (idValido && s.selecionadoId !== idValido)) {
+  const fichaId = pagina === "pacientes" ? idValido : null
+  if (s.pagina !== pagina || (idValido && s.selecionadoId !== idValido) || s.fichaId !== fichaId) {
     useStore.setState({
       pagina: pagina as Pagina,
+      fichaId,
       selecionadoId: idValido ?? s.selecionadoId,
       expandidoId: s.expandidoId,
     })
@@ -20,8 +22,9 @@ const aplicarHash = () => {
 }
 
 const escreverHash = () => {
-  const { pagina, selecionadoId } = useStore.getState()
-  const alvo = `#/${pagina}${(pagina === "fila" || pagina === "pacientes") && selecionadoId ? `/${selecionadoId}` : ""}`
+  const { pagina, selecionadoId, fichaId } = useStore.getState()
+  const idHash = pagina === "fila" ? selecionadoId : pagina === "pacientes" ? fichaId : null
+  const alvo = `#/${pagina}${idHash ? `/${idHash}` : ""}`
   if (window.location.hash !== alvo) window.history.replaceState(null, "", alvo)
 }
 
