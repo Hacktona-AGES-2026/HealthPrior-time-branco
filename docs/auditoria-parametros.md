@@ -12,7 +12,7 @@ Como ler: cada linha diz o valor, onde ele está, o que faz, por que ajuda a fil
 
 "Desafio" é fonte oficial da hackatona (`data/referencias/swalis.csv`, `src/verificar_fila_priorizada.py`,
 `docs/dicionario_dados.md`): não é literatura, mas é a regra contra a qual a banca avalia.
-As referências [R1]..[R8] estão no §9 e foram todas conferidas nesta auditoria; o §9 diz o que foi lido em cada uma
+As referências [R1]..[R9] estão no §9 e foram todas conferidas nesta auditoria; o §9 diz o que foi lido em cada uma
 (texto completo, resumo ou fonte secundária).
 
 ---
@@ -131,9 +131,9 @@ ordenação** (`score/decisoes.md` D-21). Mesmo assim, como podem aparecer no pi
 | Pontos de idade do Charlson | <50: 0; 50–59: 1; 60–69: 2; 70–79: 3; 80+: 4 | `score_mortalidade.py:117-127` | Charlson ajustado por idade | O índice combinado idade + comorbidade é de [R6] (1 ponto ≈ 1 década). O código atribui a [R5] (1987) | [R6] | **divergente** (só a atribuição) |
 | Sobrevida em 10 anos | `0,983 ^ e^(0,9 × CCI)` | `score_mortalidade.py:163` | Probabilidade informativa | Fórmula atribuída a [R5] | [R5] (fonte secundária) | com fonte |
 | Pesos van Walraven | ICC 7, arritmia 5, pulmonar 3, renal 5, DM 0, HAS 0, obesidade −4, hipotireoidismo 0, depressão −3, tumor 4, linfoma 9, metástase 12 | `score_mortalidade.py:90-103` | Elixhauser ponderado | Pesos publicados | [R7] (conferido em fonte secundária) | com fonte |
-| Leucemia com peso de linfoma | C91–C95 → `linfoma_leucemia` = 9 | `score_mortalidade.py:53`, `:101` | Soma 9 pontos para leucemia | A tabela de pesos de [R7] tem categoria "linfoma"; não achamos peso para leucemia | [R7] | **divergente** (a conferir) |
+| Leucemia com peso de linfoma | C91–C95 → `linfoma_leucemia` = 9 | `score_mortalidade.py:53`, `:101` | Soma 9 pontos para leucemia | O Elixhauser na versão de [R9] tem 31 categorias, com "linfoma" e sem nenhuma de leucemia; logo não existe peso van Walraven para leucemia | [R7], [R9] | **divergente** |
 | `cardiopatia isquemica` e I25 → infarto | 1 ponto | `apply_comorbidity_multiplier.py:42`, `:78`; `score_mortalidade.py:72` | Conta como IAM | A categoria do Charlson é infarto do miocárdio; I25 é "doença isquêmica crônica do coração" (CID-10 DATASUS), mais ampla | [R5]; CID-10 DATASUS | **divergente** |
-| E10–E14 → DM sem complicação | 1 ponto | `apply_comorbidity_multiplier.py:84` | Todo diabetes vale 1 | O Charlson dá 2 pontos para diabetes com lesão de órgão-alvo | [R5] (fonte secundária) | **divergente** (subestima) |
+| E10–E14 → DM sem complicação | 1 ponto | `apply_comorbidity_multiplier.py:84` | Todo diabetes vale 1 | O Charlson dá 2 pontos para diabetes com lesão de órgão-alvo; [R9] separa "diabetes sem complicação" de "diabetes com complicação" | [R5] (fonte secundária), [R9] | **divergente** (subestima) |
 | Faixas Charlson → multiplicador | 0→1,00; 1→1,03; 2→1,06; 3–4→1,10; 5+→1,15 | `apply_comorbidity_multiplier.py:112-120` | Fator contextual | Regra de produto (`score/decisoes.md` D-18) | — | **sem fonte** |
 | Fator idade/mortalidade | `1 + 0,075 × min(log2(IRR), 2)`, teto 1,15 | `apply_idade_mortality_multiplier.py:81-82` | Fator contextual | Regra de produto (`score/decisoes.md` D-12) | — | **sem fonte** |
 | Faixas etárias do IRR | 0–17, 18–39, 40–49, 50–59, 60–69, 70–79, 80+ | `apply_idade_mortality_multiplier.py:49-60` | Célula da tabela SIM/IBGE | "Faixas amplas e interpretáveis" (`score/decisoes.md` D-07) | — | **sem fonte** |
@@ -141,8 +141,9 @@ ordenação** (`score/decisoes.md` D-21). Mesmo assim, como podem aparecer no pi
 
 A origem da tabela IRR (SIM 2019–2023 e projeções IBGE revisão 2024) **não foi conferida** nesta
 auditoria: o arquivo `score/references/irr_nacional_cid_idade_2019_2023.parquet` não traz o script que o
-gerou. O `src/score_mortalidade.py` também cita Quan et al. (2005) para os códigos oncológicos; essa
-referência **não foi conferida** e não entra no §9.
+gerou. O `src/score_mortalidade.py` também cita Quan et al. (2005) para os códigos oncológicos: a citação e as
+categorias foram conferidas ([R9]), mas a **lista de códigos CID-10** de cada categoria não (o texto
+completo não foi lido). Por isso X-07 fala da categoria (infarto), não do código exato.
 
 **Fora do escopo** (não mexem em score, classe ou ordem): `MAX_MOTIVOS = 3` (`explicacao.py:5`, só
 o texto da explicação) e `page_size ≤ 200` (`api/routers/fila.py:24`, paginação).
@@ -179,7 +180,7 @@ Precisam de validação com os mentores (HSL) ou ficam declarados como escolha d
 | X-03 | Escopo da negação | oração inteira | [R8]: até 6 palavras após o gatilho | Escopo maior nega mais termos; o time cortou por pontuação e adversativas para não apagar urgência (D-45) | Manter; citar como "adaptado do NegEx" |
 | X-04 | `score_medico` não envelhece | `montar_fila.py:88` usa o valor fixo | D-03 / C-10: "score editado continua envelhecendo" | Paciente editado fica parado enquanto os outros sobem | Já resolvido na branch `feat/US-13-14-15-decisoes-eventos` (D-71 dela), ainda não mergeada |
 | X-05 | Atribuição do ajuste por idade do Charlson | "Charlson et al. 1987" | [R6] (1994) | Só a citação; os pontos estão certos | Corrigir o comentário em `score_mortalidade.py:118` |
-| X-06 | Leucemia com peso de linfoma no Elixhauser | 9 pontos | [R7] tem "linfoma" | Pode superestimar leucemia | Conferir no artigo original |
+| X-06 | Leucemia com peso de linfoma no Elixhauser | 9 pontos | [R9]: o Elixhauser não tem categoria de leucemia | Soma 9 pontos que o índice não prevê | Tirar C91–C95 do `linfoma` no Elixhauser (no Charlson continuam valendo 2, como malignidade) |
 | X-07 | I25 / "cardiopatia isquêmica" como infarto | 1 ponto | [R5]: infarto do miocárdio | Superestima (doença isquêmica crônica ≠ infarto) | Mapear só I21/I22/I25.2 ou texto "infarto" |
 | X-08 | Todo diabetes como "sem complicação" | 1 ponto | [R5]: com lesão de órgão-alvo = 2 | Subestima | Ler o 4º caractere do CID (E1x.2–E1x.5) |
 
@@ -201,6 +202,7 @@ invariante. X-05..X-08 estão em módulos que não ordenam a fila.
 | R6 | Charlson M, Szatrowski TP, Peterson J, Gold J. *Validation of a combined comorbidity index.* J Clin Epidemiol. 1994;47(11):1245–1251. doi:[10.1016/0895-4356(94)90129-5](https://doi.org/10.1016/0895-4356(94)90129-5) | Resumo: índice combinado idade + comorbidade; 1 ponto ≈ 1 década de idade |
 | R7 | van Walraven C, Austin PC, Jennings A, Quan H, Forster AJ. *A modification of the Elixhauser comorbidity measures into a point system for hospital death using administrative data.* Med Care. 2009;47(6):626–633 | Citação. Pesos conferidos em fonte secundária: tabela de pesos van Walraven em [PMC7651966](https://pmc.ncbi.nlm.nih.gov/articles/PMC7651966) |
 | R8 | Chapman WW, Bridewell W, Hanbury P, Cooper GF, Buchanan BG. *A simple algorithm for identifying negated findings and diseases in discharge summaries.* J Biomed Inform. 2001;34:301–310. [PDF](https://www.dbmi.pitt.edu/wp-content/uploads/2022/10/A-simple-algorithm-for-identifying-negated-findings-and-diseases-in-discharge-summaries.pdf) | Resumo: gatilhos de negação por expressão regular com escopo de 1 a 6 palavras |
+| R9 | Quan H, Sundararajan V, Halfon P, Fong A, Burnand B, Luthi JC, Saunders LD, Beck CA, Feasby TE, Ghali WA. *Coding algorithms for defining comorbidities in ICD-9-CM and ICD-10 administrative data.* Med Care. 2005;43(11):1130–1139 | Citação e método (resumo). Categorias Charlson e Elixhauser dessa versão conferidas na documentação do pacote R [`comorbidity`](https://rdrr.io/github/ellessenne/comorbidity/man/comorbidity.html), que implementa Quan 2005: o Elixhauser tem 31 categorias, com "lymphoma" e sem leucemia, e o Charlson separa diabetes com e sem complicação. Lista de códigos CID-10 não conferida |
 
 **Fontes do desafio** (não são literatura): `data/referencias/swalis.csv` (classes, prazos e exemplos),
 `src/verificar_fila_priorizada.py` (CID urgente, termos de alarme, eventos de piora, "sem urgência",
