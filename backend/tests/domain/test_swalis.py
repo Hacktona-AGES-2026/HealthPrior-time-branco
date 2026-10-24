@@ -82,6 +82,17 @@ def test_sinal_traz_trecho_original():
     ("D37.4", [], [], 1),
     ("R91", [], [], 1),
     ("K40.9", [], [], 0),
+    # Q-SW2 (D-96): piora enquanto esperava sobe a B (nível 1), nunca além
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 10, 23), "pronto_socorro", "observacao")], [], 1),
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "internacao", "alta")], [], 1),
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "exame_imagem", "progressao")], [], 1),
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "consulta_reavaliacao", "piora")], [], 1),
+    ("K43.0", [Evento("E1", "S", "P", date(2026, 9, 1), "pronto_socorro")], [], 3),  # o maior nível vale
+    # não conta: antes da entrada (histórico), duplicado, ou evento que não é piora
+    ("K80.2", [Evento("E1", "S", "P", date(2019, 1, 1), "pronto_socorro", historico=True)], [], 0),
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "pronto_socorro", duplicado_de="E0")], [], 0),
+    ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "contato_telefonico", "atendeu"),
+               Evento("E2", "S", "P", date(2026, 9, 2), "consulta_reavaliacao", "estavel")], [], 0),
 ])
 def test_eixo_progressao(cid, eventos, sinais, nivel):
     assert eixo_progressao(cid, eventos, sinais).nivel == nivel
@@ -171,3 +182,12 @@ def test_frases():
     from app.domain.texto import frases
     assert frases("Hernia redutivel. Sem sinais de encarceramento.\nDor 4; ok") == [
         "Hernia redutivel", "Sem sinais de encarceramento", "Dor 4", "ok"]
+
+
+def test_piora_na_espera_cita_o_evento_e_so_sobe():
+    ev = [Evento("E1", "S", "P", date(2026, 10, 23), "pronto_socorro", "observacao")]
+    eixo = eixo_progressao("K80.2", ev, [])
+    assert eixo.nivel == 1 and "pronto socorro observacao em 23/10/2026" in eixo.motivos[0]
+    sem = classificar("K80.2", 2, "nenhuma", [], [])
+    com = classificar("K80.2", 2, "nenhuma", ev, [])
+    assert (sem.classe, com.classe) == (Classe.D, Classe.B)

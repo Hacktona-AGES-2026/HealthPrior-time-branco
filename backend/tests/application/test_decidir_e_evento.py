@@ -164,20 +164,20 @@ def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
     _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia", "positivo",
                                       descricao="AP: adenocarcinoma"))
     r.publicar()
-    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "C"
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "B"
 
 
 def test_evento_que_muda_a_classe_vai_ao_inbox_e_congela_a_classe(dataset):
-    r = Repos(dataset)  # SOL-2026-00239: hérnia K40.9, classe C; biópsia positiva -> A2
+    r = Repos(dataset)  # SOL-2026-00239: hérnia K40.9, classe B (tem PS na espera, D-96); biópsia positiva -> A2
     res = _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia",
                                             "positivo", descricao="AP: adenocarcinoma"))
     assert (res.classe_antes, res.classe_depois, res.desfecho) == (
-        Classe.C, Classe.A2, DesfechoEvento.ENVIADO_INBOX)
+        Classe.B, Classe.A2, DesfechoEvento.ENVIADO_INBOX)
     assert r.eventos["SOL-2026-00239"][-1].evento_id == "EVT-N1" and r.commits == 1
     # Sem aprovação de um profissional, a fila continua com a classe anterior (I-04).
-    assert r.sols["SOL-2026-00239"].classe_vigente is Classe.C
+    assert r.sols["SOL-2026-00239"].classe_vigente is Classe.B
     r.publicar()
-    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "C"
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "B"
     # O regulador aprova: aí sim vale A2 e a classe deixa de estar congelada.
     _decidir(r).executar(ComandoDecisao("SOL-2026-00239", "REG-1", AcaoDecisao.APROVAR))
     assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "A2"
@@ -203,10 +203,29 @@ def test_score_editado_envelhece_a_partir_de_ref_e_nao_do_relogio(dataset):
     assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2023-00060").score_efetivo == 50.0
 
 
+def test_cena_da_demo_ps_vai_ao_inbox_aprova_e_o_paciente_sobe(dataset):
+    # US-15: PS para SOL-2023-00060 (vesícula, classe D) -> inbox -> regulador aprova -> paciente sobe.
+    r = Repos(dataset)
+    r.publicar()
+    antes = _pos(r, "SOL-2023-00060")
+    res = _registrar(r).executar(NovoEvento("SOL-2023-00060", date(2026, 10, 23), "pronto_socorro",
+                                            "observacao", descricao="Dor em hipocôndrio direito, febre.",
+                                            origem="PS Hospital Sao Lucas"))
+    assert (res.classe_antes, res.classe_depois, res.desfecho) == (
+        Classe.D, Classe.B, DesfechoEvento.ENVIADO_INBOX)
+    # Sem aprovação (I-04) a classe da fila não muda; a classe anterior fica congelada.
+    assert r.sols["SOL-2023-00060"].classe_vigente is Classe.D
+    r.publicar()
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2023-00060").classe == "D"
+    aprovada = _decidir(r).executar(ComandoDecisao("SOL-2023-00060", "REG-1", AcaoDecisao.APROVAR))
+    linha = next(l for l in r.publicada if l.solicitacao_id == "SOL-2023-00060")
+    assert linha.classe == "B" and aprovada.posicao_nova < antes
+
+
 def test_evento_sem_mudanca_de_classe_so_registra(dataset):
     r = Repos(dataset)
-    res = _registrar(r).executar(NovoEvento("SOL-2023-00060", date(2026, 10, 20), "pronto_socorro",
-                                            "atendido_liberado", descricao="Cólica biliar"))
+    res = _registrar(r).executar(NovoEvento("SOL-2023-00060", date(2026, 10, 20), "contato_telefonico",
+                                            "atendeu", descricao="Paciente confirma interesse"))
     assert res.desfecho is DesfechoEvento.REGISTRADO and res.classe_antes == res.classe_depois
 
 

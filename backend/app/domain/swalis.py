@@ -19,7 +19,7 @@ from app.domain.cid import is_lesao_incerta, is_oncologico, normalizar_cid
 from app.domain.enums import Classe
 from app.domain.models import Evento
 from app.domain.texto import buscar_termos, esta_negado, localizar_trecho
-from app.domain.urgencia import tem_biopsia_positiva
+from app.domain.urgencia import evento_e_piora, tem_biopsia_positiva
 
 VERSAO_REGRAS = "swalis-regras-2"
 
@@ -141,6 +141,12 @@ def _pontos_do_eixo(sinais: list[SinalTexto], eixo: str) -> list[tuple[int, Sina
     return [(NIVEL_DO_PONTO[s.categoria][1], s) for s in sinais if NIVEL_DO_PONTO[s.categoria][0] == eixo]
 
 
+def eventos_de_piora_na_espera(eventos: list[Evento]) -> list[Evento]:
+    """PS, internação, progressão em imagem ou piora em consulta, depois da entrada na fila (não é histórico)."""
+    return [e for e in eventos
+            if evento_e_piora(e.tipo_evento, e.resultado) and not e.historico and e.duplicado_de is None]
+
+
 def eixo_progressao(cid: str, eventos: list[Evento], sinais: list[SinalTexto]) -> Eixo:
     """SW-01. 3 obstrução/risco de vida; 2 câncer ou biópsia positiva; 1 lesão incerta/C44/suspeita."""
     c = normalizar_cid(cid)
@@ -157,6 +163,11 @@ def eixo_progressao(cid: str, eventos: list[Evento], sinais: list[SinalTexto]) -
         candidatos.append((2, "biópsia positiva"))
     if is_lesao_incerta(c):
         candidatos.append((1, f"lesão de comportamento incerto {cid}"))
+    piora = eventos_de_piora_na_espera(eventos)
+    if piora:  # Q-SW2 (D-96): piora enquanto esperava sobe o paciente a B, nunca além
+        candidatos.append((1, "piora na espera: " + "; ".join(
+            f"{e.tipo_evento.replace('_', ' ')}{' ' + e.resultado if e.resultado else ''} em {e.data_evento:%d/%m/%Y}"
+            for e in piora)))
     for nivel, s in _pontos_do_eixo(sinais, PROGRESSAO):
         if pele and s.categoria == CategoriaSinal.CANCER_CONFIRMADO:
             nivel = 1
