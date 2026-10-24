@@ -82,6 +82,7 @@ class SolicitacaoTable(SQLModel, table=True):
 
     # --- override do regulador (C-10) ---
     classe_medico: Optional[str] = None
+    classe_confirmada: Optional[str] = None  # US-13 preenche; US-12 só lê
     score_medico: Optional[float] = None
     editado_manualmente: bool = False
     editado_por: Optional[str] = None

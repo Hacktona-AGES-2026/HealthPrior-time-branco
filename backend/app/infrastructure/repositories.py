@@ -52,6 +52,7 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         status_fila=StatusFila(t.status_fila), motivo_status=t.motivo_status,
         classe_status=ClasseStatus(t.classe_status), alertas=json.loads(t.alertas_json),
         classe_medico=Classe(t.classe_medico) if t.classe_medico else None,
+        classe_confirmada=Classe(t.classe_confirmada) if t.classe_confirmada else None,
         score_medico=t.score_medico, editado_manualmente=t.editado_manualmente,
         editado_por=t.editado_por, editado_em=t.editado_em,
     )
