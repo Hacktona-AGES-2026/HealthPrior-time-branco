@@ -7,7 +7,7 @@ import { CarregandoPagina } from "@/components/shared/Carregando"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { usarAtalhos } from "@/lib/atalhos"
+import { useAtalhos } from "@/lib/atalhos"
 import { useStore } from "@/store/useStore"
 
 const PaginaFila = lazy(() => import("@/components/fila/PaginaFila"))
@@ -39,7 +39,7 @@ export default function App() {
   const sidebarAberta = useStore((s) => s.sidebarAberta)
   const setSidebar = useStore((s) => s.setSidebar)
   const alternarMenu = useCallback(() => useStore.getState().setSidebar(!useStore.getState().sidebarAberta), [])
-  usarAtalhos(alternarMenu)
+  useAtalhos(alternarMenu)
 
   return (
     <>

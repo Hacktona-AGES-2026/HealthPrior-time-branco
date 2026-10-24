@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { useColunas } from "@/store/colunas"
 import { PainelDrawer } from "./PainelDrawer"
 import { useStore } from "@/store/useStore"
-import { CabecalhoTabela, CorpoTabela, usarTabela } from "./TabelaFila"
+import { BarraSelecao } from "./BarraSelecao"
+import { CabecalhoTabela, CorpoTabela, useTabela } from "./TabelaFila"
 
 const useMd = () => {
   const consulta = "(min-width: 768px)"
@@ -25,7 +26,7 @@ export default function PaginaFila() {
   const rolagem = useRef<HTMLDivElement>(null)
   const fixo = useRef<HTMLDivElement>(null)
   const [alturaFixa, setAlturaFixa] = useState(300)
-  const { table, total, visiveis } = usarTabela()
+  const { table, total, visiveis } = useTabela()
   const oculta = useColunas((c) => c.faixaOculta)
   const setOculta = useColunas((c) => c.setFaixaOculta)
   const filtros = useStore((s) => s.filtros)
@@ -63,11 +64,13 @@ export default function PaginaFila() {
           </div>
           <div ref={fixo} className="sticky top-0 z-10 space-y-1 bg-background px-3 pt-2 pb-0">
             <FiltrosFila total={total} visiveis={visiveis} />
+            <BarraSelecao />
             <CabecalhoTabela table={table} />
           </div>
           <div className="px-3 pb-8">
             <CorpoTabela key={`${visiveis}-${JSON.stringify(filtros)}`} table={table} rolagemRef={rolagem} alturaFixa={alturaFixa} />
           </div>
+          <BarraSelecao rodape />
         </div>
       </div>
       <PainelAprovacao className="hidden lg:flex" />

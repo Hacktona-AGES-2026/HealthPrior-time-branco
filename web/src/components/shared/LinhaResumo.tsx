@@ -1,17 +1,25 @@
 import type { Paciente } from "@/data/tipos"
 import type { Decisao } from "@/lib/filtros"
 import { estiloColuna, useColunas } from "@/store/colunas"
+import { useStore } from "@/store/useStore"
 import { corPrazo } from "@/lib/cores"
 import { AlertaRevisao, ClasseBadge, StatusAprovacao } from "./Basicos"
 
 export const textoDias = (dias: number) => (dias === 1 ? "1 dia" : `${dias.toLocaleString("pt-BR")} dias`)
 
-export function LinhaResumo({ paciente: p, decisao }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean }) {
+export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean; comMarcacao?: boolean }) {
   const l = useColunas((c) => c.larguras)
   const o = useColunas((c) => c.ocultas)
+  const marcado = useStore((s) => s.marcados.includes(p.id))
+  const alternarMarcado = useStore((s) => s.alternarMarcado)
   const pendente = !decisao
   return (
     <>
+      {comMarcacao && (
+        <label className="-ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center md:size-7" onClick={(e) => e.stopPropagation()}>
+          <input type="checkbox" checked={marcado} onChange={() => alternarMarcado(p.id)} aria-label={`Selecionar ${p.iniciais}`} className="size-4 cursor-pointer accent-[var(--primary)]" />
+        </label>
+      )}
       <div className="shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
         #{p.posicao}
       </div>

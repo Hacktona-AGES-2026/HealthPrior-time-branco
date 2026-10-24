@@ -13,7 +13,7 @@ import { Kpis } from "./detalhe/Kpis"
 const ETAPAS = [0, 120, 260, 400, 540, 680]
 const JA_CARREGADOS = new Set<string>()
 
-const usarEtapas = (id: string) => {
+const useEtapas = (id: string) => {
   const [etapa, setEtapa] = useState(() => (JA_CARREGADOS.has(id) ? ETAPAS.length : 0))
   const anterior = useRef(id)
   useEffect(() => {
@@ -39,7 +39,7 @@ function Etapa({ pronto, rotulo, altura, children, className }: { pronto: boolea
 }
 
 export function PacienteDetalhe({ paciente: p }: { paciente: Paciente }) {
-  const etapa = usarEtapas(p.id)
+  const etapa = useEtapas(p.id)
 
   return (
     <div className="@container space-y-4" data-paciente={p.id}>

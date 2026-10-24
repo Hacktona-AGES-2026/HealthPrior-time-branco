@@ -8,7 +8,7 @@ const ehCampoDeTexto = (alvo: EventTarget | null) => {
   return alvo.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(alvo.tagName)
 }
 
-export const usarAtalhos = (alternarMenu: () => void) => {
+export const useAtalhos = (alternarMenu: () => void) => {
   useEffect(() => {
     const aoPressionar = (e: KeyboardEvent) => {
       const s = useStore.getState()

@@ -11,7 +11,7 @@ import { LinhaResumo } from "@/components/shared/LinhaResumo"
 import { estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 
-export const usarTabela = () => {
+export const useTabela = () => {
   const filtros = useStore((s) => s.filtros)
   const decisoes = useStore((s) => s.decisoes)
   const [sorting, setSorting] = useState<SortingState>([{ id: "pos", desc: false }])
@@ -43,9 +43,26 @@ export const usarTabela = () => {
 export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
   const larguras = useColunas((c) => c.larguras)
   const ocultas = useColunas((c) => c.ocultas)
+  const marcados = useStore((s) => s.marcados)
+  const marcarVarios = useStore((s) => s.marcarVarios)
+  const ids = table.getRowModel().rows.map((r) => r.original.id)
+  const todos = ids.length > 0 && ids.every((id) => marcados.includes(id))
+  const algum = !todos && ids.some((id) => marcados.includes(id))
   return (
     <div className="@container min-w-0">
       <div className="flex items-center gap-2 overflow-hidden border-b border-border px-3 py-1 text-xs font-medium text-muted-foreground" role="row">
+        <label className="-ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center md:size-7" title="Selecionar todos os visíveis">
+          <input
+            type="checkbox"
+            checked={todos}
+            ref={(el) => {
+              if (el) el.indeterminate = algum
+            }}
+            onChange={() => marcarVarios(ids, !todos)}
+            aria-label="Selecionar todos os pacientes visíveis"
+            className="size-4 cursor-pointer accent-[var(--primary)]"
+          />
+        </label>
         {table.getHeaderGroups()[0].headers.map((h) => {
           const ordenado = h.column.getIsSorted()
           const podeOrdenar = h.column.getCanSort()
@@ -70,11 +87,12 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
 type LinhaProps = {
   paciente: Paciente
   selecionado: boolean
+  marcado: boolean
   decisao?: Decisao
   aoAlternar: (id: string) => void
 }
 
-const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, decisao, aoAlternar }: LinhaProps) {
+const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, marcado, decisao, aoAlternar }: LinhaProps) {
   return (
     <div className="@container" role="row" aria-selected={selecionado}>
       <div
@@ -83,6 +101,7 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, de
         tabIndex={0}
         onClick={() => aoAlternar(p.id)}
         onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault()
             aoAlternar(p.id)
@@ -90,10 +109,10 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, de
         }}
         className={cn(
           "relative flex min-h-14 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-          selecionado ? "bg-primary/15 text-foreground shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/15" : "hover:bg-muted/50"
+          selecionado ? "bg-primary/15 text-foreground shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/15" : cn("hover:bg-muted/50", marcado && "bg-primary/5")
         )}
       >
-        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} />
+        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} comMarcacao />
       </div>
     </div>
   )
@@ -108,6 +127,7 @@ type CorpoProps = {
 export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const selecionadoId = useStore((s) => s.selecionadoId)
   const decisoes = useStore((s) => s.decisoes)
+  const marcados = useStore((s) => s.marcados)
   const selecionar = useStore((s) => s.selecionar)
   const listaRef = useRef<HTMLDivElement>(null)
   const [margem, setMargem] = useState(0)
@@ -163,7 +183,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
             ref={virtualizador.measureElement}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start - margem}px)` }}
           >
-            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
+            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} marcado={marcados.includes(p.id)} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
           </div>
         )
       })}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { AcoesDecisao } from "@/components/shared/AcoesDecisao"
 import { ClasseBadge, SetaVariacao, StatusAprovacao } from "@/components/shared/Basicos"
+import { NovoEvento } from "@/components/shared/NovoEvento"
 import { PacienteDetalhe } from "@/components/shared/PacienteDetalhe"
 import { normalizar } from "@/lib/filtros"
 import { useStore } from "@/store/useStore"
@@ -108,8 +109,11 @@ export default function PaginaPacientes() {
                   <Printer aria-hidden /> Imprimir
                 </Button>
               </div>
-              <div className="no-print w-full max-w-sm">
-                <AcoesDecisao paciente={paciente} />
+              <div className="no-print flex w-full flex-wrap items-center gap-2">
+                <div className="w-full max-w-sm">
+                  <AcoesDecisao paciente={paciente} />
+                </div>
+                <NovoEvento solicitacaoId={paciente.id} />
               </div>
             </div>
 

@@ -4,7 +4,6 @@ import type { Paciente } from "@/data/tipos"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { AcoesDecisao } from "@/components/shared/AcoesDecisao"
-import { NovoEvento } from "@/components/shared/NovoEvento"
 import { formatarPct } from "@/components/shared/Basicos"
 import { cn } from "@/lib/utils"
 import { useColunas } from "@/store/colunas"
@@ -121,12 +120,9 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
           <Separator />
           <section aria-label="Decisão" className="space-y-2">
             <AcoesDecisao paciente={p} />
-            <div className="flex flex-wrap items-center gap-1">
-              <NovoEvento solicitacaoId={p.id} />
-              <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2 text-muted-foreground" onClick={() => abrirFicha(p.id)}>
-                <ExternalLink aria-hidden /> Ficha completa
-              </Button>
-            </div>
+            <Button variant="outline" className="h-9 w-full gap-1.5" onClick={() => abrirFicha(p.id)}>
+              <ExternalLink aria-hidden /> Ver ficha completa
+            </Button>
           </section>
         </div>
       )}

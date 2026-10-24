@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
-export const usarContagem = (alvo: number, duracao = 700) => {
+export const useContagem = (alvo: number, duracao = 700) => {
   const [valor, setValor] = useState(alvo)
   const anterior = useRef(alvo)
   useEffect(() => {

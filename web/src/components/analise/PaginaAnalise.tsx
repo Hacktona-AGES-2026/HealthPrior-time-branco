@@ -3,7 +3,7 @@ import { Bar, BarChart, CartesianGrid, Cell, Legend, ReferenceLine, ResponsiveCo
 import { ChevronDown, CheckCheck, Layers, Siren, TimerOff, type LucideIcon } from "lucide-react"
 import { ESPECIALIDADES, PACIENTES, TOTAL_FILA } from "@/data/fila"
 import { CLASSES, NOME_CAMADA, corClasse, corPrazo } from "@/lib/cores"
-import { usarContagem } from "@/lib/motion"
+import { useContagem } from "@/lib/motion"
 import { cn } from "@/lib/utils"
 import { CamadaBadge, ClasseBadge } from "@/components/shared/Basicos"
 import { CartaoGrafico } from "@/components/shared/detalhe/Cartao"
@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useStore } from "@/store/useStore"
 
 function Resumo({ icone: Icone, rotulo, valor, sufixo = "", cor, detalhe, indice, aoClicar }: { icone: LucideIcon; rotulo: string; valor: number; sufixo?: string; cor?: string; detalhe: string; indice: number; aoClicar?: () => void }) {
-  const animado = usarContagem(valor, 900)
+  const animado = useContagem(valor, 900)
   return (
     <button type="button" onClick={aoClicar} className="fx-fade-up flex items-start gap-3 rounded-xl bg-muted/40 p-3 text-left transition-colors outline-none hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring" style={{ animationDelay: `${indice * 80}ms` }}>
       <Icone className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
