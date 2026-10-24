@@ -260,6 +260,8 @@ Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto 
 - **Front:** tela "Propostas" (persona Comitê).
 - **Depende de:** US-18
 
+> **Status: ✅ implementado** (D-108..D-110): `GET /propostas?status=` (com casos de origem e impacto simulado nas pendentes) e `POST /propostas/{id}/decidir` `{decisao: aprovar|rejeitar, usuario_id, observacao?}`; erros 404 `PROPOSTA_NAO_ENCONTRADA`, 409 `PROPOSTA_JA_DECIDIDA`, 422 `OBSERVACAO_OBRIGATORIA`. A tela Propostas ainda não tem o seletor de persona (US-23).
+
 ---
 
 ### E7 · Visualização e navegação
