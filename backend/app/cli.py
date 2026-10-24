@@ -9,6 +9,8 @@
     python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli extrair-sinais  SW-01..04: pré-aquece o cache do LLM e mostra as classes SWALIS
+    python -m app.cli seed-aprendizado  US-18: grava ~33 decisões de exemplo (DEC-SEED-*); idempotente
+    python -m app.cli gerar-propostas  US-18: agrupa as decisões em propostas de regra e as grava
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
@@ -23,7 +25,9 @@ from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
 from app.application.detectar_bloqueantes import DetectarBloqueantes, ResumoBloqueantes
 from app.application.detectar_inconsistencias import DetectarInconsistencias, ResumoInconsistencias
+from app.application.gerar_propostas import GerarPropostas
 from app.application.publicar_fila import PublicarFila
+from app.application.semear_aprendizado import SemearAprendizado
 from app.application.normalizar import Normalizar, ResumoNormalizacao
 from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
 from app.config import settings
@@ -35,9 +39,11 @@ from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
+    SqlDecisaoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
     SqlPendenciaRepository,
+    SqlPropostaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
@@ -213,6 +219,52 @@ def cmd_extrair_sinais() -> None:
     print(f"Cache: {settings.llm_cache_path}")
 
 
+def _data_referencia(session: Session):
+    return SqlFilaRepository(session).data_referencia() or settings.ref_date
+
+
+def cmd_seed_aprendizado() -> None:
+    """US-18 (D-94): grava as decisões de exemplo no log real. Não altera solicitações."""
+    criar_tabelas()
+    with Session(engine) as session:
+        gravadas = SemearAprendizado(
+            SqlDecisaoRepository(session), SqlSolicitacaoRepository(session),
+            SqlUnidadeDeTrabalho(session), _data_referencia(session)).executar()
+    print(f"seed-aprendizado: {gravadas} decisões gravadas" if gravadas
+          else "seed-aprendizado: já semeado (DEC-SEED-*), nada a gravar")
+
+
+def _linha_proposta(p) -> str:
+    extra = f" | {p.motivo_descarte}" if p.motivo_descarte else ""
+    return (f"  {p.proposta_id} | {p.direcao} {p.classe_de.value}->{p.classe_para.value} | "
+            f"{p.n_casos} casos, {p.n_reguladores} reguladores, consistência {p.consistencia:.2f} | "
+            f"{p.status}{extra}")
+
+
+def cmd_gerar_propostas() -> None:
+    """US-18: agrupa as decisões em propostas de regra (C-14) e substitui as pendentes/descartadas."""
+    from app.api.deps import criar_classificador_motivo
+
+    criar_tabelas()
+    with Session(engine) as session:
+        data = _data_referencia(session)
+        classificador = criar_classificador_motivo()
+        try:
+            r = GerarPropostas(
+                SqlDecisaoRepository(session), SqlSolicitacaoRepository(session),
+                SqlPropostaRepository(session), SqlUnidadeDeTrabalho(session),
+                datetime(data.year, data.month, data.day, tzinfo=timezone.utc),
+                classificador).executar()
+        finally:
+            if classificador is not None:
+                classificador.salvar_cache()
+    print(f"decisões: {r.analisadas} analisadas, {r.consideradas} consideradas; `outro`: "
+          f"{r.outros_reclassificados} reclassificados, {r.outros_sem_grupo} sem grupo")
+    print(f"propostas: {len(r.propostas)} pendentes, {len(r.descartadas)} descartadas")
+    for p in (*r.propostas, *r.descartadas):
+        print(_linha_proposta(p))
+
+
 def cmd_decisoes() -> None:
     raise NotImplementedError("US-11: gerar tabela de exclusões")
 
@@ -221,6 +273,7 @@ COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normal
             "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "bloqueantes": cmd_bloqueantes,
             "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "extrair-sinais": cmd_extrair_sinais,
+            "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
             "decisoes": cmd_decisoes}
 
 

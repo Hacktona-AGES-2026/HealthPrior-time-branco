@@ -12,6 +12,7 @@ from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
+from app.domain.aprendizado import PropostaRegra
 from app.domain.enums import (
     AcaoDecisao,
     Classe,
@@ -38,6 +39,7 @@ from app.infrastructure.tables import (
     FilaPublicadaTable,
     PendenciaTable,
     ProcedimentoTable,
+    PropostaRegraTable,
     SolicitacaoTable,
 )
 
@@ -253,7 +255,9 @@ class SqlDecisaoRepository:
         self._s = session
 
     def proximo_id(self) -> str:
-        ultimo = self._s.execute(select(func.max(DecisaoTable.decisao_id))).scalar()
+        # Ignora os IDs do seed (DEC-SEED-001): não seguem o padrão numérico.
+        ultimo = self._s.execute(select(func.max(DecisaoTable.decisao_id)).where(
+            DecisaoTable.decisao_id.not_like("DEC-SEED-%"))).scalar()
         return f"DEC-{(int(ultimo.split('-')[1]) + 1) if ultimo else 1:04d}"
 
     def adicionar(self, decisao: Decisao) -> None:
@@ -272,6 +276,49 @@ class SqlDecisaoRepository:
         consulta = (select(DecisaoTable).where(DecisaoTable.solicitacao_id == solicitacao_id)
                     .order_by(DecisaoTable.data, DecisaoTable.decisao_id))
         return [_para_decisao(t) for t in self._s.exec(consulta).scalars()]
+
+    def listar_todas(self) -> list[Decisao]:
+        consulta = select(DecisaoTable).order_by(DecisaoTable.data, DecisaoTable.decisao_id)
+        return [_para_decisao(t) for t in self._s.exec(consulta).scalars()]
+
+
+class SqlPropostaRepository:
+    """US-18: propostas de regra geradas a partir das decisões (a US-19 lê e decide)."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def substituir_geradas(self, propostas: list[PropostaRegra], gerada_em: datetime) -> None:
+        """Troca as pendentes/descartadas; nunca toca as aprovadas/rejeitadas."""
+        self._s.execute(delete(PropostaRegraTable).where(
+            PropostaRegraTable.status.in_(["pendente", "descartada"])))
+        self._s.add_all(
+            PropostaRegraTable(
+                proposta_id=p.proposta_id, procedimento_id=p.procedimento_id, motivo=p.motivo.value,
+                classe_de=p.classe_de.value, classe_para=p.classe_para.value, direcao=p.direcao,
+                n_casos=p.n_casos, n_reguladores=p.n_reguladores, consistencia=p.consistencia,
+                casos=",".join(p.casos), status=p.status, motivo_descarte=p.motivo_descarte,
+                gerada_em=gerada_em)
+            for p in propostas)
+        self._s.flush()
+
+    def ids_decididos(self) -> set[str]:
+        consulta = select(PropostaRegraTable.proposta_id).where(
+            PropostaRegraTable.status.in_(["aprovada", "rejeitada"]))
+        return set(self._s.execute(consulta).scalars())
+
+    def listar(self, status: str | None = None) -> list[PropostaRegra]:
+        consulta = select(PropostaRegraTable).order_by(PropostaRegraTable.proposta_id)
+        if status:
+            consulta = consulta.where(PropostaRegraTable.status == status)
+        return [PropostaRegra(
+            proposta_id=t.proposta_id, procedimento_id=t.procedimento_id,
+            motivo=MotivoCodificado(t.motivo), classe_de=Classe(t.classe_de),
+            classe_para=Classe(t.classe_para), direcao=t.direcao, n_casos=t.n_casos,
+            n_reguladores=t.n_reguladores, consistencia=t.consistencia,
+            casos=[c for c in t.casos.split(",") if c], status=t.status,
+            motivo_descarte=t.motivo_descarte,
+        ) for t in self._s.execute(consulta).scalars()]
 
 
 class SqlCargaRepository:
@@ -451,36 +498,6 @@ class SqlPendenciaRepository:
     def _proximo_numero(self) -> int:
         ultimo = self._s.execute(select(func.max(PendenciaTable.pendencia_id))).scalar()
         return int(ultimo.split("-")[1]) + 1 if ultimo else 1
-
-
-class SqlDecisaoRepository:
-    def __init__(self, session: Session):
-        self._s = session
-
-    def adicionar(self, decisao: Decisao) -> None:
-        d = decisao
-        self._s.add(DecisaoTable(
-            decisao_id=d.decisao_id, solicitacao_id=d.solicitacao_id, regulador_id=d.regulador_id,
-            acao=d.acao.value, data=d.data,
-            classe_sugerida=d.classe_sugerida.value if d.classe_sugerida else None,
-            classe_decidida=d.classe_decidida.value if d.classe_decidida else None,
-            score_decidido=d.score_decidido,
-            motivo_codificado=d.motivo_codificado.value if d.motivo_codificado else None,
-            justificativa=d.justificativa, versao_regras=d.versao_regras))
-        self._s.flush()
-
-    def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]:
-        consulta = (select(DecisaoTable).where(DecisaoTable.solicitacao_id == solicitacao_id)
-                    .order_by(DecisaoTable.data, DecisaoTable.decisao_id))
-        return [Decisao(
-            decisao_id=t.decisao_id, solicitacao_id=t.solicitacao_id, regulador_id=t.regulador_id,
-            acao=AcaoDecisao(t.acao), data=t.data,
-            classe_sugerida=Classe(t.classe_sugerida) if t.classe_sugerida else None,
-            classe_decidida=Classe(t.classe_decidida) if t.classe_decidida else None,
-            score_decidido=t.score_decidido,
-            motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
-            justificativa=t.justificativa, versao_regras=t.versao_regras,
-        ) for t in self._s.exec(consulta).scalars()]
 
 
 class SqlFilaRepository:

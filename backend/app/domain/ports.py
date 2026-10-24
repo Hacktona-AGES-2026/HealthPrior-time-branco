@@ -19,6 +19,8 @@ from app.domain.models import (
     ResultadoTabela,
     Solicitacao,
 )
+from app.domain.aprendizado import PropostaRegra
+from app.domain.enums import MotivoCodificado
 from app.domain.swalis import SinalTexto
 
 
@@ -105,6 +107,7 @@ class DecisaoRepository(Protocol):
         ...
     def adicionar(self, decisao: Decisao) -> None: ...
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]: ...
+    def listar_todas(self) -> list[Decisao]: ...
 
 
 class CorrecaoRepository(Protocol):
@@ -141,3 +144,17 @@ class VerificadorFila(Protocol):
     def verificar(self, caminho_csv: Path) -> tuple[bool, str]:
         """Retorna (passou, saída do verificador)."""
         ...
+
+
+class ClassificadorMotivo(Protocol):
+    """Mapeia uma justificativa livre para um motivo codificado (exceto `outro`), ou None (D-95)."""
+
+    def classificar(self, texto: str) -> MotivoCodificado | None: ...
+
+
+class PropostaRepository(Protocol):
+    def substituir_geradas(self, propostas: list[PropostaRegra], gerada_em: datetime) -> None:
+        """Troca as propostas `pendente`/`descartada`; `aprovada`/`rejeitada` nunca são tocadas."""
+        ...
+    def ids_decididos(self) -> set[str]: ...
+    def listar(self, status: str | None = None) -> list[PropostaRegra]: ...

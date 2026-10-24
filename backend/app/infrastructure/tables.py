@@ -158,6 +158,29 @@ class DecisaoTable(SQLModel, table=True):
     versao_regras: Optional[str] = None
 
 
+class PropostaRegraTable(SQLModel, table=True):
+    """US-18: proposta de regra agrupada das decisões. A US-19 aprova/rejeita (campos decidida_*)."""
+
+    __tablename__ = "propostas_regra"
+
+    proposta_id: str = Field(primary_key=True)
+    procedimento_id: str = Field(index=True)
+    motivo: str
+    classe_de: str
+    classe_para: str
+    direcao: str
+    n_casos: int
+    n_reguladores: int
+    consistencia: float
+    casos: str = ""  # decisao_ids separados por vírgula
+    status: str = Field(index=True)  # pendente | descartada | aprovada | rejeitada
+    motivo_descarte: Optional[str] = None
+    gerada_em: datetime
+    decidida_por: Optional[str] = None
+    decidida_em: Optional[datetime] = None
+    observacao: Optional[str] = None
+
+
 class FilaPublicadaTable(SQLModel, table=True):
     __tablename__ = "fila_publicada"
 

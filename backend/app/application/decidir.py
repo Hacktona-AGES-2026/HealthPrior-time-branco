@@ -90,7 +90,7 @@ class DecidirClasse:
             classe_sugerida=res.classe_sistema, classe_decidida=decidida,
             score_decidido=c.score, motivo_codificado=c.motivo_codificado,
             justificativa=(c.justificativa or "").strip() or None,
-            versao_regras=res.versao_regras)
+            versao_regras=res.versao_regras, procedimento_id=s.procedimento_id)
         anterior = _posicao(self._fila, s.solicitacao_id)
         self._solicitacoes.salvar(s)
         self._decisoes.adicionar(decisao)

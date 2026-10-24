@@ -246,6 +246,8 @@ Como **sistema**, quero agrupar edições parecidas dos reguladores em propostas
 - **Back:** `POST /aprendizado/gerar-propostas`
 - **Depende de:** US-14
 
+> **Status: back implementado** (branch `feat/US-18-aprendizado`, D-94..D-99): `POST /aprendizado/gerar-propostas`, CLI `seed-aprendizado` e `gerar-propostas`, tabela `propostas_regra`. Registro: `docs/implementacao/US-18-aprendizado.md`.
+
 #### US-19 · Comitê aprova a regra — **P2** · Back + Front
 Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto simulado, para aprovar ou rejeitar.
 - **CA**
