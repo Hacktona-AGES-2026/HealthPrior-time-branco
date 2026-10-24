@@ -468,6 +468,8 @@ Erros:
 - `422 {"erro": "ONCOLOGICO_REBAIXADO", "mensagem": "Oncológico não pode ficar abaixo de paciente sem urgência."}`
 - `422 {"erro": "JUSTIFICATIVA_OBRIGATORIA", "mensagem": "…"}`
 - `404 {"erro": "SOLICITACAO_NAO_ENCONTRADA", "mensagem": "…"}`
+- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-87)
+- `501 {"erro": "NAO_IMPLEMENTADO", "mensagem": "…"}`: `editar` e `manter` chegam na US-14
 
 ### 5.5 `POST /eventos`
 Request:

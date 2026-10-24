@@ -9,6 +9,10 @@ npm install && npm run dev
 npm run build
 ```
 
+## Inbox (US-12/13)
+
+A página **Inbox** lê `GET /inbox` e o botão **Aprovar** chama `POST /decisoes`: confirma a classe sugerida, registra no log e recalcula a fila (D-87..D-91). Para ver casos no inbox, publique a fila antes: `POST /admin/publicar-fila`.
+
 ## Pendências (US-06): primeira tela ligada à API
 
 A página **Pendências** lê `GET /pendencias` do back; o resto do protótipo continua com dados fictícios.

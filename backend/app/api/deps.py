@@ -29,6 +29,7 @@ from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
+    SqlDecisaoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
     SqlPendenciaRepository,
@@ -104,8 +105,12 @@ def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEv
 
 
 def get_decidir(session: Session = Depends(get_session),
-                gerar_fila: GerarFila = Depends(get_gerar_fila)) -> DecidirClasse:
-    return DecidirClasse(SqlSolicitacaoRepository(session), decisoes=None, gerar_fila=gerar_fila)
+                publicar: PublicarFila = Depends(get_publicar_fila)) -> DecidirClasse:
+    return DecidirClasse(
+        solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
+        decisoes=SqlDecisaoRepository(session), fila=SqlFilaRepository(session), scorer=get_scorer(),
+        uow=SqlUnidadeDeTrabalho(session), publicar=publicar,
+        relogio=lambda: datetime.now(timezone.utc))
 
 
 # US-20

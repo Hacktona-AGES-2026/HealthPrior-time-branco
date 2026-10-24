@@ -51,7 +51,7 @@ app/
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
-    decidir.py         US-13/14
+    decidir.py         US-13 (aprovar); US-14 (editar/manter)
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.
     db.py, tables.py   Postgres/SQLModel (tabelas espelham fluxo-sistema.md §8)

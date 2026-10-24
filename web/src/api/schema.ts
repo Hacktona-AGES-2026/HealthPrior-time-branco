@@ -200,6 +200,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/metricas/comparacao": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Comparacao
+         * @description US-22: indicadores da ordem atual (antes) × fila publicada (depois). Sem publicação: depois nulo.
+         */
+        get: operations["comparacao_metricas_comparacao_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -264,6 +284,15 @@ export interface components {
          * @enum {string}
          */
         ClasseStatus: "sugerida_nao_confirmada" | "confirmada";
+        /** ComparacaoOut */
+        ComparacaoOut: {
+            antes: components["schemas"]["IndicadoresOut"];
+            depois?: components["schemas"]["IndicadoresOut"] | null;
+            /** Publicada */
+            publicada: boolean;
+            /** Destaques */
+            destaques: components["schemas"]["DestaqueOut"][];
+        };
         /** CorrecaoOut */
         CorrecaoOut: {
             /** Campo */
@@ -322,6 +351,17 @@ export interface components {
          * @enum {string}
          */
         DesfechoEvento: "registrado" | "enviado_inbox" | "pendencia";
+        /** DestaqueOut */
+        DestaqueOut: {
+            /** Solicitacao Id */
+            solicitacao_id: string;
+            /** Posicao Antes */
+            posicao_antes?: number | null;
+            /** Posicao Depois */
+            posicao_depois?: number | null;
+            /** Camada Depois */
+            camada_depois?: number | null;
+        };
         /** EditadoAnteriormente */
         EditadoAnteriormente: {
             /** Por */
@@ -410,12 +450,9 @@ export interface components {
         /** FilaOut */
         FilaOut: {
             /** Versao Regras */
-            versao_regras: string;
-            /**
-             * Gerada Em
-             * Format: date-time
-             */
-            gerada_em: string;
+            versao_regras?: string | null;
+            /** Gerada Em */
+            gerada_em?: string | null;
             /** Publicada */
             publicada: boolean;
             /** Total */
@@ -457,6 +494,21 @@ export interface components {
                 [key: string]: number;
             };
             pendencias: components["schemas"]["PendenciasSincronizadasOut"];
+        };
+        /** IndicadoresOut */
+        IndicadoresOut: {
+            /** Total */
+            total: number;
+            /** Violacoes Regra Ouro */
+            violacoes_regra_ouro: number;
+            /** Posicao Mediana Oncologicos */
+            posicao_mediana_oncologicos?: number | null;
+            /** Pct Oncologicos Primeiro Terco */
+            pct_oncologicos_primeiro_terco: number;
+            /** Pct Ps Recente Primeira Metade */
+            pct_ps_recente_primeira_metade: number;
+            /** Pct Sem Urgencia Ultimo Terco */
+            pct_sem_urgencia_ultimo_terco: number;
         };
         /** ItemFilaOut */
         ItemFilaOut: {
@@ -513,11 +565,8 @@ export interface components {
             /** Evento Gatilho */
             evento_gatilho?: string | null;
             editado_anteriormente?: components["schemas"]["EditadoAnteriormente"] | null;
-            /**
-             * Criado Em
-             * Format: date-time
-             */
-            criado_em: string;
+            /** Criado Em */
+            criado_em?: string | null;
         };
         /**
          * MotivoCodificado
@@ -775,7 +824,9 @@ export interface operations {
                 procedimento_id?: string | null;
                 especialidade?: string | null;
                 busca?: string | null;
+                /** @description 1-based; < 1 -> 422 PAGINACAO_INVALIDA */
                 page?: number;
+                /** @description 1..200; acima de 200 é limitado a 200 */
                 page_size?: number;
             };
             header?: never;
@@ -919,6 +970,15 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1130,6 +1190,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    comparacao_metricas_comparacao_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ComparacaoOut"];
                 };
             };
         };
