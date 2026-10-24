@@ -5,14 +5,43 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 """
 from __future__ import annotations
 
-from sqlalchemy import select
+import json
+from dataclasses import fields
+
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
-from app.domain.models import Evento, ResultadoTabela, Solicitacao
-from app.infrastructure.tables import EventoTable, ProcedimentoTable, SolicitacaoTable
+from app.domain.enums import Classe, ClasseStatus, StatusFila
+from app.domain.models import Correcao, Evento, ResultadoTabela, Solicitacao
+from app.infrastructure.tables import (
+    CorrecaoTable,
+    EventoTable,
+    ProcedimentoTable,
+    SolicitacaoTable,
+)
 
 TAMANHO_LOTE = 500
+_CAMPOS_SOLICITACAO = [f.name for f in fields(Solicitacao)]
+_CAMPOS_EVENTO = [f.name for f in fields(Evento)]
+
+
+def _para_solicitacao(linha: SolicitacaoTable) -> Solicitacao:
+    """Table -> entidade. Só traz as colunas que a entidade conhece; o resto fica no banco."""
+    dados = {c: getattr(linha, c) for c in _CAMPOS_SOLICITACAO if hasattr(linha, c)}
+    for texto in ("nome_paciente", "justificativa_clinica", "observacoes"):
+        dados[texto] = dados[texto] or ""
+    dados["status_fila"] = StatusFila(linha.status_fila)
+    dados["classe_status"] = ClasseStatus(linha.classe_status)
+    dados["classe_medico"] = Classe(linha.classe_medico) if linha.classe_medico else None
+    dados["alertas"] = json.loads(linha.alertas_json)
+    return Solicitacao(**dados)
+
+
+def _para_evento(linha: EventoTable) -> Evento:
+    dados = {c: getattr(linha, c) for c in _CAMPOS_EVENTO}
+    dados["descricao"] = dados["descricao"] or ""
+    return Evento(**dados)
 
 
 class SqlSolicitacaoRepository:
@@ -23,13 +52,25 @@ class SqlSolicitacaoRepository:
         raise NotImplementedError("US-01")
 
     def listar(self, apenas_ativas: bool = True) -> list[Solicitacao]:
-        raise NotImplementedError("US-01")
+        consulta = select(SolicitacaoTable).order_by(SolicitacaoTable.solicitacao_id)
+        if apenas_ativas:
+            consulta = consulta.where(SolicitacaoTable.status_fila == StatusFila.ATIVA.value)
+        return [_para_solicitacao(linha) for linha in self._s.execute(consulta).scalars().all()]
 
     def salvar(self, solicitacao: Solicitacao) -> None:
         raise NotImplementedError("US-01")
 
     def salvar_varias(self, solicitacoes: list[Solicitacao]) -> None:
         raise NotImplementedError("US-01")
+
+    def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
+        if not solicitacoes:
+            return
+        self._s.execute(update(SolicitacaoTable), [
+            {"solicitacao_id": s.solicitacao_id, "oncologico": s.oncologico,
+             "piora_recalculada": s.piora_recalculada}
+            for s in solicitacoes
+        ])
 
 
 class SqlEventoRepository:
@@ -40,13 +81,49 @@ class SqlEventoRepository:
         raise NotImplementedError("US-01")
 
     def listar_todos(self) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = select(EventoTable).order_by(EventoTable.evento_id)
+        return [_para_evento(linha) for linha in self._s.execute(consulta).scalars().all()]
 
     def adicionar(self, evento: Evento) -> None:
         raise NotImplementedError("US-01")
 
     def salvar_varios(self, eventos: list[Evento]) -> None:
         raise NotImplementedError("US-01")
+
+    def atualizar_marcas(self, eventos: list[Evento]) -> None:
+        if not eventos:
+            return
+        self._s.execute(update(EventoTable), [
+            {"evento_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico}
+            for e in eventos
+        ])
+
+
+class SqlCorrecaoRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def substituir_por_regras(self, regras: tuple[str, ...], correcoes: list[Correcao]) -> None:
+        self._s.execute(delete(CorrecaoTable).where(CorrecaoTable.regra.in_(regras)))
+        if correcoes:
+            self._s.execute(insert(CorrecaoTable), [
+                {"solicitacao_id": c.solicitacao_id, "campo": c.campo, "original": c.original,
+                 "novo": c.novo, "regra": c.regra}
+                for c in correcoes
+            ])
+
+
+class SqlUnidadeDeTrabalho:
+    """Transação da sessão: confirma ou desfaz tudo o que os repositórios fizeram."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def confirmar(self) -> None:
+        self._s.commit()
+
+    def desfazer(self) -> None:
+        self._s.rollback()
 
 
 class SqlCargaRepository:

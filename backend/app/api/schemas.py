@@ -5,7 +5,7 @@ Mudou aqui? Atualize docs/user-stories.md §5 no mesmo PR.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Literal, Optional
+from typing import Dict, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -35,10 +35,18 @@ class ResultadoTabelaOut(BaseModel):
     atualizados: int
 
 
+class PreprocessamentoOut(BaseModel):
+    solicitacoes: int
+    eventos_duplicados: int
+    eventos_historicos: int
+    correcoes: Dict[str, int]  # por regra (PRE-xx)
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
     eventos: ResultadoTabelaOut
+    preprocessamento: Optional[PreprocessamentoOut] = None
 
 
 # ---------- fila ----------
