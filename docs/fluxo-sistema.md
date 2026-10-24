@@ -326,6 +326,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-21) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
 | `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-28/D-29) |
+| `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-37) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
 | `status_fila` | enum | `ativa`, `suspensa`, `removida` |
