@@ -213,6 +213,8 @@ Como **sistema** (e, na demo, como **apresentador**), quero inserir um evento e 
 - **Front:** formulário "Novo evento" (tipo, resultado, data, descrição, origem).
 - **Depende de:** US-03, US-12
 
+> **Status: ✅ implementado** (D-97): a cena da demo funciona — PS para SOL-2023-00060 (D → B) vai ao inbox; ao aprovar, o paciente sobe.
+
 #### US-16 · Atualização diária — **P2** · Back + Front
 Como **sistema**, quero recalcular o % do prazo de todos uma vez por dia, para a fila envelhecer sozinha.
 - **CA**
@@ -245,6 +247,8 @@ Como **sistema**, quero agrupar edições parecidas dos reguladores em propostas
   - Seed: ~30 decisões sintéticas formando 2–3 padrões para a demo.
 - **Back:** `POST /aprendizado/gerar-propostas`
 - **Depende de:** US-14
+
+> **Status: back implementado** (branch `feat/US-18-aprendizado`, D-98..D-102 e D-106): `POST /aprendizado/gerar-propostas`, CLI `seed-aprendizado` e `gerar-propostas`, tabela `propostas_regra`. Registro: `docs/implementacao/US-18-aprendizado.md`.
 
 #### US-19 · Comitê aprova a regra — **P2** · Back + Front
 Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto simulado, para aprovar ou rejeitar.
@@ -472,6 +476,8 @@ Erros:
 - `422 {"erro": "ONCOLOGICO_REBAIXADO", "mensagem": "Oncológico não pode ficar abaixo de paciente sem urgência."}`
 - `422 {"erro": "JUSTIFICATIVA_OBRIGATORIA", "mensagem": "…"}`
 - `404 {"erro": "SOLICITACAO_NAO_ENCONTRADA", "mensagem": "…"}`
+- `422 {"erro": "DECISAO_INVALIDA", "mensagem": "…"}`: `editar` sem classe nem score, ou score inválido
+- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-94); `editar` e `manter` valem para qualquer solicitação
 
 ### 5.5 `POST /eventos`
 Request:

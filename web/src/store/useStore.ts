@@ -2,19 +2,18 @@ import { create } from "zustand"
 import { toast } from "sonner"
 import { ORIGEM_DADOS, PACIENTES, PACIENTE_POR_ID, carregarFila } from "@/data/fila"
 import type { Classe } from "@/data/tipos"
-import { ErroApi, decidir, type MotivoCodificado } from "@/lib/api"
+import { ErroApi, decidir } from "@/lib/api"
 import { reguladorAtual } from "@/lib/usuario"
-import { FILTROS_VAZIOS, aplicarFiltros, type Decisao, type Filtros, type Pagina } from "@/lib/filtros"
+import { FILTROS_VAZIOS, aplicarFiltros, type Decisao, type Filtros, type MotivoCodificado, type Pagina } from "@/lib/filtros"
 
 type Zoom = [number, number] | null
 
 
-/** Decisões já gravadas na API (classe confirmada) viram o status do card. */
 export const decisoesDaApi = (): Record<string, Decisao> =>
   Object.fromEntries(
     PACIENTES.filter((p) => p.classe_status === "confirmada").map((p) => [
-      p.solicitacao_id,
-      { status: p.editado_manualmente ? "rejeitado" : "aprovado", classeFinal: p.classe_antiga } as Decisao,
+      p.id,
+      { status: p.editado_manualmente ? "editado" : "aprovado", classeFinal: p.classe_vigente ?? p.classe } as Decisao,
     ])
   )
 
@@ -30,9 +29,11 @@ type Estado = {
   decisoes: Record<string, Decisao>
   rejeitando: boolean
   atalhosAbertos: boolean
+  paletaAberta: boolean
   versaoDados: number
   enviando: boolean
   recarregar: () => Promise<void>
+  marcados: string[]
   ir: (pagina: Pagina) => void
   selecionar: (id: string | null, expandir?: boolean) => void
   alternarExpandido: (id: string) => void
@@ -43,8 +44,15 @@ type Estado = {
   setZoom: (zoom: Zoom) => void
   setRejeitando: (v: boolean) => void
   setAtalhos: (v: boolean) => void
+  setPaleta: (v: boolean) => void
+  alternarMarcado: (id: string) => void
+  marcarVarios: (ids: string[], ligado: boolean) => void
+  limparMarcados: () => void
+  aprovarLote: (ids: string[]) => void
+  mover: (direcao: 1 | -1) => void
+  irParaPosicao: (posicao: number) => boolean
   aprovar: (id: string) => void
-  rejeitar: (id: string, classe: Classe, motivo: string, motivoCodificado?: MotivoCodificado) => void
+  editar: (id: string, classe: Classe, motivoCodificado: MotivoCodificado, motivo: string) => void
   desfazer: (id: string) => void
   navegarPendente: (direcao: 1 | -1) => void
   abrirNaFila: (id: string) => void
@@ -59,14 +67,36 @@ export const useStore = create<Estado>((set, get) => {
     const filtrada = aplicarFiltros(PACIENTES, { ...filtros, status: "todos" }, decisoes)
     const universo = filtrada.length > 0 ? filtrada : PACIENTES
     const n = universo.length
-    const inicio = partirDe ? universo.findIndex((p) => p.solicitacao_id === partirDe) : -1
+    const inicio = partirDe ? universo.findIndex((p) => p.id === partirDe) : -1
     for (let passo = 1; passo <= n; passo++) {
       const i = inicio === -1 ? (direcao === 1 ? passo - 1 : n - passo) : (((inicio + direcao * passo) % n) + n) % n
       const candidato = universo[i]
-      if (!decisoes[candidato.solicitacao_id] && candidato.solicitacao_id !== partirDe) return candidato.solicitacao_id
+      if (!decisoes[candidato.id] && candidato.id !== partirDe) return candidato.id
     }
     return null
   }
+
+  const enviarDecisao = async (id: string, corpo: Omit<Parameters<typeof decidir>[0], "solicitacao_id" | "regulador_id">, titulo: string) => {
+    set({ enviando: true })
+    try {
+      const r = await decidir({ solicitacao_id: id, regulador_id: reguladorAtual(), ...corpo })
+      await get().recarregar()
+      const mov = r.posicao_anterior != null && r.posicao_nova != null ? `posição ${r.posicao_anterior} → ${r.posicao_nova}` : ""
+      toast.success(titulo, { description: r.fila_publicada ? `${mov} · fila republicada (verificador OK)` : `${mov} · fila não publicada: verificador reprovou` })
+      avancar(id)
+    } catch (e) {
+      toast.error("Decisão recusada", { description: mensagemErro(e) })
+    } finally {
+      set({ enviando: false, rejeitando: false })
+    }
+  }
+
+  const desfazerERetornar = (id: string) =>
+    set((s) => {
+      const copia = { ...s.decisoes }
+      delete copia[id]
+      return { decisoes: copia, selecionadoId: id, expandidoId: id, rejeitando: false }
+    })
 
   const avancar = (idAtual: string) => {
     const proximo = proximoPendente(idAtual, 1)
@@ -78,23 +108,6 @@ export const useStore = create<Estado>((set, get) => {
     }
   }
 
-  const enviarDecisao = async (id: string, corpo: Omit<Parameters<typeof decidir>[0], "solicitacao_id" | "regulador_id">, titulo: string) => {
-    set({ enviando: true })
-    try {
-      const r = await decidir({ solicitacao_id: id, regulador_id: reguladorAtual(), ...corpo })
-      await get().recarregar()
-      const mov = r.posicao_anterior != null && r.posicao_nova != null ? `posição ${r.posicao_anterior} → ${r.posicao_nova}` : ""
-      toast.success(titulo, {
-        description: r.fila_publicada ? `${mov} · fila republicada (verificador OK)` : `${mov} · fila não publicada: verificador reprovou`,
-      })
-      avancar(id)
-    } catch (e) {
-      toast.error("Decisão recusada", { description: mensagemErro(e) })
-    } finally {
-      set({ enviando: false, rejeitando: false })
-    }
-  }
-
   return {
     pagina: "fila",
     selecionadoId: null,
@@ -102,15 +115,17 @@ export const useStore = create<Estado>((set, get) => {
     sidebarAberta: inicialAberta(),
     filtros: FILTROS_VAZIOS,
     zoom: null,
-    decisoes: decisoesDaApi(),
+    decisoes: ORIGEM_DADOS === "api" ? decisoesDaApi() : {},
     rejeitando: false,
     atalhosAbertos: false,
+    paletaAberta: false,
     versaoDados: 0,
     enviando: false,
     recarregar: async () => {
       await carregarFila()
       set((s) => ({ versaoDados: s.versaoDados + 1, decisoes: decisoesDaApi() }))
     },
+    marcados: [],
     ir: (pagina) => set({ pagina }),
     selecionar: (id, expandir = true) =>
       set({ selecionadoId: id, expandidoId: id && expandir ? id : null, rejeitando: false }),
@@ -127,28 +142,105 @@ export const useStore = create<Estado>((set, get) => {
     setZoom: (zoom) => set({ zoom }),
     setRejeitando: (v) => set({ rejeitando: v }),
     setAtalhos: (v) => set({ atalhosAbertos: v }),
+    setPaleta: (v) => set({ paletaAberta: v }),
+    alternarMarcado: (id) => set((s) => ({ marcados: s.marcados.includes(id) ? s.marcados.filter((m) => m !== id) : [...s.marcados, id] })),
+    marcarVarios: (ids, ligado) =>
+      set((s) => ({ marcados: ligado ? [...new Set([...s.marcados, ...ids])] : s.marcados.filter((m) => !ids.includes(m)) })),
+    limparMarcados: () => set({ marcados: [] }),
+    aprovarLote: (ids) => {
+      const { decisoes } = get()
+      const novos = ids.filter((id) => !decisoes[id] && (ORIGEM_DADOS !== "api" || PACIENTE_POR_ID[id]?.inbox))
+      if (novos.length === 0) {
+        toast.info("Nada a aprovar: todos já foram revisados")
+        return
+      }
+      if (ORIGEM_DADOS === "api") {
+        const LIMITE = 40
+        const lote = novos.slice(0, LIMITE)
+        set({ enviando: true, marcados: [] })
+        void (async () => {
+          let feitas = 0
+          try {
+            for (const id of lote) {
+              await decidir({ solicitacao_id: id, regulador_id: reguladorAtual(), acao: "aprovar" })
+              feitas++
+            }
+          } catch (e) {
+            toast.error("Lote interrompido", { description: mensagemErro(e) })
+          }
+          await get().recarregar()
+          set({ enviando: false })
+          toast.success(`${feitas} solicitações aprovadas na API`, {
+            description: novos.length > LIMITE ? `Limite de ${LIMITE} por lote: restam ${novos.length - feitas}` : "Fila republicada",
+          })
+        })()
+        return
+      }
+      set((s) => {
+        const copia = { ...s.decisoes }
+        novos.forEach((id) => {
+          copia[id] = { status: "aprovado", classeFinal: PACIENTE_POR_ID[id].classe }
+        })
+        return { decisoes: copia, marcados: [] }
+      })
+      toast.success(`${novos.length} solicitações aprovadas`, {
+        description: "A classe sugerida foi confirmada em lote",
+        action: {
+          label: "Desfazer",
+          onClick: () =>
+            set((s) => {
+              const copia = { ...s.decisoes }
+              novos.forEach((id) => delete copia[id])
+              return { decisoes: copia }
+            }),
+        },
+      })
+    },
+    mover: (direcao) => {
+      const { filtros, decisoes, selecionadoId } = get()
+      const lista = aplicarFiltros(PACIENTES, filtros, decisoes)
+      if (lista.length === 0) return
+      const idx = lista.findIndex((p) => p.id === selecionadoId)
+      const novo = idx === -1 ? (direcao === 1 ? 0 : lista.length - 1) : Math.min(lista.length - 1, Math.max(0, idx + direcao))
+      set({ selecionadoId: lista[novo].id, expandidoId: lista[novo].id, rejeitando: false })
+    },
+    irParaPosicao: (posicao) => {
+      const alvo = PACIENTES.find((p) => p.posicao === posicao)
+      if (!alvo) return false
+      const { filtros, decisoes } = get()
+      if (!aplicarFiltros(PACIENTES, filtros, decisoes).some((p) => p.id === alvo.id)) set({ filtros: FILTROS_VAZIOS })
+      set({ pagina: "fila", selecionadoId: alvo.id, expandidoId: alvo.id, rejeitando: false })
+      return true
+    },
     aprovar: (id) => {
       const p = PACIENTE_POR_ID[id]
       if (ORIGEM_DADOS === "api") {
+        // A API só aprova o que está no inbox (409 SEM_PROPOSTA, D-94); fora dele, Rejeitar define a classe.
+        if (!p.inbox) {
+          toast.info("Sem proposta para aprovar", { description: "A classe sugerida já é a classe em vigor" })
+          return
+        }
         void enviarDecisao(id, { acao: "aprovar" }, `${id} aprovado · classe ${p.classe}`)
         return
       }
       set((s) => ({ decisoes: { ...s.decisoes, [id]: { status: "aprovado", classeFinal: p.classe } } }))
-      toast.success(`${id} aprovado`, { description: `${p.iniciais} · classe ${p.classe} · posição ${p.posicao_nova}` })
+      toast.success(`${id} aprovado`, {
+        description: `${p.iniciais} · classe ${p.classe} · posição ${p.posicao}`,
+        action: { label: "Desfazer", onClick: () => desfazerERetornar(id) },
+      })
       avancar(id)
     },
-    rejeitar: (id, classe, motivo, motivoCodificado = "outro") => {
+    editar: (id, classe, motivoCodificado, motivo) => {
       const p = PACIENTE_POR_ID[id]
       if (ORIGEM_DADOS === "api") {
-        void enviarDecisao(
-          id,
-          { acao: "editar", classe, motivo_codificado: motivoCodificado, justificativa: motivo },
-          `${id}: classe definida como ${classe}`
-        )
+        void enviarDecisao(id, { acao: "editar", classe, motivo_codificado: motivoCodificado, justificativa: motivo }, `${id}: classe definida como ${classe}`)
         return
       }
-      set((s) => ({ decisoes: { ...s.decisoes, [id]: { status: "rejeitado", classeFinal: classe, motivo } } }))
-      toast.error(`${id} rejeitado`, { description: `${p.iniciais} · classe final ${classe}` })
+      set((s) => ({ decisoes: { ...s.decisoes, [id]: { status: "editado", classeFinal: classe, motivoCodificado, motivo } } }))
+      toast.info(`${id}: classe editada para ${classe}`, {
+        description: `${p.iniciais} · sugerida ${p.classe}`,
+        action: { label: "Desfazer", onClick: () => desfazerERetornar(id) },
+      })
       avancar(id)
     },
     desfazer: (id) => {

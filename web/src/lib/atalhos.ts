@@ -11,8 +11,13 @@ const ehCampoDeTexto = (alvo: EventTarget | null) => {
 export const usarAtalhos = (alternarMenu: () => void) => {
   useEffect(() => {
     const aoPressionar = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
       const s = useStore.getState()
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault()
+        s.setPaleta(!s.paletaAberta)
+        return
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return
       if (e.key === "Escape") {
         if (s.rejeitando) s.setRejeitando(false)
         else if (s.expandidoId) s.recolher()
@@ -24,6 +29,21 @@ export const usarAtalhos = (alternarMenu: () => void) => {
       if (tecla === "[") {
         e.preventDefault()
         alternarMenu()
+        return
+      }
+      if (e.key === "/") {
+        e.preventDefault()
+        if (s.pagina !== "fila") s.ir("fila")
+        setTimeout(() => document.getElementById("busca-fila")?.focus(), 60)
+        return
+      }
+      if (s.pagina === "fila" && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+        e.preventDefault()
+        s.mover(e.key === "ArrowDown" ? 1 : -1)
+        return
+      }
+      if (s.pagina === "fila" && e.key === "Enter" && s.selecionadoId && document.activeElement === document.body) {
+        s.alternarExpandido(s.selecionadoId)
         return
       }
       if (tecla === "]") {

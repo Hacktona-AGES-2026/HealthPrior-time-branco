@@ -1013,6 +1013,15 @@ export interface operations {
                     "application/json": components["schemas"]["Erro"];
                 };
             };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
             /** @description Unprocessable Entity */
             422: {
                 headers: {

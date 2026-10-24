@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback } from "react"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { CabecalhoMetricas } from "@/components/layout/CabecalhoMetricas"
+import { PaletaBusca } from "@/components/layout/PaletaBusca"
 import { ShortcutsDialog } from "@/components/layout/ShortcutsDialog"
 import { CarregandoPagina } from "@/components/shared/Carregando"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -51,6 +52,7 @@ export default function App() {
           </SidebarInset>
         </SidebarProvider>
         <ShortcutsDialog />
+        <PaletaBusca />
         <Toaster position="bottom-center" richColors closeButton />
       </TooltipProvider>
     </>

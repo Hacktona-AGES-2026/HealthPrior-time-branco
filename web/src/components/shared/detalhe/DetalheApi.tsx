@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react"
 import { Gavel, ListChecks, MessageSquareQuote, TriangleAlert } from "lucide-react"
-import type { Paciente, TipoEvento } from "@/data/tipos"
+import type { Evento, Paciente, TipoEvento } from "@/data/tipos"
 import { type DetalheApi, MOTIVOS_CODIFICADOS, type MotivoCodificado, obterDetalhe } from "@/lib/api"
 import { formatarData } from "@/lib/datas"
 import { ClasseBadge } from "@/components/shared/Basicos"
 import { CarregandoBloco } from "@/components/shared/Carregando"
 import { CartaoGrafico } from "./Cartao"
 import { ICONE_EVENTO } from "./IconesEvento"
-import { LinhaTempoEventos } from "./LinhaTempoEventos"
+import { HistoricoPaciente } from "./HistoricoPaciente"
 
 const TIPOS_CONHECIDOS = new Set(Object.keys(ICONE_EVENTO))
 
@@ -28,26 +28,33 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
 
   useEffect(() => {
     let vivo = true  // remontado por paciente (key no pai): sem reset de estado aqui
-    obterDetalhe(p.solicitacao_id)
+    obterDetalhe(p.id)
       .then((r) => vivo && setD(r))
       .catch((e) => vivo && setErro(String(e)))
     return () => {
       vivo = false
     }
-  }, [p.solicitacao_id])
+  }, [p.id])
 
   if (erro) return <p className="rounded-lg border border-dashed p-4 text-xs text-muted-foreground">Não foi possível carregar o detalhe: {erro}</p>
   if (!d) return <CarregandoBloco rotulo="Buscando detalhe na API" altura={220} />
 
   const eixos = d.score.motivos.filter((m) => m.sinal.startsWith("eixo_"))
   const pontos = d.score.motivos.map((m) => ({ m, info: descreverMotivo(m.sinal, m.ref) })).filter((x) => x.info)
-  const eventos: Paciente["eventos"] = d.eventos.map((e) => ({
-    data: e.data_evento,
-    tipo: (TIPOS_CONHECIDOS.has(e.tipo_evento) ? e.tipo_evento : "consulta_reavaliacao") as TipoEvento,
-    descricao: [e.resultado?.replaceAll("_", " "), e.descricao, e.historico ? "(antes da entrada: histórico)" : "", e.duplicado ? "(duplicado)" : ""]
-      .filter(Boolean)
-      .join(" · "),
-  }))
+  const conhecidos = new Set(p.eventos.map((e) => e.id))
+  const novos: Evento[] = d.eventos
+    .filter((e) => !conhecidos.has(e.evento_id) && !e.duplicado)
+    .map((e) => ({
+      id: e.evento_id,
+      data: e.data_evento,
+      tipo: (TIPOS_CONHECIDOS.has(e.tipo_evento) ? e.tipo_evento : "consulta_reavaliacao") as TipoEvento,
+      resultado: e.resultado,
+      valor: null,
+      descricao: e.descricao ?? "",
+      origem: "registrado no sistema",
+      historico: e.historico,
+    }))
+  const eventos = [...p.eventos, ...novos]
 
   return (
     <div className="grid gap-3 @lg:grid-cols-2">
@@ -90,7 +97,6 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
         </div>
       </CartaoGrafico>
 
-      <LinhaTempoEventos p={{ ...p, eventos }} />
 
       <CartaoGrafico titulo="Decisões do regulador" descricao={`${d.decisoes.length} no log`}>
         {d.decisoes.length === 0 ? (
@@ -134,6 +140,9 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
           {d.pendencias.length + d.alertas.length === 0 && <li className="text-muted-foreground">Nada pendente.</li>}
         </ul>
       </CartaoGrafico>
+      <div className="@lg:col-span-2">
+        <HistoricoPaciente p={{ ...p, eventos }} />
+      </div>
     </div>
   )
 }
