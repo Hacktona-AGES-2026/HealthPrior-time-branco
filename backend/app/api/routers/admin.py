@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 
 from app.api.deps import get_atualizacao_diaria, get_carga_inicial, get_publicar_fila
-from app.api.schemas import CargaOut, PublicacaoOut
+from app.api.schemas import CargaOut, PublicacaoOut, RecontatoOut
 from app.application.atualizacao_diaria import AtualizacaoDiaria
 from app.application.carga_inicial import CargaInicial
 from app.application.publicar_fila import PublicarFila, ResultadoPublicacao
@@ -42,5 +42,12 @@ def atualizacao_diaria(data: date | None = None,
 def _resposta_publicacao(r: ResultadoPublicacao) -> JSONResponse:
     corpo = PublicacaoOut(publicada=r.publicada, total=r.total, por_camada=r.por_camada,
                           versao_regras=r.versao_regras, saida_verificador=r.saida_verificador,
-                          data_referencia=r.data_referencia)
+                          data_referencia=r.data_referencia, recontato=_recontato(r.recontato))
     return JSONResponse(status_code=200 if r.publicada else 422, content=corpo.model_dump(mode="json"))
+
+
+def _recontato(r) -> RecontatoOut | None:
+    if r is None:
+        return None
+    return RecontatoOut(n_dias=r.n_dias, sem_evento=r.sem_evento, abertas=r.pendencias.abertas,
+                        atualizadas=r.pendencias.atualizadas, encerradas=r.pendencias.encerradas)
