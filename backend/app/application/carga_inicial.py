@@ -1,29 +1,34 @@
 """US-01 · Carga inicial (C-02).
 
-Lê o dataset, aplica o pré-processamento e grava. Não passa pelo regulador (D-01).
+Lê o dataset e grava com os valores originais, sem alterar nada. A normalização (PRE-xx) entra
+na US-02, em colunas novas. Não passa pelo regulador (D-01). Idempotente: repetir não duplica.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 
-from app.domain.ports import EventoRepository, SolicitacaoRepository
+from app.domain.models import ResultadoTabela
+from app.domain.ports import CargaRepository
 
 
 @dataclass
 class ResumoCarga:
-    solicitacoes: int
-    eventos: int
-    suspensas: int
-    pendencias: int
+    procedimentos: ResultadoTabela
+    solicitacoes: ResultadoTabela
+    eventos: ResultadoTabela
 
 
 class CargaInicial:
-    def __init__(self, leitor, solicitacoes: SolicitacaoRepository, eventos: EventoRepository):
+    def __init__(self, leitor, repositorio: CargaRepository):
         # `leitor` é infrastructure.csv_loader.LeitorDataset (injetado para facilitar teste).
         self._leitor = leitor
-        self._solicitacoes = solicitacoes
-        self._eventos = eventos
+        self._repositorio = repositorio
 
     def executar(self) -> ResumoCarga:
-        """TODO(US-01): ler CSVs -> entidades -> pré-processar -> salvar. Idempotente."""
-        raise NotImplementedError("US-01: CargaInicial.executar")
+        # Lê tudo antes de gravar: um arquivo inválido não deixa carga pela metade.
+        resultado = self._repositorio.gravar(
+            procedimentos=self._leitor.procedimentos(),
+            solicitacoes=self._leitor.fila(),
+            eventos=self._leitor.eventos(),
+        )
+        return ResumoCarga(**resultado)

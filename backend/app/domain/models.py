@@ -171,3 +171,12 @@ class ItemFila:
     solicitacao_id: str
     camada: Camada
     score_efetivo: float
+
+
+@dataclass
+class ResultadoTabela:
+    """Contagem da carga de uma tabela (US-01)."""
+
+    lido: int = 0
+    inseridos: int = 0
+    atualizados: int = 0

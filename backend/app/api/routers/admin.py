@@ -1,12 +1,19 @@
 """US-01, US-16 · Operações administrativas (disparo manual para a demo)."""
-from fastapi import APIRouter
+from dataclasses import asdict
+
+from fastapi import APIRouter, Depends
+
+from app.api.deps import get_carga_inicial
+from app.api.schemas import CargaOut
+from app.application.carga_inicial import CargaInicial
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 
-@router.post("/carga")
-def carga():
-    raise NotImplementedError("US-01: POST /admin/carga (use também: python -m app.cli carga)")
+@router.post("/carga", response_model=CargaOut)
+def carga(caso_de_uso: CargaInicial = Depends(get_carga_inicial)):
+    """US-01. Idempotente: repetir não duplica registros."""
+    return asdict(caso_de_uso.executar())
 
 
 @router.post("/atualizacao-diaria")

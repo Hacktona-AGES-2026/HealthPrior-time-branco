@@ -9,6 +9,18 @@ from typing import Optional
 from sqlmodel import Field, SQLModel
 
 
+class ProcedimentoTable(SQLModel, table=True):
+    __tablename__ = "procedimentos"
+
+    procedimento_id: str = Field(primary_key=True)
+    procedimento: Optional[str] = None
+    especialidade: Optional[str] = None
+    porte: Optional[str] = None
+    risco_cirurgico: Optional[int] = None
+    duracao_media_min: Optional[int] = None
+    necessita_uti: Optional[str] = None
+
+
 class SolicitacaoTable(SQLModel, table=True):
     __tablename__ = "solicitacoes"
 

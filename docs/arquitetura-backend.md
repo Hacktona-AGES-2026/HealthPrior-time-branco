@@ -10,7 +10,7 @@
 
 1. **Clean Architecture enxuta.** Quatro camadas com dependência em um só sentido. Nada além disso.
 2. **Regra clínica separada de detalhe técnico.** A regra de ouro, o CID e as regras PRE-xx vivem no domínio, em Python puro, testáveis sem banco nem servidor.
-3. **Trocar peças sem efeito colateral.** O SWALIS provisório vira o real, o mock vira o caso de uso, o SQLite vira outro banco: tudo trocando só a composição (`api/deps.py`, `cli.py`).
+3. **Trocar peças sem efeito colateral.** O SWALIS provisório vira o real, o mock vira o caso de uso, o banco vira outro: tudo trocando só a composição (`api/deps.py`, `cli.py`).
 4. **Hackathon.** Sem framework de DI, sem repositório genérico, sem DTO duplicado, sem camadas "para o futuro". O que não é negociável é a **regra de dependência** e as **invariantes** de `docs/fluxo-sistema.md` §9.
 
 ---
@@ -21,7 +21,7 @@
 flowchart LR
     API[api<br/>rotas, schemas, mocks, deps] --> APP[application<br/>casos de uso]
     APP --> DOM[domain<br/>regras puras, entidades, ports]
-    INFRA[infrastructure<br/>SQLite, CSV, verificador, SWALIS stub] --> DOM
+    INFRA[infrastructure<br/>Postgres, CSV, verificador, SWALIS stub] --> DOM
     API -. composição .-> INFRA
     CLI[cli.py] --> APP
     CLI -. composição .-> INFRA
@@ -74,7 +74,7 @@ backend/
       db.py                  engine, criar_tabelas, get_session
       tables.py              tabelas SQLModel (espelham fluxo-sistema.md §8)
       repositories.py        Sql*Repository: Table <-> entidade
-      csv_loader.py          LeitorDataset (pandas, só leitura de data/)
+      csv_loader.py          LeitorDataset (CSV tipado, só leitura de data/)
       swalis_stub.py         SwalisStub (placeholder do contrato C-07)
       verificador.py         VerificadorOficial (subprocess do verificador)
       exportador.py          ExportadorCsv (fila_priorizada.csv)
@@ -104,7 +104,7 @@ backend/
 ### 4.2 `application/` — os fluxos
 - Um arquivo por caso de uso, uma classe com `executar(...)`.
 - Recebe as **portas no construtor** (injeção manual) e orquestra: buscar → aplicar regras do domínio → salvar → (gerar fila → verificar → publicar).
-- Não sabe se o banco é SQLite nem se a chamada veio da API ou da CLI.
+- Não sabe qual é o banco nem se a chamada veio da API ou da CLI.
 
 ### 4.3 `infrastructure/` — os detalhes
 - Implementa as portas. Converte `Table` ↔ entidade nos repositórios.

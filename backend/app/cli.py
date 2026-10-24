@@ -6,14 +6,16 @@
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
+import sys
 
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
 from app.config import settings
+from app.domain.errors import CargaInvalidaError
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.db import criar_tabelas, engine
-from app.infrastructure.repositories import SqlEventoRepository, SqlSolicitacaoRepository
+from app.infrastructure.repositories import SqlCargaRepository
 
 
 def cmd_init_db() -> None:
@@ -24,9 +26,12 @@ def cmd_init_db() -> None:
 def cmd_carga() -> None:
     criar_tabelas()
     with Session(engine) as session:
-        resumo = CargaInicial(LeitorDataset(), SqlSolicitacaoRepository(session),
-                              SqlEventoRepository(session)).executar()
-    print(resumo)
+        try:
+            resumo = CargaInicial(LeitorDataset(), SqlCargaRepository(session)).executar()
+        except CargaInvalidaError as e:
+            sys.exit(f"Erro na carga: {e.mensagem}")
+    for tabela, r in vars(resumo).items():
+        print(f"{tabela}: {r.lido} lidos, {r.inseridos} inseridos, {r.atualizados} atualizados")
 
 
 def cmd_gerar_fila() -> None:

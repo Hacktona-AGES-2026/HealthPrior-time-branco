@@ -14,6 +14,7 @@ from app.domain.models import (
     ItemFila,
     Pendencia,
     ResultadoScore,
+    ResultadoTabela,
     Solicitacao,
 )
 
@@ -30,6 +31,17 @@ class EventoRepository(Protocol):
     def listar_todos(self) -> list[Evento]: ...
     def adicionar(self, evento: Evento) -> None: ...
     def salvar_varios(self, eventos: list[Evento]) -> None: ...
+
+
+class CargaRepository(Protocol):
+    def gravar(self, procedimentos: list[dict], solicitacoes: list[dict],
+               eventos: list[dict]) -> dict[str, ResultadoTabela]:
+        """Upsert por chave primária numa única transação: ou entra tudo, ou nada.
+
+        Só as colunas originais do dataset são gravadas; o estado do sistema
+        (classe_status, status_fila…) nunca é sobrescrito numa recarga.
+        """
+        ...
 
 
 class PendenciaRepository(Protocol):

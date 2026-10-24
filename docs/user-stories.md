@@ -18,7 +18,7 @@
 
 ## 1. Stack e fronteira back/front
 
-- **Back:** Python + FastAPI + SQLite (via SQLAlchemy ou SQLModel) + pandas no pipeline.
+- **Back:** Python + FastAPI + PostgreSQL 16 (Docker, via SQLAlchemy 2) + pandas no pipeline (D-14).
 - **Front:** React (Vite + TypeScript).
 - **Regra:** o **back é dono de toda regra de negócio** (pré-processamento, score, trava, verificador, pendências, log, aprendizado). O **front só exibe e coleta decisões**.
   - Única exceção: validação de UX na edição do regulador (bloquear rebaixamento de oncológico na hora). **O back valida de novo** e tem a palavra final.
@@ -46,7 +46,7 @@
 #### US-01 · Carga inicial — **P0** · Back
 Como **equipe**, quero carregar as 941 solicitações e ~1.500 eventos do dataset, para ter a fila inicial no sistema.
 - **CA**
-  - Lê `data/fila_cirurgica.csv`, `data/eventos_clinicos.csv`, `data/procedimentos.csv` e grava no SQLite.
+  - Lê `data/fila_cirurgica.csv`, `data/eventos_clinicos.csv`, `data/procedimentos.csv` e grava no PostgreSQL.
   - Valores originais preservados (colunas originais intactas; normalizados em colunas novas).
   - Idempotente: rodar duas vezes não duplica registros.
   - Carga inicial **não** passa pelo regulador; classe fica `classe_status = sugerida_nao_confirmada` (D-01).
@@ -292,7 +292,7 @@ Como **usuário**, quero alternar entre as visões de Regulador, Administrativo 
 
 | US | Back | Front | Endpoint |
 |---|---|---|---|
-| US-01 | Carga dos CSVs no SQLite | — | `POST /admin/carga` / CLI |
+| US-01 | Carga dos CSVs no PostgreSQL | — | `POST /admin/carga` / CLI |
 | US-02 | PRE-01..04 + log | — | interno |
 | US-03 | PRE-05..08 | — | interno |
 | US-04 | PRE-20..25, suspensão | — | interno |

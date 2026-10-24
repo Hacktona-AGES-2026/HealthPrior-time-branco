@@ -4,10 +4,11 @@
 > **Arquitetura completa (camadas, fluxos, receitas, checklist):** `docs/arquitetura-backend.md`.
 
 ## Stack
-Python 3.10+ · FastAPI · SQLModel (SQLite) · pandas (só em infraestrutura/pipeline) · pytest.
+Python 3.10+ · FastAPI · SQLModel + PostgreSQL 16 (Docker, D-15) · pandas (só em infraestrutura/pipeline) · pytest.
 
 ## Como rodar (dentro de `backend/`)
 ```bash
+docker compose up -d --wait            # na raiz do repo: sobe o Postgres
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /docs
@@ -15,8 +16,9 @@ python -m app.cli init-db              # cria as tabelas
 python -m app.cli carga                # US-01
 python -m app.cli gerar-fila           # US-08/09/10
 pytest -q                              # testes (inclui guarda de arquitetura)
+                                       # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
-Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`.
+Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`.
 
 ## Arquitetura (Clean Architecture enxuta)
 
@@ -38,9 +40,9 @@ app/
     decidir.py         US-13/14
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.
-    db.py, tables.py   SQLite/SQLModel (tabelas espelham fluxo-sistema.md §8)
+    db.py, tables.py   Postgres/SQLModel (tabelas espelham fluxo-sistema.md §8)
     repositories.py    Sql*Repository (Table <-> entidade)
-    csv_loader.py      leitura do dataset (pandas)
+    csv_loader.py      leitura do dataset (CSV -> registros tipados; valores originais)
     swalis_stub.py     SWALIS provisório (troque pelo real em api/deps.py)
     verificador.py     chama src/verificar_fila_priorizada.py
     exportador.py      escreve fila_priorizada.csv
@@ -68,6 +70,8 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 | Trocar uma implementação (ex.: SWALIS real) | só `api/deps.py` (e `cli.py`) |
 
 ## Convenções locais
+- Sem migrations (D-16): tabelas via `create_all`. Mudou o schema? `docker compose down -v` e rode a carga de novo.
+- Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).
 - Rotas não têm regra de negócio. Se aparecer um `if` de regra numa rota, mova para domain/application.
 - Erros de regra: lance um `DomainError` específico; a API converte. `NotImplementedError` vira 501.

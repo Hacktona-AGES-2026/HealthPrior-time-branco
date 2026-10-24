@@ -28,6 +28,19 @@ class Erro(BaseModel):
     mensagem: str
 
 
+# ---------- admin ----------
+class ResultadoTabelaOut(BaseModel):
+    lido: int
+    inseridos: int
+    atualizados: int
+
+
+class CargaOut(BaseModel):
+    procedimentos: ResultadoTabelaOut
+    solicitacoes: ResultadoTabelaOut
+    eventos: ResultadoTabelaOut
+
+
 # ---------- fila ----------
 class ItemFilaOut(BaseModel):
     posicao: int

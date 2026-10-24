@@ -59,7 +59,7 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 
 ## Stack e comandos
 
-- **Back:** Python + **FastAPI** + SQLite (SQLAlchemy/SQLModel) + pandas no pipeline. Pasta `backend/`.
+- **Back:** Python + **FastAPI** + **PostgreSQL 16** (Docker, SQLModel/SQLAlchemy 2) + pandas no pipeline. Pasta `backend/` (ver `backend/AGENTS.md`).
 - **Front:** **React** (Vite + TypeScript). Pasta `frontend/`. Tipos da API gerados do OpenAPI do FastAPI.
 - **Fronteira:** o back é dono de toda regra de negócio; o front só exibe e coleta decisões (ver `docs/user-stories.md` §1 e §5). Sem login: seletor de persona no front.
 
@@ -70,6 +70,8 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 | Verificar a fila | `python src/verificar_fila_priorizada.py <caminho>/fila_priorizada.csv` |
 | Score de mortalidade | `python src/score_mortalidade.py` (gera `data/processed/score_mortalidade.csv`) |
 | Instalar deps (Python) | `pip install -r requirements.txt` |
+| Subir o Postgres | `docker compose up -d --wait` |
+| Carga inicial | `cd backend && python -m app.cli carga` |
 | Testes (back) | `cd backend && pytest -q` |
 | Rodar backend | `cd backend && uvicorn app.main:app --reload` (docs em `/docs`) |
 | Rodar frontend | _a definir_ |
