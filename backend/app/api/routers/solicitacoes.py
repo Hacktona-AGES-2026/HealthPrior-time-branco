@@ -39,7 +39,10 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
                                    tipo_evento=e.tipo_evento, resultado=e.resultado,
                                    descricao=e.descricao, historico=e.historico,
                                    duplicado=e.duplicado) for e in d.eventos],
-        decisoes=[],  # TODO(US-13): decisões do regulador
+        decisoes=[schemas.DecisaoOut(decisao_id=x.decisao_id, data=x.data, regulador_id=x.regulador_id,
+                                     acao=x.acao, classe_decidida=x.classe_decidida,
+                                     motivo_codificado=x.motivo_codificado,
+                                     justificativa=x.justificativa) for x in d.decisoes],
         pendencias=[schemas.PendenciaResumoOut(pendencia_id=p.pendencia_id, regra=p.regra,
                                                bloqueante=p.bloqueante, status=p.status)
                     for p in d.pendencias],

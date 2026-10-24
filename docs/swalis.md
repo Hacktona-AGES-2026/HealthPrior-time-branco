@@ -37,7 +37,7 @@ regras), `domain/texto.py` (frases e negação), `infrastructure/swalis_regras.p
 | `obstrucao` | progressão 3 | encarcer, estrangul, suboclus | obstrução/risco de estrangulamento agora, hérnia irredutível, retenção urinária aguda |
 | `risco_vida` | progressão 3 | colangite, icter, melena, sepse, transfund, síncope… | sangramento ativo/transfusão, sepse, colangite, angina instável, insuficiência respiratória, compressão de via aérea |
 | `perda_funcao` | progressão 3 | hidronefrose, perda de função, glaucoma facomórfico, dano neurológico | risco de perda irreversível de órgão/função |
-| `cancer_confirmado` | progressão 2 | — | câncer **do próprio paciente** confirmado por biópsia/AP (antecedente familiar = `nenhum`) |
+| `cancer_confirmado` | progressão 2 | — | câncer **do próprio paciente** confirmado por biópsia/AP (antecedente familiar e dado administrativo, como transporte/TFD, = `nenhum`) |
 | `suspeita_malignidade` | progressão 1 | perda ponderal, disfagia, rouquidão, crescimento rápido… | suspeita de câncer ainda não confirmada |
 | `dor_intensa` | sintoma 2 | — | dor intensa, incapacitante ou em repouso |
 | `sintoma_grave` | sintoma 2 | acamad, úlcera de pressão, quedas de repetição | acamado, dependente, quedas, não anda |
@@ -99,9 +99,9 @@ também para as frases apontadas pelo Jev. Testado nas 10 hérnias K40.9 com "Se
 | | A1 | A2 | B | C | D |
 |---|---|---|---|---|---|
 | Só regras (campos + palavra-chave) | 84 | 168 | 199 | 250 | 240 |
-| Regras + pontos do Jev | 102 | 166 | 225 | 326 | 122 |
+| Regras + pontos do Jev | 103 | 166 | 222 | 328 | 122 |
 
-150 classes mudaram, todas para cima (nenhuma desceu; conferido nas 941). 272 solicitações têm ponto a
+As classes só sobem com o Jev, nunca descem (nenhuma desceu; conferido nas 941). 272 solicitações têm ponto a
 revisar. Verificador oficial OK. Exemplos de subida para A1: SOL-2026-00773 (lesões coronárias >70% em
 3 vasos, D→A1), SOL-2024-00181 (hérnia irredutível, D→A1), SOL-2026-00250 (câncer com lesão
 subestenosante, A2→A1). Discutível: SOL-2025-00283 ("HB 7,8" em hemorroidas → risco_vida).

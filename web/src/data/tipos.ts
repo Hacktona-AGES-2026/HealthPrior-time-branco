@@ -30,6 +30,10 @@ export type OrigemContribuicao =
   | "regra_ouro"
 
 export type Paciente = {
+  // Só com dados da API: camada da trava, se a classe foi confirmada e se o regulador editou.
+  camada?: 1 | 2 | 3
+  classe_status?: "sugerida_nao_confirmada" | "confirmada"
+  editado_manualmente?: boolean
   solicitacao_id: string
   iniciais: string
   cns_mascarado: string

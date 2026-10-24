@@ -94,6 +94,14 @@ class ItemFilaOut(BaseModel):
     editado_manualmente: bool
     alertas: list[str] = []
     resumo_justificativa: str
+    iniciais: str = ""
+    idade: Optional[int] = None
+    sexo: Optional[str] = None
+    municipio: Optional[str] = None
+    cid_descricao: Optional[str] = None
+    intensidade_dor_eva: Optional[int] = None
+    limitacao_funcional: Optional[str] = None
+    posicao_antes: Optional[int] = None
 
 
 class FilaOut(BaseModel):
