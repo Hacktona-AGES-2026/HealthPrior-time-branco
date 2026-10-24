@@ -12,7 +12,12 @@ from app.application.montar_fila import montar_fila
 from app.application.registrar_evento import NovoEvento, RegistrarEvento
 from app.config import settings
 from app.domain.enums import AcaoDecisao, Classe, ClasseStatus, DesfechoEvento, MotivoCodificado
-from app.domain.errors import EventoInvalidoError, NaoEncontradoError, OncologicoRebaixadoError
+from app.domain.errors import (
+    EventoInvalidoError,
+    NaoEncontradoError,
+    OncologicoRebaixadoError,
+    SemPropostaError,
+)
 from app.infrastructure.csv_source import carregar_do_csv
 from app.infrastructure.swalis_regras import SwalisRegras
 
@@ -59,12 +64,19 @@ class Repos:
         p.pendencia_id = f"PEN-{len(self.pendencias) + 1:04d}"
         self.pendencias.append(p)
 
+    # DecisaoRepository
+    def proximo_id(self):
+        return f"DEC-{len(self.decisoes) + 1}"
+
     # FilaRepository / UoW
     def obter_publicada(self):
         return self.publicada
 
     def confirmar(self):
         self.commits += 1
+
+    def desfazer(self):
+        pass
 
     def publicar(self):
         self.publicada = montar_fila(list(self.sols.values()), self.eventos, SCORER, settings.ref_date)
@@ -96,7 +108,7 @@ class Publicador:
 
 def _decidir(r, passa=True):
     return DecidirClasse(r, r, r, SCORER, r, Publicador(r, passa), r, lambda: AGORA,
-                         settings.ref_date, lambda: "DEC-1")
+                         settings.ref_date)
 
 
 def _registrar(r):
@@ -110,15 +122,23 @@ def _pos(r, sid):
 def test_aprovar_confirma_e_devolve_posicoes(dataset):
     r = Repos(dataset)
     r.publicar()
-    antes = _pos(r, "SOL-2023-00060")
-    res = _decidir(r).executar(ComandoDecisao("SOL-2023-00060", "REG-1", AcaoDecisao.APROVAR))
-    s = r.sols["SOL-2023-00060"]
-    assert s.classe_status is ClasseStatus.CONFIRMADA and s.classe_confirmada is Classe.D
+    antes = _pos(r, "SOL-2025-00048")  # no inbox: prioridade "baixa" (implícita D), SWALIS A2
+    res = _decidir(r).executar(ComandoDecisao("SOL-2025-00048", "REG-1", AcaoDecisao.APROVAR))
+    s = r.sols["SOL-2025-00048"]
+    assert s.classe_status is ClasseStatus.CONFIRMADA and s.classe_confirmada is Classe.A2
     assert (res.decisao_id, res.posicao_anterior, res.fila_publicada) == ("DEC-1", antes, True)
-    assert res.posicao_nova == _pos(r, "SOL-2023-00060")
+    assert res.posicao_nova == _pos(r, "SOL-2025-00048")
     [d] = r.decisoes
     assert (d.acao, d.classe_sugerida, d.classe_decidida, d.regulador_id) == (
-        AcaoDecisao.APROVAR, Classe.D, Classe.D, "REG-1")
+        AcaoDecisao.APROVAR, Classe.A2, Classe.A2, "REG-1")
+
+
+def test_aprovar_o_que_o_inbox_nao_mostra_da_409_sem_gravar(dataset):
+    r = Repos(dataset)  # SOL-2023-00060: prioridade "baixa" e D pelo SWALIS, nada a aprovar (D-94)
+    with pytest.raises(SemPropostaError):
+        _decidir(r).executar(ComandoDecisao("SOL-2023-00060", "REG-1", AcaoDecisao.APROVAR))
+    assert r.decisoes == [] and r.commits == 0
+    assert r.sols["SOL-2023-00060"].classe_status is ClasseStatus.SUGERIDA_NAO_CONFIRMADA
 
 
 def test_editar_classe_sobe_o_paciente(dataset):
@@ -160,7 +180,8 @@ def test_decisao_de_solicitacao_inexistente(dataset):
 def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
     # C-08: depois de confirmada, a classe da fila só muda com nova decisão do regulador.
     r = Repos(dataset)
-    _decidir(r).executar(ComandoDecisao("SOL-2026-00239", "R", AcaoDecisao.APROVAR))
+    s = r.sols["SOL-2026-00239"]  # já confirmada em C (C pelo SWALIS = implícita: fora do inbox, D-94)
+    s.classe_status, s.classe_confirmada = ClasseStatus.CONFIRMADA, Classe.C
     _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia", "positivo",
                                       descricao="AP: adenocarcinoma"))
     r.publicar()
@@ -168,7 +189,7 @@ def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
 
 
 def test_evento_que_muda_a_classe_vai_ao_inbox_e_congela_a_classe(dataset):
-    r = Repos(dataset)  # SOL-2026-00239: hérnia K40.9, classe B (tem PS na espera, D-96); biópsia positiva -> A2
+    r = Repos(dataset)  # SOL-2026-00239: hérnia K40.9, classe B (tem PS na espera, D-97); biópsia positiva -> A2
     res = _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia",
                                             "positivo", descricao="AP: adenocarcinoma"))
     assert (res.classe_antes, res.classe_depois, res.desfecho) == (

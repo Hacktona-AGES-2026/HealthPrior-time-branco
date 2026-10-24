@@ -164,7 +164,7 @@ def eixo_progressao(cid: str, eventos: list[Evento], sinais: list[SinalTexto]) -
     if is_lesao_incerta(c):
         candidatos.append((1, f"lesão de comportamento incerto {cid}"))
     piora = eventos_de_piora_na_espera(eventos)
-    if piora:  # Q-SW2 (D-96): piora enquanto esperava sobe o paciente a B, nunca além
+    if piora:  # Q-SW2 (D-97): piora enquanto esperava sobe o paciente a B, nunca além
         candidatos.append((1, "piora na espera: " + "; ".join(
             f"{e.tipo_evento.replace('_', ' ')}{' ' + e.resultado if e.resultado else ''} em {e.data_evento:%d/%m/%Y}"
             for e in piora)))

@@ -58,6 +58,9 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
     )
   }
 
+  // API: só se aprova o que está no inbox (D-94)
+  const semProposta = daApi(paciente) && !paciente.divergencia
+
   if (rejeitando) {
     const valido = motivo.trim().length >= 3
     return (
@@ -117,7 +120,7 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Button variant="ghost" disabled={enviando} className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
+      <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta no inbox: a classe sugerida já é a classe em vigor" : undefined} className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
         <Check className="text-[var(--sobe)]" aria-hidden /> Aprovar <kbd className="rounded bg-background/60 px-1 text-[10px] text-muted-foreground">A</kbd>
       </Button>
       <Button variant="ghost" disabled={enviando} className="gap-1.5 bg-[var(--desce)]/15 text-foreground hover:bg-[var(--desce)]/25" onClick={() => setRejeitando(true)}>

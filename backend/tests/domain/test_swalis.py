@@ -82,7 +82,7 @@ def test_sinal_traz_trecho_original():
     ("D37.4", [], [], 1),
     ("R91", [], [], 1),
     ("K40.9", [], [], 0),
-    # Q-SW2 (D-96): piora enquanto esperava sobe a B (nível 1), nunca além
+    # Q-SW2 (D-97): piora enquanto esperava sobe a B (nível 1), nunca além
     ("K80.2", [Evento("E1", "S", "P", date(2026, 10, 23), "pronto_socorro", "observacao")], [], 1),
     ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "internacao", "alta")], [], 1),
     ("K80.2", [Evento("E1", "S", "P", date(2026, 9, 1), "exame_imagem", "progressao")], [], 1),

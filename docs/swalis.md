@@ -52,7 +52,7 @@ não nos textos do dataset.
 |---|---|
 | 3 | CID de obstrução/instabilidade (K40.0, K40.3, K42.0, K43.0, N13.2, I20.0); `obstrucao`, `risco_vida`, `perda_funcao` |
 | 2 | CID C* (exceto C44); biópsia positiva; `cancer_confirmado` |
-| 1 | Lesão incerta (D37–D48, R91); C44; `suspeita_malignidade`; **piora na espera** (PS, internação, imagem com progressão ou consulta com piora, depois da entrada na fila; D-96) |
+| 1 | Lesão incerta (D37–D48, R91); C44; `suspeita_malignidade`; **piora na espera** (PS, internação, imagem com progressão ou consulta com piora, depois da entrada na fila; D-97) |
 | 0 | nenhum ponto |
 
 C44 (pele não melanoma) fica em 1 mesmo com biópsia ou texto de câncer: confirmam o próprio C44.
@@ -100,7 +100,7 @@ também para as frases apontadas pelo Jev. Testado nas 10 hérnias K40.9 com "Se
 |---|---|---|---|---|---|
 | Só regras (campos + palavra-chave) | 84 | 168 | 199 | 250 | 240 |
 | Regras + pontos do Jev | 103 | 166 | 222 | 328 | 122 |
-| + piora na espera (D-96) | 103 | 166 | 260 | 300 | 112 |
+| + piora na espera (D-97) | 103 | 166 | 260 | 300 | 112 |
 
 As classes só sobem com o Jev, nunca descem (nenhuma desceu; conferido nas 941). 272 solicitações têm ponto a
 revisar. Verificador oficial OK. Exemplos de subida para A1: SOL-2026-00773 (lesões coronárias >70% em
@@ -124,7 +124,7 @@ validação clínica.
 | ID | Questão | Provisório |
 |---|---|---|
 | Q-SW1 | "Suspeita de malignidade" conta como progressão 1 ou 2? | 1 (igual a lesão incerta) |
-| Q-SW2 | Eventos na espera (PS, internação, progressão em imagem) devem subir o eixo de progressão? | **sobem a nível 1 (B), nunca além** (D-96): destrava a cena da demo; 38 solicitações de C/D para B |
+| Q-SW2 | Eventos na espera (PS, internação, progressão em imagem) devem subir o eixo de progressão? | **sobem a nível 1 (B), nunca além** (D-97): destrava a cena da demo; 38 solicitações de C/D para B |
 | Q-SW3 | Separação dos termos de palavra-chave por ponto (`TERMOS`) | ver `domain/swalis.py` |
 | Q-SW4 | A camada (`urgencia.py`) não usa os pontos do Jev: um A1 por "hérnia irredutível" pode ficar na camada 3 (ex.: SOL-2024-00181, posição 385). A camada 2 deve incluir progressão 3 do SWALIS? | não (cabe à US-08) |
 | Q-SW5 | Limiares de confiança do Jev (conta ≥ 0,7; revisar ≥ 0,4) | provisórios |

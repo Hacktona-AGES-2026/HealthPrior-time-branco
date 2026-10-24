@@ -213,7 +213,7 @@ Como **sistema** (e, na demo, como **apresentador**), quero inserir um evento e 
 - **Front:** formulário "Novo evento" (tipo, resultado, data, descrição, origem).
 - **Depende de:** US-03, US-12
 
-> **Status: ✅ implementado** (D-96): a cena da demo funciona — PS para SOL-2023-00060 (D → B) vai ao inbox; ao aprovar, o paciente sobe.
+> **Status: ✅ implementado** (D-97): a cena da demo funciona — PS para SOL-2023-00060 (D → B) vai ao inbox; ao aprovar, o paciente sobe.
 
 #### US-16 · Atualização diária — **P2** · Back + Front
 Como **sistema**, quero recalcular o % do prazo de todos uma vez por dia, para a fila envelhecer sozinha.
@@ -472,6 +472,8 @@ Erros:
 - `422 {"erro": "ONCOLOGICO_REBAIXADO", "mensagem": "Oncológico não pode ficar abaixo de paciente sem urgência."}`
 - `422 {"erro": "JUSTIFICATIVA_OBRIGATORIA", "mensagem": "…"}`
 - `404 {"erro": "SOLICITACAO_NAO_ENCONTRADA", "mensagem": "…"}`
+- `422 {"erro": "DECISAO_INVALIDA", "mensagem": "…"}`: `editar` sem classe nem score, ou score inválido
+- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-94); `editar` e `manter` valem para qualquer solicitação
 
 ### 5.5 `POST /eventos`
 Request:

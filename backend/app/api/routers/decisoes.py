@@ -10,7 +10,8 @@ router = APIRouter(prefix="/decisoes", tags=["regulador"])
 
 
 @router.post("", response_model=schemas.DecisaoResultadoOut,
-             responses={404: {"model": schemas.Erro}, 422: {"model": schemas.Erro}})
+             responses={404: {"model": schemas.Erro}, 409: {"model": schemas.Erro},
+                        422: {"model": schemas.Erro}})
 def registrar_decisao(body: schemas.DecisaoIn, caso: DecidirClasse = Depends(get_decidir)):
     """aprovar | editar | manter. Grava a decisão e refaz a fila pelo verificador (I-07)."""
     if settings.use_mocks:

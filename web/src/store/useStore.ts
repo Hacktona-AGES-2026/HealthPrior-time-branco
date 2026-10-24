@@ -131,6 +131,11 @@ export const useStore = create<Estado>((set, get) => {
     aprovar: (id) => {
       const p = PACIENTE_POR_ID[id]
       if (ORIGEM_DADOS === "api") {
+        // A API só aprova o que está no inbox (409 SEM_PROPOSTA, D-94); fora dele, Rejeitar define a classe.
+        if (!p.divergencia) {
+          toast.info("Sem proposta para aprovar", { description: "A classe sugerida já é a classe em vigor" })
+          return
+        }
         void enviarDecisao(id, { acao: "aprovar" }, `${id} aprovado · classe ${p.classe}`)
         return
       }
