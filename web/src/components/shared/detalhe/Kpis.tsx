@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import type { Paciente } from "@/data/tipos"
 import { HOJE, diffDias, formatarData } from "@/lib/datas"
 import { cn } from "@/lib/utils"
+import { daApi } from "@/data/adaptador"
 import { ClasseBadge, ConfiancaSelo, PrazoBar, SetaVariacao } from "@/components/shared/Basicos"
 
 function Cartao({ icone: Icone, titulo, children, alerta, indice }: { icone: typeof Clock; titulo: string; children: ReactNode; alerta?: boolean; indice: number }) {
@@ -40,6 +41,7 @@ export function Kpis({ p }: { p: Paciente }) {
   const hba1cAlerta = hba1cAlta || hba1cAntiga
   const corDor = p.intensidade_dor_eva >= 7 ? "var(--desce)" : p.intensidade_dor_eva >= 4 ? "var(--prazo-limite)" : "var(--sobe)"
   const preOpOk = p.avaliacao_pre_anestesica && p.exames_pre_op_validos
+  const api = daApi(p)
 
   return (
     <div className="@container">
@@ -66,9 +68,11 @@ export function Kpis({ p }: { p: Paciente }) {
             <SetaVariacao antiga={p.posicao_antiga} nova={p.posicao_nova} />
           </span>
         </Cartao>
+        {!api && (
         <Cartao indice={4} icone={Gauge} titulo="Confiança" alerta={p.confianca < 0.6}>
           <ConfiancaSelo valor={p.confianca} />
         </Cartao>
+        )}
         <Cartao indice={5} icone={HeartPulse} titulo="Dor (EVA)">
           <div className="mb-1 font-bold tabular-nums" style={{ color: corDor }}>
             {p.intensidade_dor_eva}
@@ -80,10 +84,13 @@ export function Kpis({ p }: { p: Paciente }) {
           <div className="mb-1 font-semibold capitalize">{p.limitacao_funcional}</div>
           <Pontos valor={NIVEL_LIMITACAO[p.limitacao_funcional]} total={3} cor="var(--primary)" />
         </Cartao>
+        {!api && (
         <Cartao indice={7} icone={Stethoscope} titulo="ASA">
           <span className="text-xl font-bold">{ASA_ROMANO[p.asa]}</span>
           <span className="ml-1 text-xs text-muted-foreground">risco anestésico</span>
         </Cartao>
+        )}
+        {!api && (
         <Cartao indice={8} icone={AlertCircle} titulo="HbA1c" alerta={hba1cAlerta}>
           {p.hba1c ? (
             <>
@@ -100,6 +107,8 @@ export function Kpis({ p }: { p: Paciente }) {
             <span className="text-xs text-muted-foreground">Não aplicável</span>
           )}
         </Cartao>
+        )}
+        {!api && (
         <Cartao indice={9} icone={CheckCircle2} titulo="Pré-operatório" alerta={!preOpOk}>
           <ul className="space-y-0.5 text-xs">
             <li className="flex items-center gap-1">
@@ -112,6 +121,7 @@ export function Kpis({ p }: { p: Paciente }) {
             </li>
           </ul>
         </Cartao>
+        )}
       </div>
     </div>
   )

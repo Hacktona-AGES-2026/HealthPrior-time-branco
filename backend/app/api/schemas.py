@@ -60,6 +60,16 @@ class InconsistenciasOut(BaseModel):
     pendencias: PendenciasSincronizadasOut
 
 
+class BloqueantesOut(BaseModel):
+    solicitacoes: int
+    achados: dict[str, int]  # por regra (PRE-xx)
+    suspensas: int
+    reativadas: int
+    oncologicas_a_confirmar: int
+    eventos_orfaos: int
+    pendencias: PendenciasSincronizadasOut
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
@@ -67,6 +77,7 @@ class CargaOut(BaseModel):
     normalizacao: NormalizacaoOut
     flags: Optional[FlagsOut] = None
     inconsistencias: Optional[InconsistenciasOut] = None
+    bloqueantes: Optional[BloqueantesOut] = None
 
 
 class PublicacaoOut(BaseModel):
@@ -75,6 +86,7 @@ class PublicacaoOut(BaseModel):
     por_camada: dict[int, int]
     versao_regras: str
     saida_verificador: str
+    data_referencia: date  # US-16: data usada no cálculo (avança na atualização diária)
 
 
 # ---------- fila ----------
@@ -93,6 +105,14 @@ class ItemFilaOut(BaseModel):
     editado_manualmente: bool
     alertas: list[str] = []
     resumo_justificativa: str
+    iniciais: str = ""
+    idade: Optional[int] = None
+    sexo: Optional[str] = None
+    municipio: Optional[str] = None
+    cid_descricao: Optional[str] = None
+    intensidade_dor_eva: Optional[int] = None
+    limitacao_funcional: Optional[str] = None
+    posicao_antes: Optional[int] = None
 
 
 class FilaOut(BaseModel):
@@ -260,6 +280,11 @@ class PendenciaOut(BaseModel):
     acao_sugerida: str
     status: StatusPendencia
     aberta_em: date
+    # preenchidos depois de resolvida (US-07); ficam null enquanto a pendência está aberta
+    resolvido_por: Optional[str] = None
+    resolvido_em: Optional[datetime] = None
+    resolucao: Optional[str] = None
+    observacao: Optional[str] = None
 
 
 class PendenciasOut(BaseModel):
@@ -275,8 +300,9 @@ class ResolverPendenciaIn(BaseModel):
 
 
 class ResolverPendenciaOut(BaseModel):
-    status_fila: StatusFila
-    fila_publicada: bool
+    status_fila: Optional[StatusFila] = Field(
+        default=None, description="da solicitação da pendência; null quando não há (PRE-24, evento órfão)")
+    fila_publicada: bool = Field(description="false: o verificador reprovou e a fila anterior segue publicada (I-07)")
 
 
 # US-22

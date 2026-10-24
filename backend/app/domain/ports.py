@@ -4,7 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -30,6 +30,15 @@ class SolicitacaoRepository(Protocol):
     def salvar_normalizadas(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só as colunas *_norm (US-02). Colunas originais e estado não são tocados."""
         ...
+    def atualizar_data_entrada(self, solicitacao: Solicitacao) -> None:
+        """Grava só `data_entrada_fila` (fusão de duplicata, US-07); o chamador registra a correção (I-10)."""
+        ...
+    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
+        """Grava só `classe_status`, `classe_confirmada` e o override (`classe_medico`, `score_medico`, `editado_*`)."""
+        ...
+    def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
+        """Grava só `status_fila` e `motivo_status` (US-04); nenhuma coluna original muda."""
+        ...
     def salvar_alertas(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `alertas` (US-05); nenhuma coluna original muda."""
         ...
@@ -43,8 +52,11 @@ class EventoRepository(Protocol):
     def listar_todos(self) -> list[Evento]: ...
     def adicionar(self, evento: Evento) -> None: ...
     def salvar_varios(self, eventos: list[Evento]) -> None: ...
+    def mover(self, de_solicitacao_id: str, para_solicitacao_id: str) -> list[str]:
+        """Passa os eventos de uma solicitação para outra (fusão, US-07). Devolve os `evento_id` movidos."""
+        ...
     def atualizar_marcas(self, eventos: list[Evento]) -> None:
-        """Grava só `duplicado_de` e `historico` (US-03); nenhum evento é apagado."""
+        """Grava só `duplicado_de`, `historico` e `orfao` (US-03/04); nenhum evento é apagado."""
         ...
 
 
@@ -74,6 +86,9 @@ class PendenciaRepository(Protocol):
         """Todas as pendências da solicitação, de qualquer status (US-21), por aberta_em."""
         ...
     def salvar(self, pendencia: Pendencia) -> None: ...
+    def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:
+        """(solicitacao_id, regra) das pendências abertas dessas `regras`."""
+        ...
     def sincronizar(self, regras: tuple[str, ...], pendencias: list[Pendencia]) -> ResultadoSincronizacao:
         """Mantém as pendências automáticas dessas `regras` iguais às `pendencias` detectadas.
 
@@ -85,6 +100,9 @@ class PendenciaRepository(Protocol):
 
 
 class DecisaoRepository(Protocol):
+    def proximo_id(self) -> str:
+        """`DEC-0001`, `DEC-0002`...: o log de decisões só cresce (nada é apagado)."""
+        ...
     def adicionar(self, decisao: Decisao) -> None: ...
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]: ...
 
@@ -99,9 +117,10 @@ class CorrecaoRepository(Protocol):
 
 class FilaRepository(Protocol):
     def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
-                         publicada_em: datetime) -> None: ...
+                         publicada_em: datetime, data_referencia: date) -> None: ...
     def obter_publicada(self) -> list[LinhaFila]: ...
     def publicada_em(self) -> datetime | None: ...
+    def data_referencia(self) -> date | None: ...
 
 
 class SwalisScorer(Protocol):

@@ -11,8 +11,9 @@ from datetime import date
 from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, ClasseStatus, StatusFila
 from app.domain.errors import NaoEncontradoError
 from app.domain.explicacao import camada_motivo, montar_explicacao
-from app.domain.models import Correcao, Evento, Motivo, Pendencia, ResultadoScore, Solicitacao
+from app.domain.models import Correcao, Decisao, Evento, Motivo, Pendencia, ResultadoScore, Solicitacao
 from app.domain.ports import (
+    DecisaoRepository,
     CorrecaoRepository,
     EventoRepository,
     FilaRepository,
@@ -58,12 +59,15 @@ class DetalheSolicitacao:
     eventos: list[EventoVisao]
     correcoes: list[Correcao]
     pendencias: list[Pendencia]
+    decisoes: list[Decisao] = field(default_factory=list)  # log do regulador (US-13/14)
 
 
 class DetalharSolicitacao:
     def __init__(self, solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
                  correcoes: CorrecaoRepository, pendencias: PendenciaRepository,
-                 fila: FilaRepository, scorer: SwalisScorer, ref_date: date):
+                 fila: FilaRepository, scorer: SwalisScorer, ref_date: date,
+                 decisoes: DecisaoRepository | None = None):
+        self._decisoes = decisoes
         self._solicitacoes = solicitacoes
         self._eventos = eventos
         self._correcoes = correcoes
@@ -110,6 +114,8 @@ class DetalharSolicitacao:
                                                       key=lambda e: (e.data_evento, e.evento_id))],
             correcoes=self._correcoes.listar_por_solicitacao(solicitacao_id),
             pendencias=self._pendencias.listar_por_solicitacao(solicitacao_id),
+            decisoes=(self._decisoes.listar_por_solicitacao(solicitacao_id)
+                      if self._decisoes else []),
         )
 
 

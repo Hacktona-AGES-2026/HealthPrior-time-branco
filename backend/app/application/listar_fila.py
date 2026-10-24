@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from app.domain.enums import ClasseStatus
+from app.domain.metricas import ordem_atual
 from app.domain.models import LinhaFila, Solicitacao
 from app.domain.ports import FilaRepository, SolicitacaoRepository
 
@@ -40,6 +41,15 @@ class ItemFilaVisao:
     editado_manualmente: bool
     alertas: list[str] = field(default_factory=list)
     resumo_justificativa: str = ""
+    # Para o front montar o card sem chamar o detalhe de cada paciente (sem nome completo).
+    iniciais: str = ""
+    idade: int | None = None
+    sexo: str | None = None
+    municipio: str | None = None
+    cid_descricao: str | None = None
+    intensidade_dor_eva: int | None = None
+    limitacao_funcional: str | None = None
+    posicao_antes: int | None = None  # ordem atual do hospital (US-22)
 
 
 @dataclass
@@ -66,8 +76,9 @@ class ListarFila:
         if gerada_em is None and not linhas:
             return PaginaFila(None, None, False, 0, [])
 
-        por_id = {s.solicitacao_id: s
-                  for s in self._solicitacoes.listar(apenas_ativas=False)}
+        todas = self._solicitacoes.listar(apenas_ativas=False)
+        por_id = {s.solicitacao_id: s for s in todas}
+        pos_antes = {sid: i for i, sid in enumerate(ordem_atual(todas), start=1)}
         pares = [(l, por_id[l.solicitacao_id]) for l in linhas
                  if l.solicitacao_id in por_id]
 
@@ -80,7 +91,7 @@ class ListarFila:
             gerada_em=gerada_em,
             publicada=True,
             total=len(filtrados),
-            itens=[_visao(l, s) for l, s in fatia],
+            itens=[_visao(l, s, pos_antes.get(s.solicitacao_id)) for l, s in fatia],
         )
 
 
@@ -99,7 +110,11 @@ def _casa(linha: LinhaFila, s: Solicitacao, filtro: FiltroFila) -> bool:
     return True
 
 
-def _visao(linha: LinhaFila, s: Solicitacao) -> ItemFilaVisao:
+def _iniciais(nome: str) -> str:
+    return "".join(f"{p[0].upper()}." for p in nome.split()[:3] if p)
+
+
+def _visao(linha: LinhaFila, s: Solicitacao, posicao_antes: int | None = None) -> ItemFilaVisao:
     return ItemFilaVisao(
         posicao=linha.posicao,
         solicitacao_id=linha.solicitacao_id,
@@ -115,4 +130,12 @@ def _visao(linha: LinhaFila, s: Solicitacao) -> ItemFilaVisao:
         editado_manualmente=linha.editado_manualmente,
         alertas=list(s.alertas),
         resumo_justificativa=linha.justificativa,
+        iniciais=_iniciais(s.nome_paciente),
+        idade=s.idade,
+        sexo=s.sexo,
+        municipio=s.municipio_norm or s.municipio,
+        cid_descricao=s.cid_descricao,
+        intensidade_dor_eva=s.intensidade_dor_eva,
+        limitacao_funcional=s.limitacao_funcional,
+        posicao_antes=posicao_antes,
     )

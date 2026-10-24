@@ -157,7 +157,7 @@ o texto da explicação) e `page_size ≤ 200` (`api/routers/fila.py:24`, pagina
 
 ## 7. Pendências: parâmetros sem fonte
 
-Precisam de validação com os mentores (HSL) ou ficam declarados como escolha do time (D-81).
+Precisam de validação com os mentores (HSL) ou ficam declarados como escolha do time (D-105).
 
 | # | Parâmetro | Valor | Pergunta para os mentores |
 |---|---|---|---|
@@ -180,7 +180,7 @@ Precisam de validação com os mentores (HSL) ou ficam declarados como escolha d
 
 | # | O quê | Código | Fonte | Impacto | Sugestão (não aplicada) |
 |---|---|---|---|---|---|
-| X-01 | Prazos A1 e A2 | 15 e 21 dias | [R1]: 8 e 30 dias | O desafio adaptou a tabela; B/C/D batem. Com 15/21, A1 envelhece mais devagar e A2 mais rápido do que no SWALIS original | Manter a tabela do desafio (é a que a banca usa) e dizer no pitch que é adaptada do SWALIS (registrado em D-80) |
+| X-01 | Prazos A1 e A2 | 15 e 21 dias | [R1]: 8 e 30 dias | O desafio adaptou a tabela; B/C/D batem. Com 15/21, A1 envelhece mais devagar e A2 mais rápido do que no SWALIS original | Manter a tabela do desafio (é a que a banca usa) e dizer no pitch que é adaptada do SWALIS (registrado em D-104) |
 | X-02 | N do recontato (Q-04) e texto do C-04 | proposta 180 dias; "NHS revisa a cada 6 meses" | [R2]: contato na semana 12, 26, 52 e depois a cada 12 semanas | Com 180 dias, o primeiro recontato vem depois do que o NHS recomenda; a frase do C-04 não bate com [R2] | Na US-17, considerar o calendário 12/26/52 semanas e corrigir a frase do C-04 |
 | X-03 | Escopo da negação | oração inteira | [R8]: até 6 palavras após o gatilho | Escopo maior nega mais termos; o time cortou por pontuação e adversativas para não apagar urgência (D-45) | Manter; citar como "adaptado do NegEx" |
 | X-04 | `score_medico` não envelhece | `montar_fila.py:88` usa o valor fixo | D-03 / C-10: "score editado continua envelhecendo" | Paciente editado fica parado enquanto os outros sobem | Já resolvido na branch `feat/US-13-14-15-decisoes-eventos` (D-71 dela), ainda não mergeada |

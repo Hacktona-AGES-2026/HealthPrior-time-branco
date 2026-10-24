@@ -1,7 +1,7 @@
 """US-10 · PublicarFila e ExportarFilaPublicada com falsos (sem banco)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -12,6 +12,7 @@ from app.domain.errors import FilaNaoPublicadaError
 from app.domain.models import LinhaFila
 
 AGORA = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
+REF = date(2026, 10, 23)
 
 
 def _linha(i: int) -> LinhaFila:
@@ -27,7 +28,7 @@ class GerarFalso:
     def executar(self, caminho: Path) -> ResultadoGeracao:
         caminho.parent.mkdir(parents=True, exist_ok=True)
         caminho.write_text("solicitacao_id,posicao,justificativa\nSOL-1,1,j\nSOL-2,2,j\n")
-        return ResultadoGeracao(self.linhas, caminho, 2, "v1", {1: 2})
+        return ResultadoGeracao(self.linhas, caminho, 2, "v1", {1: 2}, REF)
 
 
 class VerificadorFalso:
@@ -44,10 +45,10 @@ class FilaFalsa:
         self.publicada = publicada or []
         self.erro = erro
 
-    def salvar_publicada(self, linhas, versao_regras, publicada_em):
+    def salvar_publicada(self, linhas, versao_regras, publicada_em, data_referencia):
         if self.erro:
             raise self.erro
-        self.chamadas.append((linhas, versao_regras, publicada_em))
+        self.chamadas.append((linhas, versao_regras, publicada_em, data_referencia))
 
     def obter_publicada(self):
         return self.publicada
@@ -80,7 +81,8 @@ def test_verificador_ok_publica_e_promove_arquivo(tmp_path):
     caso, gerar, fila, uow = _caso(tmp_path)
     r = caso.executar()
     assert r.publicada and r.total == 2 and r.saida_verificador == "saida"
-    assert fila.chamadas == [(gerar.linhas, "v1", AGORA)]
+    assert fila.chamadas == [(gerar.linhas, "v1", AGORA, REF)]
+    assert r.data_referencia == REF
     assert uow.confirmou == 1 and uow.desfez == 0
     final = tmp_path / "fila_priorizada.csv"
     assert r.caminho_csv == final

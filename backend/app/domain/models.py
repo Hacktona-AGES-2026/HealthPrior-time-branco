@@ -62,10 +62,14 @@ class Solicitacao:
     # override do regulador (C-10)
     classe_medico: Classe | None = None
     classe_confirmada: Classe | None = None
+    # Classe do sistema em vigor enquanto não há confirmação: congelada quando um evento muda a
+    # sugestão, para nenhuma mudança de classe valer sem decisão humana (I-04, C-08).
+    classe_vigente: Classe | None = None
     score_medico: float | None = None
     editado_manualmente: bool = False
     editado_por: str | None = None
     editado_em: datetime | None = None
+    motivo_codificado: MotivoCodificado | None = None
 
 
 @dataclass
@@ -144,6 +148,7 @@ class Pendencia:
     resolvido_por: str | None = None
     resolvido_em: datetime | None = None
     resolucao: str | None = None
+    observacao: str | None = None
 
 
 @dataclass
@@ -159,6 +164,7 @@ class Decisao:
     motivo_codificado: MotivoCodificado | None = None
     justificativa: str | None = None
     versao_regras: str | None = None
+    procedimento_id: str | None = None  # alimenta o ciclo de aprendizado (C-14)
 
 
 @dataclass

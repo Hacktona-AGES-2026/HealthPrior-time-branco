@@ -44,4 +44,13 @@ def test_pendencias():
 
 
 def test_nao_implementado_vira_501():
-    assert client.post("/admin/atualizacao-diaria").status_code == 501
+    @app.post("/_teste/nao-implementado")
+    def _nao_implementado():
+        raise NotImplementedError("teste")
+
+    try:
+        r = client.post("/_teste/nao-implementado")
+    finally:
+        app.router.routes.pop()
+    assert r.status_code == 501
+    assert r.json()["erro"] == "NAO_IMPLEMENTADO"
