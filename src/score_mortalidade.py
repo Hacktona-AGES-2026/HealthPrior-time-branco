@@ -34,14 +34,17 @@ LIMITACOES (leia antes de usar o resultado como se fosse clinico):
     desfecho que nao temos). Reportamos sexo como coluna informativa, nao como
     pontos somados ao score.
 
-Uso: python score_mortalidade.py [fila_cirurgica.csv]
+Uso: python src/score_mortalidade.py [fila_cirurgica.csv]
 """
+import os
 import re
 import sys
 
 import pandas as pd
 
-ARQ = sys.argv[1] if len(sys.argv) > 1 else "fila_cirurgica.csv"
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ARQ = sys.argv[1] if len(sys.argv) > 1 else os.path.join(RAIZ, "data", "fila_cirurgica.csv")
+SAIDA = os.path.join(RAIZ, "data", "processed", "score_mortalidade.csv")
 
 # ---------------------------------------------------------------------------
 # 1. Categorias detectadas por CID (oncologicas -- Quan et al. 2005)
@@ -171,9 +174,10 @@ def main():
         })
 
     out = pd.DataFrame(linhas)
-    out.to_csv("score_mortalidade.csv", index=False)
+    os.makedirs(os.path.dirname(SAIDA), exist_ok=True)
+    out.to_csv(SAIDA, index=False)
 
-    print(f"Processado: {len(out)} solicitacoes -> score_mortalidade.csv\n")
+    print(f"Processado: {len(out)} solicitacoes -> {os.path.relpath(SAIDA, RAIZ)}\n")
 
     print("=" * 78)
     print("ELIXHAUSER (van Walraven) -- maior = maior risco de obito intra-hospitalar")

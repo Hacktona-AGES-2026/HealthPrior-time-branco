@@ -12,7 +12,7 @@
 | `fila_cirurgica.csv` | 941 | A fila: uma linha por solicitação cirúrgica, já com os dados do paciente, diagnóstico, dor, limitação, tempo de espera, prioridade manual da regulação e textos livres. |
 | `eventos_clinicos.csv` | ~1.500 | O que aconteceu durante a espera: biópsias, HbA1c, pronto-socorro, internações, exames de imagem, reavaliações, contatos telefônicos e faltas. |
 | `procedimentos.csv` | 23 | Catálogo de procedimentos: especialidade, porte, risco cirúrgico (1 a 5), duração média e necessidade de UTI. |
-| `referencias/swalis.csv` | 5 | Um framework possível de urgência (classes A1 a D com prazo máximo). Opcional. |
+| `data/referencias/swalis.csv` | 5 | Um framework possível de urgência (classes A1 a D com prazo máximo). Opcional. |
 | `dicionario_dados.md` | — | Descrição de cada coluna, domínios e observações. |
 | `verificar_fila_priorizada.py` | — | Verificador da regra de ouro para o `fila_priorizada.csv` que a sua equipe vai entregar. |
 
@@ -130,7 +130,7 @@ FROM fila GROUP BY 1,2 HAVING count(*) > 1;
 Colunas obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Uma linha por solicitação que a sua solução considera ativa (vale explicar no `DECISOES.md` o que ficou de fora e por quê). Antes de entregar, rode:
 
 ```bash
-python verificar_fila_priorizada.py caminho/para/fila_priorizada.csv
+python src/verificar_fila_priorizada.py caminho/para/fila_priorizada.csv
 ```
 
 O verificador confere o formato, a cobertura da fila e a regra de ouro com uma definição conservadora de "sem urgência clínica". É uma ferramenta de autoconferência da equipe: a avaliação da banca é feita pela demonstração e pelo pitch.

@@ -28,7 +28,7 @@ Este arquivo é a **fonte de verdade** do comportamento do sistema. Agentes de I
   - `procedimentos.csv` — 23 procedimentos
   - `swalis.csv` — classes A1–D com prazo máximo (15, 21, 60, 180, 360 dias)
   - `dicionario_dados.md` — descrição de cada coluna
-  - `CID10CSV/` — tabelas públicas CID-10 (DATASUS)
+  - `data/referencias/CID10CSV/` — tabelas públicas CID-10 (DATASUS)
 - **Entregável obrigatório:** `fila_priorizada.csv` com colunas `solicitacao_id`, `posicao`, `justificativa` (pode ter colunas extras), validado por `verificar_fila_priorizada.py`.
 - **Regra de ouro (eliminatória):** nenhum paciente com neoplasia maligna (CID iniciado por `C`) pode ficar abaixo de um paciente sem urgência clínica. **Usar o CID, não a flag.**
 - **Critérios de avaliação:** originalidade 30% · valor para quem decide 30% · segurança e explicabilidade 20% · execução técnica 20%.
@@ -453,7 +453,7 @@ Obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `cama
 - Não usar contagem de eventos como prioridade (viés de acesso); pesar por gravidade.
 - Não colocar HbA1c, ASA, distância ou faltas no score (são alertas/auditoria).
 - Toda função de transformação deve ser pura e testável; toda correção, logada.
-- Rodar `python verificar_fila_priorizada.py fila_priorizada.csv` antes de abrir PR.
+- Rodar `python src/verificar_fila_priorizada.py fila_priorizada.csv` antes de abrir PR.
 
 **Prompt base para tarefas**
 > "Implemente `<C-xx>` conforme `docs/fluxo-sistema.md`. Respeite `I-01` a `I-10`. Não decida nada listado em `Q-xx`; deixe configurável. Inclua testes com os exemplos reais da seção 7."

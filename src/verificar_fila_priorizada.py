@@ -12,7 +12,7 @@ Verifica o entregável comum do desafio: fila_priorizada.csv (solicitacao_id, po
        e sem sinais de alarme no texto da justificativa.
   4. Indicadores informativos: posição mediana dos oncológicos, dos pacientes com piora recente etc.
 
-Uso: python verificar_fila_priorizada.py fila_priorizada.csv [--dataset pasta_do_dataset]
+Uso: python src/verificar_fila_priorizada.py fila_priorizada.csv [--dataset pasta_do_dataset]
 """
 import argparse
 import os
@@ -31,7 +31,7 @@ CID_URGENTE = {'I200', 'K403', 'K400', 'K420', 'K430', 'K800', 'N132', 'I832'}
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('arquivo')
-    ap.add_argument('--dataset', default=os.path.dirname(os.path.abspath(__file__)))
+    ap.add_argument('--dataset', default=os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'data'))
     a = ap.parse_args()
 
     fila = pd.read_csv(os.path.join(a.dataset, 'fila_cirurgica.csv'))
