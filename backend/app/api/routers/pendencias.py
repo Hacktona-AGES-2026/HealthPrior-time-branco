@@ -4,8 +4,9 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 
 from app.api import mocks, schemas
-from app.api.deps import get_listar_pendencias
+from app.api.deps import get_listar_pendencias, get_resolver_pendencia
 from app.application.listar_pendencias import ListarPendencias
+from app.application.resolver_pendencia import ResolverPendencia
 from app.config import settings
 from app.domain.enums import StatusPendencia
 from app.domain.models import Pendencia
@@ -35,8 +36,12 @@ def listar_pendencias(
 
 
 @router.post("/{pendencia_id}/resolver", response_model=schemas.ResolverPendenciaOut,
-             responses={404: {"model": schemas.Erro}})
-def resolver_pendencia(pendencia_id: str, body: schemas.ResolverPendenciaIn):
+             responses={404: {"model": schemas.Erro}, 409: {"model": schemas.Erro},
+                        422: {"model": schemas.Erro}})
+def resolver_pendencia(pendencia_id: str, body: schemas.ResolverPendenciaIn,
+                       caso_de_uso: ResolverPendencia = Depends(get_resolver_pendencia)):
     if settings.use_mocks:
         return schemas.ResolverPendenciaOut(status_fila="removida", fila_publicada=True)
-    raise NotImplementedError("US-07: POST /pendencias/{id}/resolver")
+    resultado = caso_de_uso.executar(
+        pendencia_id, body.resolucao, body.usuario_id, body.observacao, body.fundir_com)
+    return schemas.ResolverPendenciaOut(status_fila=resultado.status_fila, fila_publicada=resultado.fila_publicada)

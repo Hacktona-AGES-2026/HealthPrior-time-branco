@@ -286,5 +286,6 @@ class ResolverPendenciaIn(BaseModel):
 
 
 class ResolverPendenciaOut(BaseModel):
-    status_fila: StatusFila
-    fila_publicada: bool
+    status_fila: Optional[StatusFila] = Field(
+        default=None, description="da solicitação da pendência; null quando não há (PRE-24, evento órfão)")
+    fila_publicada: bool = Field(description="false: o verificador reprovou e a fila anterior segue publicada (I-07)")

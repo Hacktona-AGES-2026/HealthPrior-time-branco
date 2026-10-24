@@ -72,7 +72,8 @@ class SqlSolicitacaoRepository:
         self._s = session
 
     def obter(self, solicitacao_id: str) -> Solicitacao | None:
-        raise NotImplementedError("US-01")
+        linha = self._s.get(SolicitacaoTable, solicitacao_id)
+        return _para_entidade(linha) if linha is not None else None
 
     def listar(self, apenas_ativas: bool = True) -> list[Solicitacao]:
         consulta = select(SolicitacaoTable).order_by(SolicitacaoTable.solicitacao_id)
@@ -101,6 +102,12 @@ class SqlSolicitacaoRepository:
              for s in solicitacoes],
         )
         self._s.expire_all()  # o update em lote não sincroniza os objetos já carregados
+
+    def atualizar_data_entrada(self, solicitacao: Solicitacao) -> None:
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id)
+                        .values(data_entrada_fila=solicitacao.data_entrada_fila))
+        self._s.expire_all()
 
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
@@ -160,6 +167,16 @@ class SqlEventoRepository:
     def salvar_varios(self, eventos: list[Evento]) -> None:
         raise NotImplementedError("US-01")
 
+    def mover(self, de_solicitacao_id: str, para_solicitacao_id: str) -> list[str]:
+        tabela = EventoTable.__table__
+        ids = list(self._s.execute(select(tabela.c.evento_id).where(tabela.c.solicitacao_id == de_solicitacao_id)
+                                   .order_by(tabela.c.evento_id)).scalars())
+        if ids:
+            self._s.execute(update(tabela).where(tabela.c.solicitacao_id == de_solicitacao_id)
+                            .values(solicitacao_id=para_solicitacao_id))
+            self._s.expire_all()
+        return ids
+
     def atualizar_marcas(self, eventos: list[Evento]) -> None:
         if not eventos:
             return
@@ -215,7 +232,12 @@ class SqlCorrecaoRepository:
         self._s = session
 
     def adicionar_varias(self, correcoes: list[Correcao]) -> None:
-        raise NotImplementedError("US-03")
+        self._s.add_all(
+            CorrecaoTable(solicitacao_id=c.solicitacao_id, campo=c.campo, original=c.original,
+                          novo=c.novo, regra=c.regra)
+            for c in correcoes
+        )
+        self._s.flush()
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Correcao]:
         raise NotImplementedError("US-03")
@@ -241,7 +263,7 @@ def _para_pendencia(t: PendenciaTable) -> Pendencia:
         pendencia_id=t.pendencia_id, solicitacao_id=t.solicitacao_id, regra=t.regra, titulo=t.titulo,
         bloqueante=t.bloqueante, evidencias=evidencias, acao_sugerida=t.acao_sugerida or "",
         status=StatusPendencia(t.status), aberta_em=t.aberta_em, resolvido_por=t.resolvido_por,
-        resolvido_em=t.resolvido_em, resolucao=t.resolucao,
+        resolvido_em=t.resolvido_em, resolucao=t.resolucao, observacao=t.observacao,
     )
 
 
@@ -258,7 +280,8 @@ class SqlPendenciaRepository:
         self._s = session
 
     def obter(self, pendencia_id: str) -> Pendencia | None:
-        raise NotImplementedError("US-06")
+        linha = self._s.get(PendenciaTable, pendencia_id)
+        return _para_pendencia(linha) if linha is not None else None
 
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
@@ -274,7 +297,12 @@ class SqlPendenciaRepository:
         return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
-        raise NotImplementedError("US-07")
+        """Grava só o desfecho (status, quem, quando, resolução, observação); o achado não muda."""
+        linha = self._s.get(PendenciaTable, pendencia.pendencia_id)
+        linha.status = pendencia.status.value
+        linha.resolvido_por, linha.resolvido_em = pendencia.resolvido_por, pendencia.resolvido_em
+        linha.resolucao, linha.observacao = pendencia.resolucao, pendencia.observacao
+        self._s.flush()
 
     def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:
         linhas = self._s.execute(
