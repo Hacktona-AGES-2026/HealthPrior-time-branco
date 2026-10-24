@@ -1,7 +1,7 @@
 import { useState } from "react"
-import { AlertTriangle, ArrowRight, Check, FileCheck2, Loader2, RefreshCw, ShieldCheck, X } from "lucide-react"
+import { AlertTriangle, ArrowRight, Check, FileCheck2, Loader2, RefreshCw, ShieldCheck, Undo2, X } from "lucide-react"
 import { toast } from "sonner"
-import { decidirProposta, URL_API, type Proposta, type StatusProposta } from "@/api/cliente"
+import { decidirProposta, reverterRegra, URL_API, type Proposta, type StatusProposta } from "@/api/cliente"
 import { formatarData } from "@/lib/datas"
 import { usuarioAtual } from "@/lib/usuario"
 import { cn } from "@/lib/utils"
@@ -15,6 +15,7 @@ const ABAS: Record<StatusProposta, string> = {
   pendente: "Para decidir",
   aprovada: "Aprovadas",
   rejeitada: "Rejeitadas",
+  revertida: "Revertidas",
   descartada: "Descartadas (I-01)",
 }
 const ROTULO_MOTIVO = (m: string) => m.replaceAll("_", " ")
@@ -99,7 +100,25 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
   const [rejeitando, setRejeitando] = useState(false)
   const [observacao, setObservacao] = useState("")
   const [enviando, setEnviando] = useState(false)
+  const [revertendo, setRevertendo] = useState(false)
+  const [motivoReversao, setMotivoReversao] = useState("")
   const i = p.impacto
+
+  async function reverter() {
+    setEnviando(true)
+    try {
+      const r = await reverterRegra(p.proposta_id, { usuario_id: usuarioAtual(), motivo: motivoReversao.trim() })
+      toast.success("Regra revertida", {
+        description: `${r.devolvidos_ao_inbox} ${r.devolvidos_ao_inbox === 1 ? "paciente saiu" : "pacientes saíram"} do Inbox: a sugestão voltou à classe anterior.`,
+      })
+      setRevertendo(false)
+    } catch (e) {
+      toast.error("Não foi possível reverter a regra", { description: e instanceof Error ? e.message : undefined })
+    } finally {
+      setEnviando(false)
+      aoDecidir() // também no erro: um 409 significa que já foi revertida
+    }
+  }
 
   async function decidir(decisao: "aprovar" | "rejeitar") {
     setEnviando(true)
@@ -207,14 +226,40 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
         </div>
       )}
 
-      {(p.status === "aprovada" || p.status === "rejeitada") && (
+      {(p.status === "aprovada" || p.status === "rejeitada" || p.status === "revertida") && (
         <div className="mt-3 border-t pt-3 text-sm">
           <p>
-            <b>{p.status === "aprovada" ? `Aprovada (versão ${p.versao ?? "?"})` : "Rejeitada"}</b>
+            <b>{p.status === "rejeitada" ? "Rejeitada" : `Aprovada (versão ${p.versao ?? "?"})`}</b>
             {p.decidida_por && <> por <span className="font-mono">{p.decidida_por}</span></>}
             {p.decidida_em && <> em {formatarData(p.decidida_em.slice(0, 10))}</>}
           </p>
           {p.observacao && <p className="mt-1 text-muted-foreground">{p.observacao}</p>}
+          {p.status === "revertida" && (
+            <p className="mt-2">
+              <b className="text-destructive">Revertida</b>
+              {p.revertida_por && <> por <span className="font-mono">{p.revertida_por}</span></>}
+              {p.revertida_em && <> em {formatarData(p.revertida_em.slice(0, 10))}</>}
+              {p.motivo_reversao && <span className="text-muted-foreground">: {p.motivo_reversao}</span>}
+            </p>
+          )}
+          {p.status === "aprovada" &&
+            (revertendo ? (
+              <div className="mt-3 space-y-2">
+                <Textarea value={motivoReversao} onChange={(e) => setMotivoReversao(e.target.value)} placeholder="Motivo da reversão (obrigatório)" aria-label="Motivo da reversão" />
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="destructive" disabled={enviando || motivoReversao.trim() === ""} onClick={reverter}>
+                    {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Undo2 aria-hidden />} Reverter: confirmar
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => { setRevertendo(false); setMotivoReversao("") }}>Cancelar</Button>
+                  <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">A regra deixa de valer. Quem ela mandou ao Inbox e ninguém decidiu sai de lá; quem o regulador já decidiu não muda.</p>
+              </div>
+            ) : (
+              <Button size="sm" variant="outline" className="mt-3" onClick={() => setRevertendo(true)}>
+                <Undo2 aria-hidden /> Reverter regra
+              </Button>
+            ))}
         </div>
       )}
     </li>

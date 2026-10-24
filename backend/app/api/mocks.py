@@ -133,3 +133,8 @@ PROPOSTAS = s.PropostasOut(total=1, itens=[s.PropostaDetalheOut(
 DECIDIR_PROPOSTA = s.DecidirPropostaOut(
     proposta_id="PROP-PROC004-ps_recorrente-C-B", status="aprovada", versao=1,
     versao_regras="swalis-regras-2+aprendizado-v1", enviados_ao_inbox=12)
+
+
+REVERTER_REGRA = s.ReverterRegraOut(
+    regra_id="PROP-PROC004-ps_recorrente-C-B", status="revertida",
+    versao_regras="swalis-regras-2", devolvidos_ao_inbox=12)

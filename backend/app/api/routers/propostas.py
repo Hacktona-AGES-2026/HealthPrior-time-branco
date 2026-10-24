@@ -5,8 +5,8 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from app.api import mocks, schemas
-from app.api.deps import get_decidir_proposta, get_listar_propostas, get_nomes_procedimentos
-from app.application.propostas import DecidirProposta, ListarPropostas, PropostaDetalhe
+from app.api.deps import get_decidir_proposta, get_listar_propostas, get_nomes_procedimentos, get_reverter_regra
+from app.application.propostas import DecidirProposta, ListarPropostas, PropostaDetalhe, ReverterRegra
 from app.config import settings
 
 router = APIRouter(tags=["comite"])
@@ -29,11 +29,14 @@ def _item(d: PropostaDetalhe, nomes: dict[str, str]) -> schemas.PropostaDetalheO
             afetados=d.impacto.afetados, oncologicos_afetados=d.impacto.oncologicos_afetados,
             oncologicos_rebaixados=d.impacto.oncologicos_rebaixados, exemplos=d.impacto.exemplos),
         decidida_por=p.decidida_por, decidida_em=p.decidida_em, observacao=p.observacao,
-        versao=d.versao)
+        versao=d.versao,
+        revertida_por=d.reversao.revertida_por if d.reversao else None,
+        revertida_em=d.reversao.revertida_em if d.reversao else None,
+        motivo_reversao=d.reversao.motivo_reversao if d.reversao else None)
 
 
 @router.get("/propostas", response_model=schemas.PropostasOut)
-def listar_propostas(status: Optional[str] = Query(default=None, pattern="^(pendente|descartada|aprovada|rejeitada)$"),
+def listar_propostas(status: Optional[str] = Query(default=None, pattern="^(pendente|descartada|aprovada|rejeitada|revertida)$"),
                      caso: ListarPropostas = Depends(get_listar_propostas),
                      nomes: dict[str, str] = Depends(get_nomes_procedimentos)):
     """Propostas com os casos de origem e, nas pendentes, o impacto simulado (shadow run)."""
@@ -53,3 +56,15 @@ def decidir_proposta(proposta_id: str, body: schemas.DecidirPropostaIn,
     return schemas.DecidirPropostaOut(
         proposta_id=r.proposta_id, status=r.status, versao=r.versao, versao_regras=r.versao_regras,
         enviados_ao_inbox=r.enviados_ao_inbox)
+
+
+@router.post("/regras/{regra_id}/reverter", response_model=schemas.ReverterRegraOut, responses=_ERROS)
+def reverter_regra(regra_id: str, body: schemas.ReverterRegraIn,
+                   caso: ReverterRegra = Depends(get_reverter_regra)):
+    """Desativa a regra aprovada (C-14: versionada e reversível) e tira do inbox quem só estava lá por ela."""
+    if settings.use_mocks:
+        return mocks.REVERTER_REGRA
+    r = caso.executar(regra_id, body.usuario_id, body.motivo)
+    return schemas.ReverterRegraOut(
+        regra_id=r.regra_id, status=r.status, versao_regras=r.versao_regras,
+        devolvidos_ao_inbox=r.devolvidos_ao_inbox)

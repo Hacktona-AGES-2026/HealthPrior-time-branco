@@ -351,7 +351,7 @@ class PropostaRegraOut(BaseModel):
     n_reguladores: int
     consistencia: float
     casos: list[str]
-    status: Literal["pendente", "descartada", "aprovada", "rejeitada"]
+    status: Literal["pendente", "descartada", "aprovada", "rejeitada", "revertida"]
     motivo_descarte: Optional[str] = None
 
 
@@ -391,7 +391,10 @@ class PropostaDetalheOut(PropostaRegraOut):
     decidida_por: Optional[str] = None
     decidida_em: Optional[datetime] = None
     observacao: Optional[str] = None
-    versao: Optional[int] = None  # versão de regras criada, nas aprovadas
+    versao: Optional[int] = None  # versão de regras criada, nas aprovadas e revertidas
+    revertida_por: Optional[str] = None
+    revertida_em: Optional[datetime] = None
+    motivo_reversao: Optional[str] = None
 
 
 class PropostasOut(BaseModel):
@@ -411,3 +414,15 @@ class DecidirPropostaOut(BaseModel):
     versao: Optional[int] = None
     versao_regras: Optional[str] = None
     enviados_ao_inbox: int
+
+
+class ReverterRegraIn(BaseModel):
+    usuario_id: str
+    motivo: str
+
+
+class ReverterRegraOut(BaseModel):
+    regra_id: str
+    status: Literal["revertida"]
+    versao_regras: str
+    devolvidos_ao_inbox: int

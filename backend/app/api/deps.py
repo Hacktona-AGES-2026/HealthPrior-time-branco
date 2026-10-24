@@ -16,7 +16,7 @@ from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.gerar_propostas import GerarPropostas
-from app.application.propostas import DecidirProposta, ListarPropostas
+from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -241,3 +241,11 @@ def get_decidir_proposta(session: Session = Depends(get_session),
                            SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                            _scorer(session, data), SqlUnidadeDeTrabalho(session),
                            lambda: datetime.now(timezone.utc))
+
+
+def get_reverter_regra(session: Session = Depends(get_session),
+                       data: date = Depends(get_data_referencia)) -> ReverterRegra:
+    return ReverterRegra(SqlPropostaRepository(session), SqlRegraRepository(session),
+                         SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         get_scorer(data), SqlUnidadeDeTrabalho(session),
+                         lambda: datetime.now(timezone.utc))

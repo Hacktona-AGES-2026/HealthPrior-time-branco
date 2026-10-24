@@ -194,6 +194,9 @@ class RegraAprendidaTable(SQLModel, table=True):
     aprovada_por: str
     aprovada_em: datetime
     ativa: bool = True
+    revertida_por: Optional[str] = None
+    revertida_em: Optional[datetime] = None
+    motivo_reversao: Optional[str] = None
 
 
 class FilaPublicadaTable(SQLModel, table=True):

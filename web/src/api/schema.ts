@@ -294,6 +294,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/regras/{regra_id}/reverter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverter Regra
+         * @description Desativa a regra aprovada (C-14: versionada e reversível) e tira do inbox quem só estava lá por ela.
+         */
+        post: operations["reverter_regra_regras__regra_id__reverter_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -867,7 +887,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pendente" | "descartada" | "aprovada" | "rejeitada";
+            status: "pendente" | "descartada" | "aprovada" | "rejeitada" | "revertida";
             /** Motivo Descarte */
             motivo_descarte?: string | null;
             /** Casos Origem */
@@ -881,6 +901,12 @@ export interface components {
             observacao?: string | null;
             /** Versao */
             versao?: number | null;
+            /** Revertida Por */
+            revertida_por?: string | null;
+            /** Revertida Em */
+            revertida_em?: string | null;
+            /** Motivo Reversao */
+            motivo_reversao?: string | null;
         };
         /** PropostaRegraOut */
         PropostaRegraOut: {
@@ -910,7 +936,7 @@ export interface components {
              * Status
              * @enum {string}
              */
-            status: "pendente" | "descartada" | "aprovada" | "rejeitada";
+            status: "pendente" | "descartada" | "aprovada" | "rejeitada" | "revertida";
             /** Motivo Descarte */
             motivo_descarte?: string | null;
         };
@@ -977,6 +1003,27 @@ export interface components {
             inseridos: number;
             /** Atualizados */
             atualizados: number;
+        };
+        /** ReverterRegraIn */
+        ReverterRegraIn: {
+            /** Usuario Id */
+            usuario_id: string;
+            /** Motivo */
+            motivo: string;
+        };
+        /** ReverterRegraOut */
+        ReverterRegraOut: {
+            /** Regra Id */
+            regra_id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "revertida";
+            /** Versao Regras */
+            versao_regras: string;
+            /** Devolvidos Ao Inbox */
+            devolvidos_ao_inbox: number;
         };
         /** ScoreOut */
         ScoreOut: {
@@ -1583,6 +1630,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["DecidirPropostaOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    reverter_regra_regras__regra_id__reverter_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                regra_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverterRegraIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReverterRegraOut"];
                 };
             };
             /** @description Not Found */

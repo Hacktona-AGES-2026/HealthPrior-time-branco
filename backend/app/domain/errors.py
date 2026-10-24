@@ -112,3 +112,13 @@ class PropostaJaDecididaError(DomainError):
 class DecisaoPropostaInvalidaError(DomainError):
     codigo = "DECISAO_INVALIDA"
     status_http = 422
+
+
+class RegraNaoEncontradaError(DomainError):
+    codigo = "REGRA_NAO_ENCONTRADA"
+    status_http = 404
+
+
+class RegraJaRevertidaError(DomainError):
+    codigo = "REGRA_JA_REVERTIDA"
+    status_http = 409

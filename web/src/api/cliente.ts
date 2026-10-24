@@ -15,6 +15,7 @@ export type ImpactoProposta = components["schemas"]["ImpactoOut"]
 export type ListaPropostas = components["schemas"]["PropostasOut"]
 export type StatusProposta = Proposta["status"]
 export type ResultadoProposta = components["schemas"]["DecidirPropostaOut"]
+export type ResultadoReversao = components["schemas"]["ReverterRegraOut"]
 
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
@@ -105,4 +106,20 @@ export async function decidirProposta(
   }
   if (!resposta.ok) throw await lerErro(resposta)
   return (await resposta.json()) as ResultadoProposta
+}
+
+/** US-19 · POST /regras/{id}/reverter. Desativa a regra e tira do inbox quem só estava lá por ela; o motivo é obrigatório. */
+export async function reverterRegra(regraId: string, corpo: { usuario_id: string; motivo: string }): Promise<ResultadoReversao> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/regras/${encodeURIComponent(regraId)}/reverter`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(corpo),
+    })
+  } catch {
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (!resposta.ok) throw await lerErro(resposta)
+  return (await resposta.json()) as ResultadoReversao
 }

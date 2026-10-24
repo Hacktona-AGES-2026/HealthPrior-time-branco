@@ -8,6 +8,7 @@ Rebaixar nunca vale para oncológico (I-01).
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from datetime import datetime
 
 from app.domain.aprendizado import direcao
 from app.domain.cid import is_oncologico
@@ -22,6 +23,18 @@ class RegraAprendida:
     classe_de: Classe
     classe_para: Classe
     versao: int  # N da versão de regras em que entrou
+
+
+@dataclass(frozen=True)
+class RegraRegistrada:
+    """A regra com o histórico de quem aprovou e, se foi o caso, de quem reverteu e por quê."""
+
+    regra: RegraAprendida
+    ativa: bool
+    aprovada_por: str
+    revertida_por: str | None = None
+    revertida_em: datetime | None = None
+    motivo_reversao: str | None = None
 
 
 def _oncologica(s: Solicitacao) -> bool:

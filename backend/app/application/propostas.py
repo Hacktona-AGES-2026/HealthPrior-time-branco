@@ -12,6 +12,8 @@ from app.domain.errors import (
     ObservacaoObrigatoriaError,
     PropostaJaDecididaError,
     PropostaNaoEncontradaError,
+    RegraJaRevertidaError,
+    RegraNaoEncontradaError,
 )
 from app.domain.models import Decisao
 from app.domain.ports import (
@@ -23,7 +25,7 @@ from app.domain.ports import (
     SwalisScorer,
     UnidadeDeTrabalho,
 )
-from app.domain.regras_aprendidas import Impacto, RegraAprendida, simular_impacto
+from app.domain.regras_aprendidas import Impacto, RegraAprendida, RegraRegistrada, aplicar_regras, simular_impacto
 
 
 @dataclass
@@ -31,7 +33,8 @@ class PropostaDetalhe:
     proposta: PropostaRegra
     casos_origem: list[Decisao]
     impacto: Impacto | None  # só nas pendentes (shadow run)
-    versao: int | None  # versão de regras criada, nas aprovadas
+    versao: int | None  # versão de regras criada, nas aprovadas e revertidas
+    reversao: RegraRegistrada | None = None  # quem reverteu, quando e por quê
 
 
 @dataclass
@@ -71,13 +74,15 @@ class ListarPropostas(_Base):
     def executar(self, status: str | None = None) -> list[PropostaDetalhe]:
         propostas = self._propostas.listar(status)
         log = {d.decisao_id: d for d in self._decisoes.listar_todas()}
-        versoes = {r.regra_id: r.versao for r in self._regras.listar_ativas()}
+        regras = {r.regra.regra_id: r for r in self._regras.listar_todas()}
         candidatas = self._candidatas() if any(p.status == "pendente" for p in propostas) else []
         saida = []
         for p in propostas:
             impacto = simular_impacto(candidatas, _regra(p, 0)) if p.status == "pendente" else None
+            reg = regras.get(p.proposta_id)
             saida.append(PropostaDetalhe(
-                p, [log[c] for c in p.casos if c in log], impacto, versoes.get(p.proposta_id)))
+                p, [log[c] for c in p.casos if c in log], impacto, reg.regra.versao if reg else None,
+                reg if reg and not reg.ativa else None))
         return saida
 
 
@@ -131,3 +136,65 @@ class DecidirProposta(_Base):
             raise
         versao_regras = f"{self._scorer.versao_regras.split('+aprendizado-v')[0]}+aprendizado-v{versao}"
         return ResultadoDecisaoProposta(proposta_id, "aprovada", versao, versao_regras, enviados)
+
+
+@dataclass
+class ResultadoReversao:
+    regra_id: str
+    status: str
+    versao_regras: str
+    devolvidos_ao_inbox: int
+
+
+class ReverterRegra:
+    """US-19 (C-14: "versionada; reversível"). Desativa a regra e desfaz o que a aprovação pôs no inbox.
+
+    `scorer_base` é o SWALIS sem regras aprendidas: com ele se vê o que cada paciente passaria a ter
+    sem esta regra (as outras seguem valendo).
+    """
+
+    def __init__(self, propostas: PropostaRepository, regras: RegraRepository,
+                 solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
+                 scorer_base: SwalisScorer, uow: UnidadeDeTrabalho, relogio: Callable[[], datetime]):
+        self._propostas, self._regras = propostas, regras
+        self._solicitacoes, self._eventos, self._scorer = solicitacoes, eventos, scorer_base
+        self._uow, self._relogio = uow, relogio
+
+    def executar(self, regra_id: str, usuario_id: str, motivo: str | None) -> ResultadoReversao:
+        if not usuario_id.strip():
+            raise DecisaoPropostaInvalidaError("usuario_id é obrigatório.")
+        reg = self._regras.obter(regra_id)
+        if reg is None:
+            raise RegraNaoEncontradaError(f"Regra {regra_id} não encontrada.")
+        if not reg.ativa:
+            raise RegraJaRevertidaError(f"A regra {regra_id} já foi revertida.")
+        texto = (motivo or "").strip()
+        if not texto:
+            raise ObservacaoObrigatoriaError("Reverter a regra exige o motivo em texto.")
+        restantes = [r for r in self._regras.listar_ativas() if r.regra_id != regra_id]
+        agora = self._relogio()
+        try:
+            self._regras.desativar(regra_id, usuario_id, agora, texto)
+            self._propostas.marcar(regra_id, "revertida")
+            devolvidos = 0
+            por_sol: dict[str, list] = {}
+            for e in self._eventos.listar_todos():
+                por_sol.setdefault(e.solicitacao_id, []).append(e)
+            for s in self._solicitacoes.listar(apenas_ativas=True):
+                if (s.procedimento_id != reg.regra.procedimento_id or s.classe_vigente is None
+                        or s.classe_status == ClasseStatus.CONFIRMADA):
+                    continue
+                base = self._scorer.calcular(s, por_sol.get(s.solicitacao_id, [])).classe_sistema
+                sugerida, _ = aplicar_regras(s, base, restantes)
+                if sugerida == s.classe_vigente:  # sem a regra não há mais divergência: some do inbox
+                    s.classe_vigente = None
+                    self._solicitacoes.salvar(s)
+                    devolvidos += 1
+            self._uow.confirmar()
+        except Exception:
+            self._uow.desfazer()
+            raise
+        v = max((r.versao for r in restantes), default=0)
+        base_versao = self._scorer.versao_regras
+        return ResultadoReversao(regra_id, "revertida",
+                                 f"{base_versao}+aprendizado-v{v}" if v else base_versao, devolvidos)

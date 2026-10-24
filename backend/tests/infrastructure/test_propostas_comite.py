@@ -9,6 +9,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import select
 
 from app.api import deps
+from app.api.routers import decisoes as roteador_decisoes
 from app.api.routers import inbox as roteador_inbox
 from app.api.routers import propostas as roteador
 from app.application.gerar_fila import GerarFila
@@ -54,6 +55,7 @@ def api(session, monkeypatch, tmp_path):
     reais = dataclasses.replace(settings, use_mocks=False)
     monkeypatch.setattr(roteador, "settings", reais)
     monkeypatch.setattr(roteador_inbox, "settings", reais)
+    monkeypatch.setattr(roteador_decisoes, "settings", reais)
     monkeypatch.setattr(deps, "get_scorer", lambda data=None: SwalisRegras())  # sem LLM: determinístico
     app.dependency_overrides[get_session] = lambda: session
     yield TestClient(app)
@@ -160,3 +162,77 @@ def test_com_mocks_devolve_o_contrato_fixo(session, monkeypatch):
         assert c.post("/propostas/X/decidir", json={"decisao": "aprovar", "usuario_id": "u"}).json()["versao"] == 1
     finally:
         app.dependency_overrides.clear()
+
+
+# ---- reverter (C-14: versionada e reversível) ----
+
+def reverter(api, regra=P1, usuario="comite-02", motivo="Regra ampla demais para o procedimento"):
+    return api.post(f"/regras/{regra}/reverter", json={"usuario_id": usuario, "motivo": motivo})
+
+
+def test_reverter_desativa_a_regra_e_tira_do_inbox_quem_so_estava_la_por_ela(api, session):
+    inbox_antes = api.get("/inbox").json()["total"]
+    enviados = decidir(api).json()["enviados_ao_inbox"]
+    assert api.get("/inbox").json()["total"] == inbox_antes + enviados
+
+    r = reverter(api)
+    assert r.status_code == 200, r.text
+    corpo = r.json()
+    assert (corpo["status"], corpo["devolvidos_ao_inbox"]) == ("revertida", enviados)
+    assert "aprendizado" not in corpo["versao_regras"]
+    assert SqlRegraRepository(session).listar_ativas() == []
+    assert api.get("/inbox").json()["total"] == inbox_antes  # voltou ao que era
+    session.expire_all()
+    assert session.exec(select(SolicitacaoTable).where(SolicitacaoTable.classe_sistema == "C",
+                                                       SolicitacaoTable.procedimento_id == "PROC004")).all() == []
+
+    rev = api.get("/propostas", params={"status": "revertida"}).json()["itens"][0]
+    assert (rev["proposta_id"], rev["revertida_por"], rev["motivo_reversao"], rev["versao"]) == (
+        P1, "comite-02", "Regra ampla demais para o procedimento", 1)
+    assert api.get("/propostas", params={"status": "aprovada"}).json()["total"] == 0
+
+
+def test_o_swalis_volta_a_sugerir_a_classe_antiga(api, session):
+    sw = SwalisRegras()
+    s = next(s for s in SqlSolicitacaoRepository(session).listar() if s.procedimento_id == "PROC004"
+             and sw.calcular(s, SqlEventoRepository(session).listar_por_solicitacao(s.solicitacao_id)).classe_sistema.value == "C")
+    ev = SqlEventoRepository(session).listar_por_solicitacao(s.solicitacao_id)
+    decidir(api)
+    reverter(api)
+    assert com_regras(sw, session).calcular(s, ev).classe_sistema.value == "C"
+
+
+def test_reverter_nao_mexe_em_quem_o_regulador_ja_confirmou(api, session):
+    # um paciente afetado é aprovado pelo regulador: a revisão dele vale mesmo se a regra cair
+    decidir(api)
+    inbox = api.get("/inbox").json()["itens"]
+    alvo = next(i["solicitacao_id"] for i in inbox if i["classe_atual"] == "C" and i["classe_sugerida"] == "B")
+    assert api.post("/decisoes", json={"solicitacao_id": alvo, "regulador_id": "reg-01", "acao": "aprovar"}).status_code == 200
+    reverter(api)
+    session.expire_all()
+    s = session.get(SolicitacaoTable, alvo)
+    assert (s.classe_status, s.classe_confirmada) == ("confirmada", "B")
+
+
+def test_reverter_exige_motivo_e_nao_repete(api):
+    decidir(api)
+    assert reverter(api, motivo="  ").json()["erro"] == "OBSERVACAO_OBRIGATORIA"
+    assert reverter(api).status_code == 200
+    assert reverter(api).json()["erro"] == "REGRA_JA_REVERTIDA"
+    assert reverter(api, "PROP-NAO-EXISTE").status_code == 404
+
+
+def test_regra_nova_depois_da_reversao_abre_a_versao_seguinte(api):
+    decidir(api)
+    reverter(api)
+    assert decidir(api, "PROP-PROC002-piora_funcional-D-C").json()["versao"] == 2  # nunca reaproveita número
+
+
+def test_proposta_revertida_nao_volta_ao_gerar_de_novo(api, session):
+    decidir(api)
+    reverter(api)
+    ref = settings.ref_date
+    GerarPropostas(SqlDecisaoRepository(session), SqlSolicitacaoRepository(session),
+                   SqlPropostaRepository(session), SqlUnidadeDeTrabalho(session),
+                   datetime(ref.year, ref.month, ref.day, tzinfo=timezone.utc)).executar()
+    assert P1 not in {i["proposta_id"] for i in api.get("/propostas", params={"status": "pendente"}).json()["itens"]}

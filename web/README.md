@@ -30,7 +30,7 @@ Os tipos da API são **gerados**: com o back no ar, `npm run gen:api` atualiza `
 
 ## Propostas (US-19)
 
-A página **Propostas** lê `GET /propostas` (abas: para decidir, aprovadas, rejeitadas, descartadas) e decide com `POST /propostas/{id}/decidir`. Para ver propostas na demo: `python -m app.cli seed-aprendizado` e `python -m app.cli gerar-propostas` (back com `HP_USE_MOCKS=false`).
+A página **Propostas** lê `GET /propostas` (abas: para decidir, aprovadas, rejeitadas, revertidas, descartadas), decide com `POST /propostas/{id}/decidir` e reverte regras aprovadas com `POST /regras/{id}/reverter`. Para ver propostas na demo: `python -m app.cli seed-aprendizado` e `python -m app.cli gerar-propostas` (back com `HP_USE_MOCKS=false`).
 
 ## Atalhos
 

@@ -13,7 +13,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.aprendizado import PropostaRegra
-from app.domain.regras_aprendidas import RegraAprendida
+from app.domain.regras_aprendidas import RegraAprendida, RegraRegistrada
 from app.domain.enums import (
     AcaoDecisao,
     Classe,
@@ -296,7 +296,7 @@ class SqlPropostaRepository:
 
     def ids_decididos(self) -> set[str]:
         consulta = select(PropostaRegraTable.proposta_id).where(
-            PropostaRegraTable.status.in_(["aprovada", "rejeitada"]))
+            PropostaRegraTable.status.in_(["aprovada", "rejeitada", "revertida"]))
         return set(self._s.execute(consulta).scalars())
 
     def listar(self, status: str | None = None) -> list[PropostaRegra]:
@@ -308,6 +308,10 @@ class SqlPropostaRepository:
     def obter(self, proposta_id: str) -> PropostaRegra | None:
         t = self._s.get(PropostaRegraTable, proposta_id)
         return _para_proposta(t) if t else None
+
+    def marcar(self, proposta_id: str, status: str) -> None:
+        self._s.get(PropostaRegraTable, proposta_id).status = status
+        self._s.flush()
 
     def registrar_decisao(self, proposta_id: str, status: str, por: str, em: datetime,
                           observacao: str | None) -> None:
@@ -327,6 +331,12 @@ def _para_proposta(t: PropostaRegraTable) -> PropostaRegra:
         decidida_em=t.decidida_em, observacao=t.observacao)
 
 
+def _registrada(t: RegraAprendidaTable) -> RegraRegistrada:
+    return RegraRegistrada(
+        RegraAprendida(t.regra_id, t.procedimento_id, Classe(t.classe_de), Classe(t.classe_para), t.versao),
+        t.ativa, t.aprovada_por, t.revertida_por, t.revertida_em, t.motivo_reversao)
+
+
 class SqlRegraRepository:
     """US-19: regras aprendidas em vigor (versionadas)."""
 
@@ -339,6 +349,19 @@ class SqlRegraRepository:
         return [RegraAprendida(t.regra_id, t.procedimento_id, Classe(t.classe_de),
                                Classe(t.classe_para), t.versao)
                 for t in self._s.execute(consulta).scalars()]
+
+    def listar_todas(self) -> list[RegraRegistrada]:
+        consulta = select(RegraAprendidaTable).order_by(RegraAprendidaTable.versao)
+        return [_registrada(t) for t in self._s.execute(consulta).scalars()]
+
+    def obter(self, regra_id: str) -> RegraRegistrada | None:
+        t = self._s.get(RegraAprendidaTable, regra_id)
+        return _registrada(t) if t else None
+
+    def desativar(self, regra_id: str, por: str, em: datetime, motivo: str) -> None:
+        t = self._s.get(RegraAprendidaTable, regra_id)
+        t.ativa, t.revertida_por, t.revertida_em, t.motivo_reversao = False, por, em, motivo
+        self._s.flush()
 
     def proxima_versao(self) -> int:
         return (self._s.execute(select(func.max(RegraAprendidaTable.versao))).scalar() or 0) + 1
