@@ -4,6 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -11,7 +12,7 @@ from app.domain.models import (
     Correcao,
     Decisao,
     Evento,
-    ItemFila,
+    LinhaFila,
     Pendencia,
     ResultadoScore,
     ResultadoTabela,
@@ -28,6 +29,9 @@ class SolicitacaoRepository(Protocol):
     def salvar_normalizadas(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só as colunas *_norm (US-02). Colunas originais e estado não são tocados."""
         ...
+    def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
+        """Grava só `oncologico` e `piora_recalculada` (US-03); nenhuma coluna original muda."""
+        ...
 
 
 class EventoRepository(Protocol):
@@ -35,6 +39,9 @@ class EventoRepository(Protocol):
     def listar_todos(self) -> list[Evento]: ...
     def adicionar(self, evento: Evento) -> None: ...
     def salvar_varios(self, eventos: list[Evento]) -> None: ...
+    def atualizar_marcas(self, eventos: list[Evento]) -> None:
+        """Grava só `duplicado_de` e `historico` (US-03); nenhum evento é apagado."""
+        ...
 
 
 class UnidadeDeTrabalho(Protocol):
@@ -76,12 +83,14 @@ class CorrecaoRepository(Protocol):
 
 
 class FilaRepository(Protocol):
-    def salvar_publicada(self, itens: list[ItemFila], versao_regras: str) -> None: ...
-    def obter_publicada(self) -> list[ItemFila]: ...
+    def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
+                         publicada_em: datetime) -> None: ...
+    def obter_publicada(self) -> list[LinhaFila]: ...
+    def publicada_em(self) -> datetime | None: ...
 
 
 class SwalisScorer(Protocol):
-    """Contrato do SWALIS (C-07). Implementação real virá do time do SWALIS; até lá, SwalisStub."""
+    """Contrato do SWALIS (C-07). Implementação: SwalisRegras (infrastructure/swalis_regras.py)."""
 
     versao_regras: str
 

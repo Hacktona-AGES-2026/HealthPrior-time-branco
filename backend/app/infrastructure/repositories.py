@@ -5,15 +5,18 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 """
 from __future__ import annotations
 
-from sqlalchemy import bindparam, delete, select, update
+from datetime import datetime
+
+from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.enums import Classe, ClasseStatus, StatusFila
-from app.domain.models import Correcao, Evento, ResultadoTabela, Solicitacao
+from app.domain.models import Correcao, Evento, LinhaFila, ResultadoTabela, Solicitacao
 from app.infrastructure.tables import (
     CorrecaoTable,
     EventoTable,
+    FilaPublicadaTable,
     ProcedimentoTable,
     SolicitacaoTable,
 )
@@ -31,6 +34,7 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         intensidade_dor_eva=t.intensidade_dor_eva, limitacao_funcional=t.limitacao_funcional,
         justificativa_clinica=t.justificativa_clinica or "", observacoes=t.observacoes or "",
         prioridade_regulacao=t.prioridade_regulacao, flag_oncologico=t.flag_oncologico,
+        flag_piora_clinica=t.flag_piora_clinica, piora_recalculada=t.piora_recalculada,
         cid_norm=t.cid_norm, nome_norm=t.nome_norm or "", oncologico=t.oncologico,
         municipio_norm=t.municipio_norm, prioridade_norm=t.prioridade_norm,
         status_fila=StatusFila(t.status_fila), motivo_status=t.motivo_status,
@@ -38,6 +42,15 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         classe_medico=Classe(t.classe_medico) if t.classe_medico else None,
         score_medico=t.score_medico, editado_manualmente=t.editado_manualmente,
         editado_por=t.editado_por, editado_em=t.editado_em,
+    )
+
+
+def _para_evento(t: EventoTable) -> Evento:
+    return Evento(
+        evento_id=t.evento_id, solicitacao_id=t.solicitacao_id, paciente_id=t.paciente_id,
+        data_evento=t.data_evento, tipo_evento=t.tipo_evento, resultado=t.resultado,
+        valor_numerico=t.valor_numerico, descricao=t.descricao or "", origem=t.origem,
+        duplicado_de=t.duplicado_de, historico=t.historico, orfao=t.orfao,
     )
 
 
@@ -76,22 +89,52 @@ class SqlSolicitacaoRepository:
         )
         self._s.expire_all()  # o update em lote não sincroniza os objetos já carregados
 
+    def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
+        if not solicitacoes:
+            return
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela)
+            .where(tabela.c.solicitacao_id == bindparam("b_id"))
+            .values(oncologico=bindparam("oncologico"),
+                    piora_recalculada=bindparam("piora_recalculada")),
+            [{"b_id": s.solicitacao_id, "oncologico": s.oncologico,
+              "piora_recalculada": s.piora_recalculada} for s in solicitacoes],
+        )
+        self._s.expire_all()
+
 
 class SqlEventoRepository:
     def __init__(self, session: Session):
         self._s = session
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = (select(EventoTable).where(EventoTable.solicitacao_id == solicitacao_id)
+                    .order_by(EventoTable.data_evento, EventoTable.evento_id))
+        return [_para_evento(t) for t in self._s.exec(consulta).scalars()]
 
     def listar_todos(self) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = select(EventoTable).order_by(EventoTable.evento_id)
+        return [_para_evento(t) for t in self._s.exec(consulta).scalars()]
 
     def adicionar(self, evento: Evento) -> None:
         raise NotImplementedError("US-01")
 
     def salvar_varios(self, eventos: list[Evento]) -> None:
         raise NotImplementedError("US-01")
+
+    def atualizar_marcas(self, eventos: list[Evento]) -> None:
+        if not eventos:
+            return
+        tabela = EventoTable.__table__
+        self._s.execute(
+            update(tabela)
+            .where(tabela.c.evento_id == bindparam("b_id"))
+            .values(duplicado_de=bindparam("duplicado_de"), historico=bindparam("historico")),
+            [{"b_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico}
+             for e in eventos],
+        )
+        self._s.expire_all()
 
 
 class SqlCargaRepository:
@@ -149,6 +192,43 @@ class SqlCorrecaoRepository:
         self._s.flush()
 
 
+class SqlFilaRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
+                         publicada_em: datetime) -> None:
+        """Substitui a fila publicada inteira. Não confirma: a unidade de trabalho confirma."""
+        self._s.execute(delete(FilaPublicadaTable))
+        self._s.add_all(
+            FilaPublicadaTable(
+                solicitacao_id=l.solicitacao_id, posicao=l.posicao, camada=l.camada,
+                classe=l.classe, pct_prazo_consumido=l.pct_prazo_consumido,
+                dias_em_fila=l.dias_em_fila, score_efetivo=l.score_efetivo,
+                justificativa=l.justificativa, editado_manualmente=l.editado_manualmente,
+                versao_regras=versao_regras, publicada_em=publicada_em,
+            )
+            for l in linhas
+        )
+        self._s.flush()
+
+    def obter_publicada(self) -> list[LinhaFila]:
+        rows = self._s.execute(
+            select(FilaPublicadaTable).order_by(FilaPublicadaTable.posicao)).scalars().all()
+        return [
+            LinhaFila(
+                solicitacao_id=t.solicitacao_id, posicao=t.posicao, justificativa=t.justificativa,
+                camada=t.camada, classe=t.classe, pct_prazo_consumido=t.pct_prazo_consumido,
+                dias_em_fila=t.dias_em_fila, score_efetivo=t.score_efetivo,
+                editado_manualmente=t.editado_manualmente, versao_regras=t.versao_regras,
+            )
+            for t in rows
+        ]
+
+    def publicada_em(self) -> datetime | None:
+        return self._s.execute(select(func.max(FilaPublicadaTable.publicada_em))).scalar()
+
+
 class SqlUnidadeDeTrabalho:
     def __init__(self, session: Session):
         self._s = session
@@ -160,4 +240,4 @@ class SqlUnidadeDeTrabalho:
         self._s.rollback()
 
 
-# Demais repositórios (Pendencia, Decisao, Correcao, Fila) seguem o mesmo padrão.
+# Demais repositórios (Pendencia, Decisao, Correcao) seguem o mesmo padrão.

@@ -33,7 +33,7 @@ class CategoriaSinal(str, Enum):
     SINTOMA_GRAVE = "sintoma_grave"  # sintoma 2
 
 
-# Termos do verificador oficial (urgencia._KW_ALARME) separados por eixo. Provisório (D-28):
+# Termos do verificador oficial (urgencia._KW_ALARME) separados por eixo. Provisório (D-44):
 # a separação é do time, não do SWALIS; ajuste aqui e registre no DECISOES.md.
 TERMOS: dict[CategoriaSinal, re.Pattern[str]] = {
     CategoriaSinal.RISCO_VIDA: re.compile(

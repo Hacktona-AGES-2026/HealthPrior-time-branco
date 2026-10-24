@@ -1,9 +1,10 @@
 """Comandos de linha (rode dentro de backend/):
 
     python -m app.cli init-db     cria as tabelas
-    python -m app.cli carga       US-01/02: carga inicial + normalização (mesma transação)
+    python -m app.cli carga       US-01/02/03: carga inicial + normalização + flags (mesma transação)
     python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
-    python -m app.cli gerar-fila  US-08/09/10: gera, verifica e publica fila_priorizada.csv (via banco)
+    python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
+    python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli extrair-sinais  SW-01..04: pré-aquece o cache do LLM e mostra as classes SWALIS
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
@@ -11,12 +12,16 @@
 import argparse
 import sys
 from collections import Counter
+from datetime import datetime, timezone
 
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
+from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
+from app.application.publicar_fila import PublicarFila
 from app.application.normalizar import Normalizar, ResumoNormalizacao
+from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
 from app.config import settings
 from app.domain.errors import CargaInvalidaError
 from app.infrastructure.csv_loader import LeitorDataset
@@ -26,6 +31,8 @@ from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
+    SqlEventoRepository,
+    SqlFilaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
@@ -43,19 +50,32 @@ def _imprimir_normalizacao(r: ResumoNormalizacao) -> None:
     print(f"normalização: {r.solicitacoes} solicitações, {r.correcoes} correções ({regras})")
 
 
+def _imprimir_flags(r: ResumoFlags) -> None:
+    regras = ", ".join(f"{regra}: {n}" for regra, n in sorted(r.correcoes.items())) or "nenhuma"
+    print(f"flags: {r.solicitacoes} solicitações, correções ({regras})")
+    print(f"eventos: {r.eventos_duplicados} duplicados, {r.eventos_historicos} históricos")
+
+
+def _recalcular_flags(session: Session) -> RecalcularFlags:
+    return RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                           SqlCorrecaoRepository(session))
+
+
 def cmd_carga() -> None:
     criar_tabelas()
     with Session(engine) as session:
         normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
         try:
             resumo = CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                                  SqlUnidadeDeTrabalho(session)).executar()
+                                  SqlUnidadeDeTrabalho(session),
+                                  _recalcular_flags(session)).executar()
         except CargaInvalidaError as e:
             sys.exit(f"Erro na carga: {e.mensagem}")
     for tabela in ("procedimentos", "solicitacoes", "eventos"):
         r = getattr(resumo, tabela)
         print(f"{tabela}: {r.lido} lidos, {r.inseridos} inseridos, {r.atualizados} atualizados")
     _imprimir_normalizacao(resumo.normalizacao)
+    _imprimir_flags(resumo.flags)
 
 
 def cmd_normalizar() -> None:
@@ -65,8 +85,32 @@ def cmd_normalizar() -> None:
     _imprimir_normalizacao(resumo)
 
 
+def cmd_flags() -> None:
+    with Session(engine) as session:
+        resumo = _recalcular_flags(session).executar()
+        SqlUnidadeDeTrabalho(session).confirmar()
+    _imprimir_flags(resumo)
+
+
 def cmd_gerar_fila() -> None:
-    raise NotImplementedError("US-08/09/10: montar GerarFila (ver app/api/deps.py) e executar")
+    """US-09/10: gera a fila do banco, roda o verificador e só publica se passar (I-07)."""
+    with Session(engine) as session:
+        gerar = GerarFila(
+            SqlSolicitacaoRepository(session), SqlEventoRepository(session), criar_swalis(),
+            ExportadorCsv(), settings.ref_date,
+        )
+        resultado = PublicarFila(
+            gerar, VerificadorOficial(), SqlFilaRepository(session), SqlUnidadeDeTrabalho(session),
+            lambda: datetime.now(timezone.utc), settings.output_dir,
+        ).executar()
+    print(resultado.saida_verificador, end="")
+    print(f"Arquivo: {resultado.caminho_csv}")
+    print(f"Total: {resultado.total} | " + " | ".join(
+        f"camada {c}: {resultado.por_camada.get(c, 0)}" for c in (1, 2, 3)))
+    if not resultado.publicada:
+        print("FILA NÃO PUBLICADA: o verificador falhou (I-07). A fila anterior continua valendo.",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def cmd_gerar_fila_csv() -> None:
@@ -125,7 +169,7 @@ def cmd_decisoes() -> None:
 
 
 COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
-            "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
+            "flags": cmd_flags, "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "extrair-sinais": cmd_extrair_sinais, "decisoes": cmd_decisoes}
 
 
