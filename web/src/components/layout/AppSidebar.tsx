@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BellRing, FileUp, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+import { BarChart3, BellRing, FileUp, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -43,9 +43,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="HealthPrior" render={<div />} className="cursor-default hover:bg-transparent">
-              <span className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                <Activity className="size-4" aria-hidden />
-              </span>
+              <img src="/logo.png" alt="" width={32} height={32} className="size-8 shrink-0 object-contain" />
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold">HealthPrior</span>
               </span>
