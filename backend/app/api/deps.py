@@ -113,7 +113,7 @@ def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas
 # US-12
 def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
     return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
-                       SqlEventoRepository(session), get_scorer())
+                       SqlEventoRepository(session), get_scorer(), SqlDecisaoRepository(session))
 
 
 # US-21
@@ -126,4 +126,5 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session)) -> Detalha
         fila=SqlFilaRepository(session),
         scorer=get_scorer(),
         ref_date=settings.ref_date,
+        decisoes=SqlDecisaoRepository(session),
     )

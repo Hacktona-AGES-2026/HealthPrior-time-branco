@@ -139,3 +139,25 @@ def test_evento_gatilho_e_editado_anteriormente():
     assert s1.criado_em == AGORA and s1.camada == 2 and s1.dias_em_fila == 11
     assert len(s1.motivos) == 3
     assert s2.evento_gatilho is None and s2.editado_anteriormente is None
+
+
+def test_sugestao_ja_avaliada_nao_volta_ao_inbox():
+    # Regulador editou para B recusando a sugestão D: o paciente sai do inbox; volta se a
+    # sugestão mudar (D-76).
+    from app.domain.enums import AcaoDecisao
+    from app.domain.models import Decisao
+
+    class DecisoesFalsas:
+        def __init__(self, sugerida):
+            self.sugerida = sugerida
+
+        def listar_por_solicitacao(self, sid):
+            return [Decisao("DEC-1", sid, "R", AcaoDecisao.EDITAR, AGORA, self.sugerida, Classe.B)]
+
+    s = sol("S1", status=ClasseStatus.CONFIRMADA, confirmada=Classe.B)
+    uc, _ = caso(["S1"], [s], {"S1": Classe.D})
+    assert uc.executar().total == 1  # sem log de decisões: entra
+    uc._decisoes = DecisoesFalsas(Classe.D)
+    assert uc.executar().total == 0  # a sugestão D já foi avaliada
+    uc._decisoes = DecisoesFalsas(Classe.C)
+    assert uc.executar().total == 1  # sugestão mudou desde a decisão

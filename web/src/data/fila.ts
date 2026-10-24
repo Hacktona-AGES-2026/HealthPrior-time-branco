@@ -2,8 +2,10 @@ import { CLASSES, indiceClasse } from "@/lib/cores"
 import { criarRng, gerarPacientesBase } from "./gerador"
 import { ID_DESTAQUE, enriquecerDestaque } from "./destaque"
 import type { Classe, Fantasma, Paciente, SlotFila } from "./tipos"
+import { listarFila, listarInbox } from "@/lib/api"
+import { deApi } from "./adaptador"
 
-export const TOTAL_FILA = 941
+export let TOTAL_FILA = 941
 
 export const BANDAS: Record<Classe, [number, number]> = {
   A1: [1, 28],
@@ -87,23 +89,47 @@ const construirFantasmas = (ocupadas: Set<number>) => {
   return fantasmas
 }
 
-const { pacientes, ocupadas } = construirPacientes()
-
-export const PACIENTES: Paciente[] = pacientes
-
-export const FANTASMAS: Fantasma[] = construirFantasmas(ocupadas)
-
-export const PACIENTE_POR_ID: Record<string, Paciente> = Object.fromEntries(PACIENTES.map((p) => [p.solicitacao_id, p]))
-
-export const FILA: SlotFila[] = (() => {
-  const slots: SlotFila[] = Array.from({ length: TOTAL_FILA }, (_, i) => ({ posicao: i + 1 }))
-  PACIENTES.forEach((p) => {
-    slots[p.posicao_nova - 1].paciente = p
+const montarSlots = (pacientes: Paciente[], fantasmas: Fantasma[], total: number): SlotFila[] => {
+  const slots: SlotFila[] = Array.from({ length: total }, (_, i) => ({ posicao: i + 1 }))
+  pacientes.forEach((p) => {
+    if (slots[p.posicao_nova - 1]) slots[p.posicao_nova - 1].paciente = p
   })
-  FANTASMAS.forEach((f) => {
-    slots[f.posicao - 1].fantasma = f
+  fantasmas.forEach((f) => {
+    if (slots[f.posicao - 1]) slots[f.posicao - 1].fantasma = f
   })
   return slots
-})()
+}
 
-export const ESPECIALIDADES = [...new Set(PACIENTES.map((p) => p.especialidade))].sort()
+// Dados vivos: preenchidos por `carregarFila()` (API) ou pelo mock. Os imports são live bindings
+// do ES module, então quem importa enxerga a versão nova depois de cada recarga.
+export let PACIENTES: Paciente[] = []
+export let FANTASMAS: Fantasma[] = []
+export let PACIENTE_POR_ID: Record<string, Paciente> = {}
+export let FILA: SlotFila[] = []
+export let ESPECIALIDADES: string[] = []
+export let ORIGEM_DADOS: "api" | "mock" = "mock"
+export let VERSAO_REGRAS = ""
+
+const aplicar = (pacientes: Paciente[], fantasmas: Fantasma[], total: number) => {
+  PACIENTES = [...pacientes].sort((a, b) => a.posicao_nova - b.posicao_nova)
+  FANTASMAS = fantasmas
+  TOTAL_FILA = total
+  PACIENTE_POR_ID = Object.fromEntries(PACIENTES.map((p) => [p.solicitacao_id, p]))
+  FILA = montarSlots(PACIENTES, FANTASMAS, total)
+  ESPECIALIDADES = [...new Set(PACIENTES.map((p) => p.especialidade))].sort()
+}
+
+export const usarMock = () => {
+  const { pacientes, ocupadas } = construirPacientes()
+  aplicar(pacientes, construirFantasmas(ocupadas), 941)
+  ORIGEM_DADOS = "mock"
+}
+
+/** Busca fila + inbox na API. Lança erro se a API não responder (quem chama decide o fallback). */
+export const carregarFila = async () => {
+  const [{ itens, versao_regras }, inbox] = await Promise.all([listarFila(), listarInbox()])
+  const pacientes = itens.map((i) => deApi(i, inbox.itens.find((x) => x.solicitacao_id === i.solicitacao_id)))
+  aplicar(pacientes, [], itens.length)
+  ORIGEM_DADOS = "api"
+  VERSAO_REGRAS = versao_regras ?? ""
+}

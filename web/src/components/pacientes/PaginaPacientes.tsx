@@ -14,12 +14,13 @@ import { COLUNAS, estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 import { FichaSus } from "./FichaSus"
 
-const indiceBusca = PACIENTES.map((p) => ({
+const criarIndiceBusca = () => PACIENTES.map((p) => ({
   p,
   alvo: normalizar([p.solicitacao_id, p.iniciais, p.cns_mascarado, p.cid, p.cid_descricao, p.procedimento, p.municipio, p.especialidade, ...p.sinais].join(" ")),
 }))
 
 export default function PaginaPacientes() {
+  const indiceBusca = criarIndiceBusca()
   const selecionadoId = useStore((s) => s.selecionadoId)
   const decisoes = useStore((s) => s.decisoes)
   const selecionar = useStore((s) => s.selecionar)
