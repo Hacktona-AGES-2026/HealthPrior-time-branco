@@ -2,6 +2,7 @@
 
 > **Status:** 24/10/2026 · auditoria sobre a `main` em `cd0802e`. Nenhum valor de código foi alterado.
 > **Pergunta da issue:** por que cada parâmetro resolve o problema da fila, e o que a literatura diz dele.
+> **Versão para o pitch** (fórmula do score, classificação SWALIS e literatura em linguagem direta): [`score-e-literatura.md`](score-e-literatura.md).
 
 Como ler: cada linha diz o valor, onde ele está, o que faz, por que ajuda a fila e de onde vem.
 **Status** usa três rótulos:
@@ -12,7 +13,7 @@ Como ler: cada linha diz o valor, onde ele está, o que faz, por que ajuda a fil
 
 "Desafio" é fonte oficial da hackatona (`data/referencias/swalis.csv`, `src/verificar_fila_priorizada.py`,
 `docs/dicionario_dados.md`): não é literatura, mas é a regra contra a qual a banca avalia.
-As referências [R1]..[R9] estão no §9 e foram todas conferidas nesta auditoria; o §9 diz o que foi lido em cada uma
+As referências [R1]..[R14] estão no §9 e foram todas conferidas nesta auditoria; o §9 diz o que foi lido em cada uma
 (texto completo, resumo ou fonte secundária).
 
 ---
@@ -137,7 +138,10 @@ ordenação** (`score/decisoes.md` D-21). Mesmo assim, como podem aparecer no pi
 | Faixas Charlson → multiplicador | 0→1,00; 1→1,03; 2→1,06; 3–4→1,10; 5+→1,15 | `apply_comorbidity_multiplier.py:112-120` | Fator contextual | Regra de produto (`score/decisoes.md` D-18) | — | **sem fonte** |
 | Fator idade/mortalidade | `1 + 0,075 × min(log2(IRR), 2)`, teto 1,15 | `apply_idade_mortality_multiplier.py:81-82` | Fator contextual | Regra de produto (`score/decisoes.md` D-12) | — | **sem fonte** |
 | Faixas etárias do IRR | 0–17, 18–39, 40–49, 50–59, 60–69, 70–79, 80+ | `apply_idade_mortality_multiplier.py:49-60` | Célula da tabela SIM/IBGE | "Faixas amplas e interpretáveis" (`score/decisoes.md` D-07) | — | **sem fonte** |
-| Sem limiar mínimo de óbitos | 0 | `score/decisoes.md` D-09 | Toda célula tem IRR, mesmo instável | Retornar valor para todos | — | **sem fonte** |
+| Sem limiar mínimo de óbitos | 0 | `score/decisoes.md` D-09 | Toda célula tem IRR, mesmo instável | Retornar valor para todos | [R12]: o NCHS não publica taxa com menos de 20 óbitos (erro padrão relativo ≥ 23%) | **divergente** (107 de 357 células; 26 pacientes com fator > 1 vindo delas) |
+| Charlson sem idade | idade fora do índice de comorbidade | `score/decisoes.md` D-14 | Evita contar a idade no Charlson e no IRR | 1 ponto de comorbidade ≈ 1 década de idade no índice combinado | [R6] | com fonte |
+| CID principal fora do Charlson | — | `score/decisoes.md` D-15 | Não conta a doença da cirurgia como comorbidade | O Elixhauser separa comorbidades do motivo principal da internação | [R10] | com fonte |
+| Hierarquia do Charlson | não aplicada (tumor + metástase somariam 8) | `apply_comorbidity_multiplier.py:139` | Soma todas as categorias achadas | Metástase substitui malignidade; diabetes com complicação substitui sem complicação | [R11] | **divergente** (0 casos no dataset) |
 
 A origem da tabela IRR (SIM 2019–2023 e projeções IBGE revisão 2024) **não foi conferida** nesta
 auditoria: o arquivo `score/references/irr_nacional_cid_idade_2019_2023.parquet` não traz o script que o
@@ -182,11 +186,14 @@ Precisam de validação com os mentores (HSL) ou ficam declarados como escolha d
 | X-05 | Atribuição do ajuste por idade do Charlson | "Charlson et al. 1987" | [R6] (1994) | Só a citação; os pontos estão certos | Corrigir o comentário em `score_mortalidade.py:118` |
 | X-06 | Leucemia com peso de linfoma no Elixhauser | 9 pontos | [R9]: o Elixhauser não tem categoria de leucemia | Soma 9 pontos que o índice não prevê | Tirar C91–C95 do `linfoma` no Elixhauser (no Charlson continuam valendo 2, como malignidade) |
 | X-07 | I25 / "cardiopatia isquêmica" como infarto | 1 ponto | [R5]: infarto do miocárdio | Superestima (doença isquêmica crônica ≠ infarto) | Mapear só I21/I22/I25.2 ou texto "infarto" |
-| X-08 | Todo diabetes como "sem complicação" | 1 ponto | [R5]: com lesão de órgão-alvo = 2 | Subestima | Ler o 4º caractere do CID (E1x.2–E1x.5) |
+| X-08 | Todo diabetes como "sem complicação" | 1 ponto | [R5]: com lesão de órgão-alvo = 2 | Subestima (0 casos no dataset hoje) | Ler o 4º caractere do CID (E1x.2–E1x.5) |
+| X-09 | IRR sem limiar mínimo de óbitos | `score/decisoes.md` D-09 | [R12]: < 20 óbitos = taxa não confiável | 26 pacientes recebem fator > 1 de células instáveis | Exigir ≥ 20 óbitos na célula ou cair para fator neutro |
+| X-10 | Hierarquia do Charlson não aplicada | tumor + metástase = 8 | [R11]: metástase substitui malignidade (6) | 0 casos no dataset | Aplicar a hierarquia antes de somar |
+| X-11 | Teto `min(100, …)` da composição proposta | `score/README.md` | — (incompatibilidade interna) | O score da fila é % do prazo e passa de 100; o teto empataria todos os atrasados | Não usar o teto se os fatores forem ligados ao % do prazo (`score-e-literatura.md` §4.4) |
 
 Nenhum parâmetro contradiz a regra de ouro (I-01): ela não depende de peso, só da camada 1 pelo CID,
 e o verificador oficial continua sendo o portão (I-07). X-04 contraria uma decisão (D-03), não uma
-invariante. X-05..X-08 estão em módulos que não ordenam a fila.
+invariante. X-05..X-11 estão em módulos que não ordenam a fila.
 
 ---
 
@@ -203,6 +210,7 @@ invariante. X-05..X-08 estão em módulos que não ordenam a fila.
 | R7 | van Walraven C, Austin PC, Jennings A, Quan H, Forster AJ. *A modification of the Elixhauser comorbidity measures into a point system for hospital death using administrative data.* Med Care. 2009;47(6):626–633 | Citação. Pesos conferidos em fonte secundária: tabela de pesos van Walraven em [PMC7651966](https://pmc.ncbi.nlm.nih.gov/articles/PMC7651966) |
 | R8 | Chapman WW, Bridewell W, Hanbury P, Cooper GF, Buchanan BG. *A simple algorithm for identifying negated findings and diseases in discharge summaries.* J Biomed Inform. 2001;34:301–310. [PDF](https://www.dbmi.pitt.edu/wp-content/uploads/2022/10/A-simple-algorithm-for-identifying-negated-findings-and-diseases-in-discharge-summaries.pdf) | Resumo: gatilhos de negação por expressão regular com escopo de 1 a 6 palavras |
 | R9 | Quan H, Sundararajan V, Halfon P, Fong A, Burnand B, Luthi JC, Saunders LD, Beck CA, Feasby TE, Ghali WA. *Coding algorithms for defining comorbidities in ICD-9-CM and ICD-10 administrative data.* Med Care. 2005;43(11):1130–1139 | Citação e método (resumo). Categorias Charlson e Elixhauser dessa versão conferidas na documentação do pacote R [`comorbidity`](https://rdrr.io/github/ellessenne/comorbidity/man/comorbidity.html), que implementa Quan 2005: o Elixhauser tem 31 categorias, com "lymphoma" e sem leucemia, e o Charlson separa diabetes com e sem complicação. Lista de códigos CID-10 não conferida |
+| R10–R14 | Elixhauser 1998; HDR UK (hierarquia do Charlson); CDC/NCHS (confiabilidade estatística); definição de causa básica do SIM; Western Canada Waiting List Project 2004 | Citação completa e o que foi lido em [`score-e-literatura.md`](score-e-literatura.md#7-referências) §7 |
 
 **Fontes do desafio** (não são literatura): `data/referencias/swalis.csv` (classes, prazos e exemplos),
 `src/verificar_fila_priorizada.py` (CID urgente, termos de alarme, eventos de piora, "sem urgência",
