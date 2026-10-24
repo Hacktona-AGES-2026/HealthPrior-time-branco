@@ -6,7 +6,7 @@ from datetime import date
 from typing import Protocol
 
 from app.domain.cid import is_oncologico
-from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, StatusFila
+from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, ClasseStatus, StatusFila
 from app.domain.models import Evento, ItemRanking, LinhaFila, ResultadoScore, Solicitacao
 from app.domain.ranking import ordenar_fila
 from app.domain.urgencia import (
@@ -71,6 +71,32 @@ def montar_justificativa(
     return texto
 
 
+def classe_e_score_efetivos(sol: Solicitacao, res: ResultadoScore,
+                            ref_date: date) -> tuple[Classe, float, float]:
+    """(classe, score, % do prazo) usados na ordenação (C-10).
+
+    Classe: a do regulador (editar/manter); senão a confirmada (aprovar); senão a vigente
+    congelada por evento; senão a do SWALIS (só vale até a primeira mudança, carga = D-01).
+    Assim nenhuma classe sugerida depois da carga vale sem decisão humana (I-04, C-08).
+    O % do prazo segue o prazo da classe efetiva; score editado continua envelhecendo a partir
+    da edição, no ritmo do prazo da classe.
+    """
+    confirmada = sol.classe_confirmada if sol.classe_status == ClasseStatus.CONFIRMADA else None
+    classe = sol.classe_medico or confirmada or sol.classe_vigente or res.classe_sistema
+    prazo = PRAZO_MAXIMO_DIAS[classe]
+    dias = (ref_date - sol.data_entrada_fila).days
+    if classe == res.classe_sistema:
+        pct = res.pct_prazo_consumido
+        if sol.score_medico is None:
+            return classe, res.score_sistema, pct
+    else:
+        pct = round(100 * dias / prazo, 1)
+    if sol.score_medico is None:
+        return classe, pct, pct
+    desde = max(0, (ref_date - sol.editado_em.date()).days) if sol.editado_em else 0
+    return classe, round(sol.score_medico + 100 * desde / prazo, 1), pct
+
+
 def montar_fila(
     solicitacoes: list[Solicitacao],
     eventos_por_solicitacao: dict[str, list[Evento]],
@@ -78,15 +104,14 @@ def montar_fila(
     ref_date: date,
 ) -> list[LinhaFila]:
     """Calcula score, camada e posição de cada solicitação ativa."""
-    contexto: dict[str, tuple[Solicitacao, ResultadoScore, list[str], list[str], float, Classe]] = {}
+    contexto: dict[str, tuple[Solicitacao, ResultadoScore, list[str], list[str], float, Classe, float]] = {}
     itens: list[ItemRanking] = []
     for sol in solicitacoes:
         if sol.status_fila != StatusFila.ATIVA:
             continue
         eventos = eventos_por_solicitacao.get(sol.solicitacao_id, [])
         res = scorer.calcular(sol, eventos)
-        score = sol.score_medico if sol.score_medico is not None else res.score_sistema
-        classe = sol.classe_medico if sol.classe_medico is not None else res.classe_sistema
+        classe, score, pct = classe_e_score_efetivos(sol, res, ref_date)
         sinais = SinaisUrgencia(
             cid_norm=sol.cid_norm,
             intensidade_dor_eva=sol.intensidade_dor_eva,
@@ -101,16 +126,14 @@ def montar_fila(
         itens.append(ItemRanking(sol.solicitacao_id, oncologico, is_urgente(sinais),
                                  score, sol.data_entrada_fila))
         contexto[sol.solicitacao_id] = (sol, res, motivos_urgencia(sinais),
-                                        motivos_sintomas(sinais), score, classe)
+                                        motivos_sintomas(sinais), score, classe, pct)
 
     linhas: list[LinhaFila] = []
     for item in ordenar_fila(itens):
-        sol, res, motivos, sintomas, score, classe = contexto[item.solicitacao_id]
-        classe_txt = classe.value if isinstance(classe, Classe) else str(classe)
-        prazo = PRAZO_MAXIMO_DIAS[classe] if isinstance(classe, Classe) else res.prazo_dias
+        sol, res, motivos, sintomas, score, classe, pct = contexto[item.solicitacao_id]
+        classe_txt = classe.value
+        prazo = PRAZO_MAXIMO_DIAS[classe]
         dias = (ref_date - sol.data_entrada_fila).days
-        # Classe editada pelo regulador: o % do prazo acompanha o prazo da classe decidida.
-        pct = round(100 * dias / prazo, 1) if sol.classe_medico is not None else res.pct_prazo_consumido
         camada = int(item.camada)
         linhas.append(LinhaFila(
             solicitacao_id=sol.solicitacao_id,
