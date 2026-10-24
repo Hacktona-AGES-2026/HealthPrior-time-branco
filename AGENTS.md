@@ -68,6 +68,7 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 | O quê | Comando |
 |---|---|
 | Verificar a fila | `python src/verificar_fila_priorizada.py <caminho>/fila_priorizada.csv` |
+| Gerar a fila (provisório) | `cd backend && python -m app.cli gerar-fila-csv` (gera `backend/output/fila_priorizada.csv` e roda o verificador) |
 | Score de mortalidade | `python src/score_mortalidade.py` (gera `data/processed/score_mortalidade.csv`) |
 | Instalar deps (Python) | `pip install -r requirements.txt` |
 | Subir o Postgres | `docker compose up -d --wait` |

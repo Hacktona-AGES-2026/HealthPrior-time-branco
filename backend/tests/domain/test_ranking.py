@@ -1,33 +1,136 @@
-"""Casos de aceite da US-08. Remova o skip ao implementar domain/ranking.py."""
-from datetime import date
+from __future__ import annotations
+
+import random
+from datetime import date, timedelta
 
 import pytest
 
 from app.domain.enums import Camada
 from app.domain.models import ItemRanking
-from app.domain.ranking import ordenar_fila
+from app.domain.ranking import definir_camada, ordenar_fila
 
-pytestmark = pytest.mark.skip(reason="US-08 ainda não implementada")
-
-
-def _item(sid, onco=False, urg=False, score=0.0, entrada=date(2025, 1, 1)):
-    return ItemRanking(sid, onco, urg, score, entrada)
+DATA = date(2025, 1, 1)
 
 
-def test_oncologico_acima_de_nao_urgente_mesmo_com_score_menor():
-    fila = ordenar_fila([_item("NAO-URG", score=111.0), _item("ONCO", onco=True, score=25.0)])
-    assert [i.solicitacao_id for i in fila] == ["ONCO", "NAO-URG"]
+def item(
+    sid: str,
+    *,
+    oncologico: bool = False,
+    urgente: bool = False,
+    score: float = 0.0,
+    data: date = DATA,
+) -> ItemRanking:
+    return ItemRanking(
+        solicitacao_id=sid,
+        oncologico=oncologico,
+        urgente=urgente,
+        score_efetivo=score,
+        data_entrada_fila=data,
+    )
+
+
+def test_oncologico_com_score_baixo_fica_acima_de_nao_urgente_com_score_alto():
+    itens = [
+        item("nao_urgente", score=111),
+        item("onco", oncologico=True, score=25),
+    ]
+
+    fila = ordenar_fila(itens)
+
+    assert fila[0].solicitacao_id == "onco"
+    assert fila[0].posicao == 1
     assert fila[0].camada == Camada.ONCOLOGICO
+    assert fila[1].solicitacao_id == "nao_urgente"
 
 
-def test_camadas_em_ordem_e_posicoes_sem_buraco():
-    fila = ordenar_fila([_item("C3", score=999), _item("C2", urg=True, score=1),
-                         _item("C1", onco=True, score=1)])
-    assert [i.camada for i in fila] == [Camada.ONCOLOGICO, Camada.URGENTE, Camada.DEMAIS]
-    assert [i.posicao for i in fila] == [1, 2, 3]
+def test_tres_camadas_nao_se_invadem():
+    itens = [
+        item("demais", score=999),
+        item("urgente", urgente=True, score=1),
+        item("onco", oncologico=True, score=1),
+    ]
+
+    fila = ordenar_fila(itens)
+
+    assert [f.solicitacao_id for f in fila] == ["onco", "urgente", "demais"]
+    assert [f.camada for f in fila] == [Camada.ONCOLOGICO, Camada.URGENTE, Camada.DEMAIS]
+    assert [f.posicao for f in fila] == [1, 2, 3]
 
 
-def test_desempate_pela_entrada_mais_antiga():
-    fila = ordenar_fila([_item("NOVO", score=50, entrada=date(2026, 1, 1)),
-                         _item("ANTIGO", score=50, entrada=date(2023, 1, 1))])
-    assert fila[0].solicitacao_id == "ANTIGO"
+def test_definir_camada_prioriza_oncologico_sobre_urgente():
+    assert definir_camada(item("a", oncologico=True, urgente=True)) == Camada.ONCOLOGICO
+    assert definir_camada(item("b", urgente=True)) == Camada.URGENTE
+    assert definir_camada(item("c")) == Camada.DEMAIS
+
+
+def test_desempate_por_entrada_mais_antiga_quando_score_empata():
+    itens = [
+        item("recente", score=50, data=date(2025, 3, 1)),
+        item("antiga", score=50, data=date(2024, 6, 1)),
+    ]
+
+    fila = ordenar_fila(itens)
+
+    assert [f.solicitacao_id for f in fila] == ["antiga", "recente"]
+
+
+def test_desempate_final_por_solicitacao_id_quando_score_e_data_empatam():
+    itens = [
+        item("SOL-30", score=50, data=DATA),
+        item("SOL-10", score=50, data=DATA),
+        item("SOL-20", score=50, data=DATA),
+    ]
+
+    fila = ordenar_fila(itens)
+
+    assert [f.solicitacao_id for f in fila] == ["SOL-10", "SOL-20", "SOL-30"]
+
+
+def test_solicitacao_id_repetido_levanta_value_error():
+    itens = [item("dup"), item("dup", oncologico=True)]
+
+    with pytest.raises(ValueError):
+        ordenar_fila(itens)
+
+
+def test_lista_vazia_devolve_lista_vazia():
+    assert ordenar_fila([]) == []
+
+
+def test_ordenar_fila_nao_modifica_itens_de_entrada():
+    itens = [item("b", score=1), item("a", oncologico=True, score=2)]
+    copia = [ItemRanking(**vars(i)) for i in itens]
+
+    ordenar_fila(itens)
+
+    assert itens == copia
+
+
+def test_propriedade_regra_de_ouro_com_300_itens_aleatorios():
+    random.seed(42)
+    itens: list[ItemRanking] = []
+    for i in range(300):
+        itens.append(
+            item(
+                f"SOL-{i:04d}",
+                oncologico=random.random() < 0.3,
+                urgente=random.random() < 0.4,
+                score=round(random.uniform(0, 1000), 2),
+                data=DATA + timedelta(days=random.randint(0, 900)),
+            )
+        )
+
+    fila = ordenar_fila(itens)
+
+    assert [f.posicao for f in fila] == list(range(1, 301))
+
+    camadas = [f.camada for f in fila]
+    ultimo_onco = max((i for i, c in enumerate(camadas) if c == Camada.ONCOLOGICO), default=-1)
+    primeiro_nao_onco = min(
+        (i for i, c in enumerate(camadas) if c != Camada.ONCOLOGICO), default=len(camadas)
+    )
+    assert ultimo_onco < primeiro_nao_onco
+
+    ultimo_urgente = max((i for i, c in enumerate(camadas) if c == Camada.URGENTE), default=-1)
+    primeiro_demais = min((i for i, c in enumerate(camadas) if c == Camada.DEMAIS), default=len(camadas))
+    assert ultimo_urgente < primeiro_demais

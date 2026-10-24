@@ -15,7 +15,8 @@ uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /
 python -m app.cli init-db              # cria as tabelas
 python -m app.cli carga                # US-01 + US-02 (carga e normalização, mesma transação)
 python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
-python -m app.cli gerar-fila           # US-08/09/10
+python -m app.cli gerar-fila           # US-08/09/10 (via banco, após US-01)
+python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
