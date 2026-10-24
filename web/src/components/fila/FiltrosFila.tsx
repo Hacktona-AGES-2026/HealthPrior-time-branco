@@ -26,6 +26,7 @@ const STATUS: [StatusFiltro, string][] = [
 ]
 
 const itensEspecialidade = (): Record<string, string> => Object.fromEntries([["todas", "Todas as especialidades"], ...ESPECIALIDADES.map((e) => [e, e])])
+const ITENS_CAMADA: Record<string, string> = { todas: "Todas as camadas", "1": "Camada 1 · oncológico", "2": "Camada 2 · urgente", "3": "Camada 3 · demais" }
 const ITENS_CLASSE: Record<string, string> = Object.fromEntries([["todas", "Todas as classes"], ...CLASSES.map((c) => [c, `Classe ${c}`])])
 
 export function FiltrosFila({ total, visiveis }: { total: number; visiveis: number }) {
@@ -66,6 +67,18 @@ export function FiltrosFila({ total, visiveis }: { total: number; visiveis: numb
         </SelectTrigger>
         <SelectContent>
           {Object.entries(ITENS_CLASSE).map(([valor, rotulo]) => (
+            <SelectItem key={valor} value={valor}>
+              {rotulo}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select items={ITENS_CAMADA} value={filtros.camada} onValueChange={(v) => setFiltros({ camada: v ?? "todas" })}>
+        <SelectTrigger size="sm" className="w-44" aria-label="Filtrar por camada">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(ITENS_CAMADA).map(([valor, rotulo]) => (
             <SelectItem key={valor} value={valor}>
               {rotulo}
             </SelectItem>

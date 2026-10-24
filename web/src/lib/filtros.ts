@@ -1,6 +1,6 @@
 import type { Classe, Paciente } from "@/data/tipos"
 
-export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis"
+export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "propostas"
 
 export type Decisao = {
   status: "aprovado" | "rejeitado"
@@ -14,6 +14,7 @@ export type Filtros = {
   busca: string
   especialidade: string
   classe: string
+  camada: string
   oncologicos: boolean
   vencidos: boolean
   mudou: boolean
@@ -25,6 +26,7 @@ export const FILTROS_VAZIOS: Filtros = {
   busca: "",
   especialidade: "todas",
   classe: "todas",
+  camada: "todas",
   oncologicos: false,
   vencidos: false,
   mudou: false,
@@ -56,6 +58,7 @@ export const aplicarFiltros = (pacientes: Paciente[], f: Filtros, decisoes: Reco
     }
     if (f.especialidade !== "todas" && p.especialidade !== f.especialidade) return false
     if (f.classe !== "todas" && p.classe !== f.classe) return false
+    if (f.camada !== "todas" && String(p.camada ?? "") !== f.camada) return false
     if (f.oncologicos && !ehOncologico(p)) return false
     if (f.vencidos && p.prazo_consumido_pct <= 100) return false
     if (f.mudou && !mudouPosicao(p)) return false
