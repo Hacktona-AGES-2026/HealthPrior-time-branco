@@ -321,6 +321,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | Coluna | Tipo | Descrição |
 |---|---|---|
 | `cid_norm` | texto | CID maiúsculo sem ponto (PRE-01) |
+| `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-20) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
