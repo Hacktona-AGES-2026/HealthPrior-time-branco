@@ -25,6 +25,28 @@ w(c)  = 100 / P(c)                                      peso de cada dia de espe
 P(c)  = { A1: 15, A2: 21, B: 60, C: 180, D: 360 }       prazo máximo da classe (dias)
 ```
 
+**Legenda (o que cada letra quer dizer):**
+
+| Letra | Nome | O que é | Exemplo (SOL-2023-00010) |
+|---|---|---|---|
+| x | paciente | a solicitação que está sendo pontuada | SOL-2023-00010 |
+| t(x) | **tempo** | quantos dias o paciente está na fila (23/10/2026 menos a data de entrada) | 1.318 dias |
+| p(x) | **progressão** | nota de 0 a 3: quanto a doença pode piorar ou ameaçar a vida (3 = obstrução/risco de vida; 2 = câncer confirmado; 1 = suspeita; 0 = nada) | 2 (câncer pelo CID) |
+| s(x) | **sintoma** | nota de 0 a 2: quanto dói ou limita (2 = dor 7–10 ou limitação grave; 1 = dor 4–6 ou moderada; 0 = leve ou nada) | 1 (dor EVA 4) |
+| T | **tabela** | a regra que transforma as duas notas na classe | p = 2 → A2 |
+| C(x) | **classe** | A1, A2, B, C ou D | A2 |
+| P(c) | **prazo** | quantos dias a classe tolera esperar | 21 dias |
+| w(c) | **peso** | quanto vale cada dia de espera nessa classe = 100 / prazo | 100 / 21 = 4,762 |
+| f(x) | **score** | peso × dias = "% do prazo já consumido" | 4,762 × 1.318 = 6.276% |
+| L(x) | **camada** | 1 = câncer pelo CID; 2 = sinal de urgência; 3 = demais | 1 |
+| U(x) | **urgente?** | sim/não: tem sinal clínico de urgência (complicação no CID, piora na espera, biópsia positiva, alarme no texto) | — (já está na camada 1) |
+| [ … ] | indicador | vale 1 se o que está dentro é verdade e 0 se não é | — |
+| ∨ | "ou" | basta uma das condições | — |
+| max{ … } | maior valor | o eixo fica com a nota do achado mais grave | — |
+
+Em palavras: **o score é o número de dias na fila multiplicado pelo peso da classe**. A classe sai das duas
+notas (progressão e sintoma). A fila ordena primeiro pela camada e, dentro dela, pelo score.
+
 **Peso por dia de espera** (quanto o score sobe a cada dia):
 
 | Classe | Prazo P(c) | Peso w(c) = 100/P(c) | Em relação à D |
