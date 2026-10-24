@@ -48,12 +48,25 @@ class FlagsOut(BaseModel):
     correcoes: dict[str, int]  # por regra (PRE-xx)
 
 
+class PendenciasSincronizadasOut(BaseModel):
+    abertas: int
+    atualizadas: int
+    encerradas: int
+
+
+class InconsistenciasOut(BaseModel):
+    solicitacoes: int
+    alertas: dict[str, int]  # por regra (PRE-xx)
+    pendencias: PendenciasSincronizadasOut
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
     eventos: ResultadoTabelaOut
     normalizacao: NormalizacaoOut
     flags: Optional[FlagsOut] = None
+    inconsistencias: Optional[InconsistenciasOut] = None
 
 
 class PublicacaoOut(BaseModel):

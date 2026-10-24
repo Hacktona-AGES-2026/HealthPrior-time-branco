@@ -9,6 +9,7 @@ from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
+from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
@@ -23,6 +24,7 @@ from app.infrastructure.repositories import (
     SqlCorrecaoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
+    SqlPendenciaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
@@ -38,8 +40,11 @@ def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
     normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
     flags = RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                             SqlCorrecaoRepository(session))
+    inconsistencias = DetectarInconsistencias(
+        SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+        SqlPendenciaRepository(session), settings.ref_date)
     return CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                        SqlUnidadeDeTrabalho(session), flags)
+                        SqlUnidadeDeTrabalho(session), flags, inconsistencias)
 
 
 def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:

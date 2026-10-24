@@ -15,6 +15,7 @@ from app.domain.models import (
     LinhaFila,
     Pendencia,
     ResultadoScore,
+    ResultadoSincronizacao,
     ResultadoTabela,
     Solicitacao,
 )
@@ -28,6 +29,9 @@ class SolicitacaoRepository(Protocol):
     def salvar_varias(self, solicitacoes: list[Solicitacao]) -> None: ...
     def salvar_normalizadas(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só as colunas *_norm (US-02). Colunas originais e estado não são tocados."""
+        ...
+    def salvar_alertas(self, solicitacoes: list[Solicitacao]) -> None:
+        """Grava só `alertas` (US-05); nenhuma coluna original muda."""
         ...
     def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `oncologico` e `piora_recalculada` (US-03); nenhuma coluna original muda."""
@@ -67,6 +71,14 @@ class PendenciaRepository(Protocol):
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]: ...
     def salvar(self, pendencia: Pendencia) -> None: ...
+    def sincronizar(self, regras: tuple[str, ...], pendencias: list[Pendencia]) -> ResultadoSincronizacao:
+        """Mantém as pendências automáticas dessas `regras` iguais às `pendencias` detectadas.
+
+        Uma por (solicitação, regra). Abre as que faltam; atualiza a evidência das abertas; encerra
+        (resolvida, por "sistema") as abertas que deixaram de valer. Nunca reabre nem altera as que
+        uma pessoa já resolveu ou descartou, e nunca apaga.
+        """
+        ...
 
 
 class DecisaoRepository(Protocol):
