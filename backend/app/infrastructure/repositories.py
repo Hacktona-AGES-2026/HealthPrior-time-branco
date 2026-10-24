@@ -134,17 +134,6 @@ class SqlSolicitacaoRepository:
                         .values(data_entrada_fila=solicitacao.data_entrada_fila))
         self._s.expire_all()
 
-    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
-        tabela = SolicitacaoTable.__table__
-        self._s.execute(
-            update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id).values(
-                classe_status=solicitacao.classe_status.value,
-                classe_confirmada=solicitacao.classe_confirmada.value if solicitacao.classe_confirmada else None,
-                classe_medico=solicitacao.classe_medico.value if solicitacao.classe_medico else None,
-                score_medico=solicitacao.score_medico, editado_manualmente=solicitacao.editado_manualmente,
-                editado_por=solicitacao.editado_por, editado_em=solicitacao.editado_em))
-        self._s.expire_all()
-
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
             return
@@ -451,36 +440,6 @@ class SqlPendenciaRepository:
     def _proximo_numero(self) -> int:
         ultimo = self._s.execute(select(func.max(PendenciaTable.pendencia_id))).scalar()
         return int(ultimo.split("-")[1]) + 1 if ultimo else 1
-
-
-class SqlDecisaoRepository:
-    def __init__(self, session: Session):
-        self._s = session
-
-    def adicionar(self, decisao: Decisao) -> None:
-        d = decisao
-        self._s.add(DecisaoTable(
-            decisao_id=d.decisao_id, solicitacao_id=d.solicitacao_id, regulador_id=d.regulador_id,
-            acao=d.acao.value, data=d.data,
-            classe_sugerida=d.classe_sugerida.value if d.classe_sugerida else None,
-            classe_decidida=d.classe_decidida.value if d.classe_decidida else None,
-            score_decidido=d.score_decidido,
-            motivo_codificado=d.motivo_codificado.value if d.motivo_codificado else None,
-            justificativa=d.justificativa, versao_regras=d.versao_regras))
-        self._s.flush()
-
-    def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]:
-        consulta = (select(DecisaoTable).where(DecisaoTable.solicitacao_id == solicitacao_id)
-                    .order_by(DecisaoTable.data, DecisaoTable.decisao_id))
-        return [Decisao(
-            decisao_id=t.decisao_id, solicitacao_id=t.solicitacao_id, regulador_id=t.regulador_id,
-            acao=AcaoDecisao(t.acao), data=t.data,
-            classe_sugerida=Classe(t.classe_sugerida) if t.classe_sugerida else None,
-            classe_decidida=Classe(t.classe_decidida) if t.classe_decidida else None,
-            score_decidido=t.score_decidido,
-            motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
-            justificativa=t.justificativa, versao_regras=t.versao_regras,
-        ) for t in self._s.exec(consulta).scalars()]
 
 
 class SqlFilaRepository:
