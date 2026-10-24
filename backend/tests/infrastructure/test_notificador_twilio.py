@@ -163,7 +163,7 @@ def test_waha_manda_texto_livre_para_cada_numero_com_o_chat_id_certo():
 def test_waha_parcial_sem_numero_e_sessao_caida():
     def handler(request):
         import json
-        return httpx.Response(422 if "995492424" in json.loads(request.content)["chatId"] else 201, text="Session is not ready")
+        return httpx.Response(422 if "5511999990002" in json.loads(request.content)["chatId"] else 201, text="Session is not ready")
 
     w = NotificadorWaha("http://waha:3000", client=cliente(handler))
     parcial = w.enviar("+5511999990001,+5511999990002", "x")
