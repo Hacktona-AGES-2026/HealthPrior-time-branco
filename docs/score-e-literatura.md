@@ -12,111 +12,98 @@
 
 ---
 
-## 1. A função
-
-Para um paciente x:
+## 1. A fórmula
 
 ```
-f(x) = w(C(x)) · t(x)                                   score usado na ordem (% do prazo consumido)
+score = peso_da_classe × dias_na_fila
 
-t(x)  = 23/10/2026 − data_entrada_fila(x)               dias em fila
-C(x)  = T( p(x), s(x) )                                 classe SWALIS
-w(c)  = 100 / P(c)                                      peso de cada dia de espera na classe c
-P(c)  = { A1: 15, A2: 21, B: 60, C: 180, D: 360 }       prazo máximo da classe (dias)
+dias_na_fila   = 23/10/2026 − data_de_entrada_na_fila
+peso_da_classe = 100 / prazo_da_classe
+prazo_da_classe:  A1 = 15 dias · A2 = 21 · B = 60 · C = 180 · D = 360
 ```
 
-**Legenda (o que cada letra quer dizer):**
-
-| Letra | Nome | O que é | Exemplo (SOL-2023-00010) |
-|---|---|---|---|
-| x | paciente | a solicitação que está sendo pontuada | SOL-2023-00010 |
-| t(x) | **tempo** | quantos dias o paciente está na fila (23/10/2026 menos a data de entrada) | 1.318 dias |
-| p(x) | **progressão** | nota de 0 a 3: quanto a doença pode piorar ou ameaçar a vida (3 = obstrução/risco de vida; 2 = câncer confirmado; 1 = suspeita; 0 = nada) | 2 (câncer pelo CID) |
-| s(x) | **sintoma** | nota de 0 a 2: quanto dói ou limita (2 = dor 7–10 ou limitação grave; 1 = dor 4–6 ou moderada; 0 = leve ou nada) | 1 (dor EVA 4) |
-| T | **tabela** | a regra que transforma as duas notas na classe | p = 2 → A2 |
-| C(x) | **classe** | A1, A2, B, C ou D | A2 |
-| P(c) | **prazo** | quantos dias a classe tolera esperar | 21 dias |
-| w(c) | **peso** | quanto vale cada dia de espera nessa classe = 100 / prazo | 100 / 21 = 4,762 |
-| f(x) | **score** | peso × dias = "% do prazo já consumido" | 4,762 × 1.318 = 6.276% |
-| L(x) | **camada** | 1 = câncer pelo CID; 2 = sinal de urgência; 3 = demais | 1 |
-| U(x) | **urgente?** | sim/não: tem sinal clínico de urgência (complicação no CID, piora na espera, biópsia positiva, alarme no texto) | — (já está na camada 1) |
-| [ … ] | indicador | vale 1 se o que está dentro é verdade e 0 se não é | — |
-| ∨ | "ou" | basta uma das condições | — |
-| max{ … } | maior valor | o eixo fica com a nota do achado mais grave | — |
-
-Em palavras: **o score é o número de dias na fila multiplicado pelo peso da classe**. A classe sai das duas
-notas (progressão e sintoma). A fila ordena primeiro pela camada e, dentro dela, pelo score.
+Juntando: **score = 100 × dias_na_fila / prazo_da_classe**, ou seja, o **% do prazo já consumido**.
+100% significa que o paciente esperou tudo o que a classe tolera.
 
 **Peso por dia de espera** (quanto o score sobe a cada dia):
 
-| Classe | Prazo P(c) | Peso w(c) = 100/P(c) | Em relação à D |
+| Classe | Prazo | Peso (100 / prazo) | Em relação à D |
 |---|---|---|---|
-| A1 | 15 | 6,667 | 24× |
-| A2 | 21 | 4,762 | 17,1× |
-| B | 60 | 1,667 | 6× |
-| C | 180 | 0,556 | 2× |
-| D | 360 | 0,278 | 1× |
+| A1 | 15 dias | 6,667 por dia | 24× |
+| A2 | 21 dias | 4,762 por dia | 17,1× |
+| B | 60 dias | 1,667 por dia | 6× |
+| C | 180 dias | 0,556 por dia | 2× |
+| D | 360 dias | 0,278 por dia | 1× |
 
-**Eixos** (indicadores [·] valem 1 se verdadeiro e 0 se falso; o eixo é o **máximo**):
+### 1.1 Como sai a classe
+
+A classe vem de duas notas. Cada nota fica com o **achado mais grave** do paciente; os achados não se somam.
 
 ```
-p(x) = max{ 3 · [ obstrução ∨ risco de vida ∨ perda de função
-                  ∨ CID ∈ {K40.0, K40.3, K42.0, K43.0, N13.2, I20.0} ],
-            2 · [ CID começa com C (exceto C44) ∨ biópsia positiva ∨ câncer confirmado no texto ],
-            1 · [ CID ∈ D37–D48 ∨ CID = R91 ∨ CID = C44 ∨ suspeita de malignidade no texto ],
-            0 }
+nota_de_progressão (0 a 3) = a maior entre:
+   3  se houver obstrução, risco de vida ou risco de perda de função
+        (pelo texto, ou CID K40.0, K40.3, K42.0, K43.0, N13.2, I20.0)
+   2  se houver câncer confirmado
+        (CID começa com C, exceto C44; ou biópsia positiva; ou câncer confirmado no texto)
+   1  se houver suspeita de câncer
+        (CID D37–D48, R91 ou C44; ou suspeita no texto)
+   0  se não houver nada disso
 
-s(x) = max{ 2 · [ dor EVA ≥ 7 ∨ limitação = grave ∨ CID ∈ {I83.2, K80.0}
-                  ∨ dor intensa no texto ∨ acamado/quedas/úlcera de pressão no texto ],
-            1 · [ 4 ≤ dor EVA ≤ 6 ∨ limitação = moderada ∨ dor vazia ∨ limitação vazia
-                  ∨ dor/limitação moderada no texto ],
-            0 }
+nota_de_sintoma (0 a 2) = a maior entre:
+   2  se dor EVA 7 a 10, ou limitação grave, ou CID I83.2 / K80.0,
+        ou dor intensa / acamado / quedas no texto
+   1  se dor EVA 4 a 6, ou limitação moderada, ou dor/limitação não informada,
+        ou sintoma moderado no texto
+   0  se dor 0 a 3 e limitação nenhuma ou leve
 ```
 
 Um achado do texto conta se veio por palavra-chave não negada ou pelo Jev com probabilidade ≥ 0,7.
 
-**Tabela T (classe):**
-
 ```
-T(p, s) = A1  se p = 3
-          A2  se p = 2
-          B   se p = 1,  ou p = 0 e s = 2
-          C   se p = 0 e s = 1
-          D   se p = 0 e s = 0
-```
-
-**Camada e ordem:**
-
-```
-L(x) = 1  se CID começa com C
-       2  se U(x) = 1
-       3  caso contrário
-
-U(x) = [ CID ∈ {I20.0, K40.0, K40.3, K42.0, K43.0, K80.0, N13.2, I83.2} ]
-     ∨ [ PS, internação, imagem com progressão ou reavaliação com piora DURANTE a espera ]
-     ∨ [ biópsia positiva ]
-     ∨ [ termo de alarme na justificativa clínica ]
-
-ordem = ( L(x) crescente, f(x) decrescente, data_entrada_fila crescente, solicitacao_id crescente )
+classe = A1   se nota_de_progressão = 3
+         A2   se nota_de_progressão = 2
+         B    se nota_de_progressão = 1
+         B    se nota_de_progressão = 0 e nota_de_sintoma = 2
+         C    se nota_de_progressão = 0 e nota_de_sintoma = 1
+         D    se nota_de_progressão = 0 e nota_de_sintoma = 0
 ```
 
-- **Override do regulador:** se houver classe editada, ela substitui C(x); se houver score editado, ele
-  substitui f(x).
-- **Fatores contextuais** (calculados, **ainda não ligados** à ordem; §6):
-  f'(x) = f(x) · m_comorb(x) · m_idade(x), com cada fator entre 1,00 e 1,15.
-- **Relação com o SWALIS publicado:** P_SWALIS(x) = t(x) · 360 / P(c) = 3,6 · f(x) [R1].
+### 1.2 Como sai a posição na fila
 
-**Exemplo:** SOL-2023-00010 (C18.7, adenocarcinoma de sigmoide).
+```
+camada = 1   se o CID começa com C (câncer)
+         2   se tem sinal clínico de urgência:
+               CID de complicação (I20.0, K40.0, K40.3, K42.0, K43.0, K80.0, N13.2, I83.2)
+               ou PS, internação, imagem com progressão ou reavaliação com piora DURANTE a espera
+               ou biópsia positiva
+               ou termo de alarme na justificativa clínica
+         3   nos demais casos
 
-| Termo | Valor |
+ordem da fila = 1º camada (1 antes de 2 antes de 3)
+                2º score (maior primeiro)
+                3º data de entrada (mais antiga primeiro)
+                4º número da solicitação (só para desempatar de forma fixa)
+```
+
+- **Edição do regulador:** se o regulador editou a classe, vale a classe dele; se editou o score, vale o
+  score dele.
+- **Fatores de comorbidade e idade** (calculados, **ainda não ligados** à ordem; §6):
+  score_ajustado = score × fator_de_comorbidade × fator_de_idade, com cada fator entre 1,00 e 1,15.
+- **Relação com o SWALIS publicado:** o score do artigo é dias_na_fila × 360 / prazo_da_classe = 3,6 × o
+  nosso score [R1]. A ordem é a mesma.
+
+### 1.3 Exemplo: SOL-2023-00010 (C18.7, adenocarcinoma de sigmoide)
+
+| Passo | Valor |
 |---|---|
-| p | 2 (câncer pelo CID e biópsia) |
-| s | 1 (dor EVA 4) |
-| C | A2 |
-| w | 4,762 |
-| t | 1.318 dias |
-| f | 4,762 × 1.318 = 6.276,2 |
-| L | 1 |
+| Nota de progressão | 2 (câncer pelo CID e biópsia) |
+| Nota de sintoma | 1 (dor EVA 4) |
+| Classe | A2 |
+| Prazo da classe | 21 dias |
+| Peso da classe | 100 / 21 = 4,762 por dia |
+| Dias na fila | 1.318 |
+| Score | 4,762 × 1.318 = **6.276%** do prazo |
+| Camada | 1 (câncer) |
 
 Resultado: posição 1. Na fila por prioridade manual estava na posição 606.
 
@@ -129,7 +116,7 @@ mais aparecem na fila.
 
 ### 2.1 O que o modelo sabe de cada doença
 
-O score **não tem fórmula por doença**: é sempre w(classe) · dias. A doença só entra quando o CID muda a
+O score **não tem fórmula por doença**: é sempre peso_da_classe × dias_na_fila. A doença só entra quando o CID muda a
 classe ou a camada:
 
 | Doença na fila | Pacientes | O CID muda algo? | Classes hoje |
@@ -164,14 +151,15 @@ Cada estudo mostra um formato de risco diferente:
 O que todos têm em comum é que **o risco cresce com o tempo**. Isso basta para a ordem dentro da classe:
 
 ```
-se risco(t) é crescente em t, então   t₁ > t₂  ⇔  risco(t₁) > risco(t₂)
+se o risco cresce com os dias na fila, então
+quem esperou mais dias  ⇔  quem tem mais risco   (dentro da mesma classe)
 ```
 
 Ordenar por dias de espera dá a **mesma ordem** que ordenar pelo risco verdadeiro, seja a curva linear,
 exponencial ou em degrau. Não precisamos conhecer a curva de cada doença para acertar a ordem entre
 pacientes da mesma classe.
 
-O formato só importa **entre classes**, e é isso que o peso w(c) = 100/P(c) resolve. Cada dia de uma
+O formato só importa **entre classes**, e é isso que o peso da classe (100 / prazo) resolve. Cada dia de uma
 A2 vale 17 dias de uma D, e o 100% marca, em qualquer classe, o ponto em que o paciente esperou tudo o que
 a doença tolera [R1].
 
