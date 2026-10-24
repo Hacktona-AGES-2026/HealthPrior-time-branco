@@ -229,6 +229,15 @@ class EditadoAnteriormente(BaseModel):
     em: date
 
 
+class PreviaOut(BaseModel):
+    """O que a decisão faria antes de gravar: classe, % do prazo, score e posição estimada."""
+    classe: Classe
+    pct_prazo_consumido: float
+    score: float
+    posicao_atual: Optional[int] = None
+    posicao_estimada: Optional[int] = None
+
+
 class ItemInboxOut(BaseModel):
     solicitacao_id: str
     procedimento: str
@@ -240,6 +249,7 @@ class ItemInboxOut(BaseModel):
     evento_gatilho: Optional[str] = None
     editado_anteriormente: Optional[EditadoAnteriormente] = None
     criado_em: Optional[datetime] = None
+    previa: Optional[PreviaOut] = None  # se aprovar
 
 
 class InboxOut(BaseModel):

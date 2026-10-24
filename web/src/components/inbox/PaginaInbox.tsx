@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { PreviaDecisao } from "@/components/shared/PreviaDecisao"
 import { AlertTriangle, ArrowRight, Check, Inbox as IconeInbox, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { aprovarProposta, URL_API, type ItemInbox } from "@/api/cliente"
@@ -120,6 +121,7 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
         <Badge>{item.classe_sugerida}</Badge>
         {item.evento_gatilho && <span className="text-xs text-muted-foreground">gatilho: {item.evento_gatilho}</span>}
       </div>
+      {item.previa && <PreviaDecisao previa={item.previa} rotulo={`Se aprovar ${item.classe_sugerida}`} className="mt-2" />}
 
       {item.editado_anteriormente && (
         <p className="mt-2 text-sm text-muted-foreground">

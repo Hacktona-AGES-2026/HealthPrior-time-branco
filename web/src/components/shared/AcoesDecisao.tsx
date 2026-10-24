@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ClasseBadge } from "@/components/shared/Basicos"
+import { PreviaDecisao, usePrevia } from "@/components/shared/PreviaDecisao"
 import { useStore } from "@/store/useStore"
 
 const ITENS_CLASSE: Record<string, string> = Object.fromEntries(CLASSES.map((c) => [c, `${c} · ${DESCRICAO_CLASSE[c].split(",")[0]}`]))
@@ -38,6 +39,8 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
   }, [editando])
 
   const semProposta = ORIGEM_DADOS === "api" && !paciente.inbox
+  // Prévia do Editar: posição e prazo que a classe escolhida daria, antes de salvar.
+  const previaEdicao = usePrevia(id, "editar", classe, ORIGEM_DADOS === "api" && editando)
 
   if (decisao) {
     const ok = decisao.status === "aprovado"
@@ -110,6 +113,8 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
           Justificativa
           <Textarea ref={campo} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Por que mudar a classe?" rows={3} className="text-foreground" aria-required />
         </label>
+        {previaEdicao?.previa && <PreviaDecisao previa={previaEdicao.previa} rotulo={`Se salvar ${classe}`} />}
+        {previaEdicao?.erro && <p className="text-xs text-[var(--desce)]">{previaEdicao.erro}</p>}
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" className="h-9 flex-1 sm:h-8" onClick={() => setEditando(false)}>
             Cancelar

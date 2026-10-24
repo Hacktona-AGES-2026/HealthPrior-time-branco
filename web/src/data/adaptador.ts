@@ -17,7 +17,9 @@ export const sobrepor = (base: Paciente, i: ItemFilaApi, inbox?: ItemInboxApi): 
   posicao_atual: i.posicao_antes ?? base.posicao_atual,
   camada: i.camada,
   classe: inbox?.classe_sugerida ?? i.classe ?? base.classe,
-  classe_vigente: inbox?.classe_atual ?? i.classe ?? null,
+  // Em vigor = a classe que a fila publicada usa. O `classe_atual` do inbox, para quem nunca foi
+  // confirmado, é a classe implícita da prioridade manual, não a que vale na fila (D-117).
+  classe_vigente: i.classe ?? inbox?.classe_atual ?? null,
   pct: i.pct_prazo_consumido ?? base.pct,
   dias_em_fila: i.dias_em_fila,
   justificativa: i.resumo_justificativa || base.justificativa,

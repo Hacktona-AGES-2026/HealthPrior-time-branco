@@ -174,3 +174,15 @@ export const obterDetalheEmCache = (id: string): Promise<DetalheApi> => {
 }
 
 export const limparCacheDetalhe = () => cacheDetalhe.clear()
+
+/** Prévia de uma decisão (US-13/14): o que aprovar/editar/manter faria, sem gravar. */
+export type Previa = {
+  classe: Classe
+  pct_prazo_consumido: number
+  score: number
+  posicao_atual: number | null
+  posicao_estimada: number | null
+}
+
+export const preverDecisao = (id: string, acao: "aprovar" | "editar" | "manter", classe?: Classe) =>
+  pedir<Previa>(`/solicitacoes/${encodeURIComponent(id)}/previa?acao=${acao}${classe ? `&classe=${classe}` : ""}`)

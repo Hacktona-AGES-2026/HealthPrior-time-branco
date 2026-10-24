@@ -161,3 +161,12 @@ def test_sugestao_ja_avaliada_nao_volta_ao_inbox():
     assert uc.executar().total == 0  # a sugestão D já foi avaliada
     uc._decisoes = DecisoesFalsas(Classe.C)
     assert uc.executar().total == 1  # sugestão mudou desde a decisão
+
+
+def test_inbox_traz_previa_de_aprovar_quando_tem_data():
+    s = sol("S1")
+    uc, _ = caso(["S1"], [s], {"S1": Classe.A1})
+    assert uc.executar().itens[0].previa is None  # sem data de referência: sem prévia
+    uc._ref_date = date(2026, 10, 23)
+    p = uc.executar().itens[0].previa
+    assert p is not None and p.classe is Classe.A1 and p.posicao_estimada == 1

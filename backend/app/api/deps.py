@@ -24,6 +24,7 @@ from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
 from app.application.listar_fila import ListarFila
 from app.application.listar_inbox import ListarInbox
+from app.application.prever_decisao import PreverDecisao
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.application.resolver_pendencia import ResolverPendencia
@@ -187,9 +188,18 @@ def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas
 
 
 # US-12
-def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
+def get_listar_inbox(session: Session = Depends(get_session),
+                     data: date = Depends(get_data_referencia)) -> ListarInbox:
+    # Mesma data da fila publicada: a prévia (posição se aprovar) bate com a próxima publicação.
     return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
-                       SqlEventoRepository(session), _scorer(session), SqlDecisaoRepository(session))
+                       SqlEventoRepository(session), _scorer(session, data), SqlDecisaoRepository(session),
+                       ref_date=data)
+
+
+def get_prever_decisao(session: Session = Depends(get_session),
+                       data: date = Depends(get_data_referencia)) -> PreverDecisao:
+    return PreverDecisao(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         SqlFilaRepository(session), _scorer(session, data), data)
 
 
 # US-21

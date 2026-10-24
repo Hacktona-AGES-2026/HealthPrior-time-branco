@@ -1,9 +1,14 @@
 """US-21 · Detalhe e explicação do paciente."""
+from dataclasses import asdict
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 
 from app.api import mocks, schemas
-from app.api.deps import get_detalhar_solicitacao
+from app.api.deps import get_detalhar_solicitacao, get_prever_decisao
 from app.application.detalhar_solicitacao import DetalharSolicitacao, DetalheSolicitacao
+from app.application.prever_decisao import PreverDecisao
+from app.domain.enums import AcaoDecisao, Classe
 from app.config import settings
 
 router = APIRouter(prefix="/solicitacoes", tags=["solicitacoes"])
@@ -16,6 +21,15 @@ def obter_solicitacao(solicitacao_id: str,
     if settings.use_mocks:
         return mocks.DETALHE.model_copy(update={"solicitacao_id": solicitacao_id})
     return _para_schema(detalhar.executar(solicitacao_id))
+
+
+@router.get("/{solicitacao_id}/previa", response_model=schemas.PreviaOut,
+            responses={404: {"model": schemas.Erro}, 422: {"model": schemas.Erro}})
+def prever_decisao(solicitacao_id: str, acao: AcaoDecisao = AcaoDecisao.APROVAR,
+                   classe: Optional[Classe] = None, score: Optional[float] = None,
+                   prever: PreverDecisao = Depends(get_prever_decisao)):
+    """Classe, % do prazo, score e posição que a decisão daria, sem gravar nada (US-13/14)."""
+    return schemas.PreviaOut(**asdict(prever.executar(solicitacao_id, acao, classe, score)))
 
 
 def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
