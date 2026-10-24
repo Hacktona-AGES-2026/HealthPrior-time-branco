@@ -32,8 +32,12 @@ HERNIAS_NEGADAS = {
 }
 
 
-def _risco(trecho: str, origem: str = "regra") -> SinalTexto:
-    return SinalTexto(CategoriaSinal.RISCO_VIDA, "x", trecho, "justificativa_clinica", origem)
+def _risco(trecho: str, origem: str = "regra", confianca: float = 1.0) -> SinalTexto:
+    return SinalTexto(CategoriaSinal.RISCO_VIDA, "x", trecho, "justificativa_clinica", origem, confianca)
+
+
+def _ponto(cat: CategoriaSinal, confianca: float = 0.95) -> SinalTexto:
+    return SinalTexto(cat, "jev", "frase", "justificativa_clinica", "llm", confianca)
 
 
 @pytest.mark.parametrize("sid,texto", HERNIAS_NEGADAS.items())
@@ -48,6 +52,7 @@ def test_hernia_com_negacao_nao_vira_urgencia(sid, texto):
     "Ausência de icterícia.",
     "Não há sinais de estrangulamento.",
     "US descarta colangite.",
+    "Hérnia sempre volta para dentro, nunca encarcerou.",
 ])
 def test_outras_negacoes(texto):
     assert sinais_por_palavra_chave(texto, "j") == []
@@ -64,7 +69,7 @@ def test_negacao_nao_atravessa_frase_nem_oracao():
 
 
 def test_sinal_traz_trecho_original():
-    [oc] = buscar_termos("Obesa. Hérnia encarcerada com redução manual no PS.", TERMOS[CategoriaSinal.RISCO_VIDA])
+    [oc] = buscar_termos("Obesa. Hérnia encarcerada com redução manual no PS.", TERMOS[CategoriaSinal.OBSTRUCAO])
     assert oc.trecho == "Hérnia encarcerada com redução manual no PS"
 
 
@@ -129,21 +134,40 @@ def test_localizar_trecho():
     assert localizar_trecho("abc", "") is None
 
 
-def test_sinal_do_llm_nao_muda_a_classe():
-    # I-05: a categoria vem do LLM; se mudasse a classe, o LLM estaria decidindo.
-    c = classificar("K40.9", 0, "nenhuma", [], [_risco("Paciente com hernia", "llm")])
-    assert c.classe is Classe.D and c.progressao.nivel == 0
+def test_ponto_do_jev_sobe_a_classe_e_fica_rastreavel():
+    c = classificar("K40.9", 0, "nenhuma", [], [_ponto(CategoriaSinal.OBSTRUCAO, 0.98)])
+    assert c.classe is Classe.A1 and c.progressao.nivel == 3
+    assert c.progressao.motivos == ['"frase" → obstrucao (Jev p=0.98)']
+
+
+def test_ponto_do_jev_nunca_baixa_a_classe():
+    # Câncer pelo CID continua A2 mesmo que o Jev só ache "sintoma moderado".
+    assert classificar("C61", 0, "nenhuma", [], [_ponto(CategoriaSinal.SINTOMA_MODERADO)]).classe is Classe.A2
+
+
+def test_ponto_incerto_vai_para_revisar_sem_mudar_a_classe():
+    incerto = _ponto(CategoriaSinal.RISCO_VIDA, 0.5)
+    c = classificar("K40.9", 0, "nenhuma", [], [incerto])
+    assert c.classe is Classe.D and c.revisar == [incerto] and c.sinais == []
+    assert classificar("K40.9", 0, "nenhuma", [], [_ponto(CategoriaSinal.RISCO_VIDA, 0.3)]).revisar == []
+
+
+@pytest.mark.parametrize("cat,classe", [
+    (CategoriaSinal.CANCER_CONFIRMADO, Classe.A2),  # câncer escondido com CID benigno
+    (CategoriaSinal.SUSPEITA_MALIGNIDADE, Classe.B),
+    (CategoriaSinal.DOR_INTENSA, Classe.B),
+    (CategoriaSinal.SINTOMA_GRAVE, Classe.B),
+    (CategoriaSinal.SINTOMA_MODERADO, Classe.C),
+])
+def test_cada_ponto_no_seu_nivel(cat, classe):
+    assert classificar("K40.9", 0, "nenhuma", [], [_ponto(cat)]).classe is classe
+
+
+def test_c44_fica_em_b_mesmo_com_texto_de_cancer():
+    assert classificar("C44.3", 0, "nenhuma", [], [_ponto(CategoriaSinal.CANCER_CONFIRMADO)]).classe is Classe.B
 
 
 def test_frases():
     from app.domain.texto import frases
     assert frases("Hernia redutivel. Sem sinais de encarceramento.\nDor 4; ok") == [
         "Hernia redutivel", "Sem sinais de encarceramento", "Dor 4", "ok"]
-
-
-def test_suspeita_de_malignidade_em_cancer_confirmado_e_redundante():
-    from app.domain.swalis import alerta_redundante
-    sinal = SinalTexto(CategoriaSinal.SUSPEITA_MALIGNIDADE, "x", "Nodulo BI-RADS 4C", "j", "llm")
-    assert alerta_redundante(sinal, "C50.4")
-    assert not alerta_redundante(sinal, "D44.0")
-    assert not alerta_redundante(_risco("Lesao de tronco 80%", "llm"), "C61")

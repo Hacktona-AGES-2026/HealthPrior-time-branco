@@ -1,7 +1,7 @@
 """Busca de termos no texto clínico com tratamento de negação (SW-04).
 
 "Sem sinais de encarceramento" não pode virar urgência. Um termo precedido de negação
-("sem", "nega", "ausência de", "não há", "descarta") na mesma oração é ignorado.
+("sem", "nega", "nunca", "ausência de", "não há", "descarta") na mesma oração é ignorado.
 """
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 
-NEGACOES = re.compile(r"\b(?:sem|nega|negou|negam|ausencia de|nao ha|descarta|descartad[oa])\b")
+NEGACOES = re.compile(r"\b(?:sem|nega|negou|negam|nunca|ausencia de|nao ha|nao houve|descarta|descartad[oa])\b")
 # Fim do escopo da negação: fim de frase, pontuação de oração ou conjunção adversativa.
 # "Sem melhora, evoluiu com suboclusão" -> a suboclusão NÃO fica negada.
 _FIM_DE_ESCOPO = re.compile(r"[.;:!?,\n|]|\b(?:mas|porem|entretanto|contudo|evoluiu|evoluindo)\b")

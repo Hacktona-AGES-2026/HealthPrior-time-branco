@@ -107,8 +107,8 @@ class ItemFilaOut(BaseModel):
 
 
 class FilaOut(BaseModel):
-    versao_regras: str
-    gerada_em: datetime
+    versao_regras: Optional[str] = None
+    gerada_em: Optional[datetime] = None
     publicada: bool
     total: int
     itens: list[ItemFilaOut]
@@ -209,7 +209,7 @@ class ItemInboxOut(BaseModel):
     motivos: list[MotivoOut]
     evento_gatilho: Optional[str] = None
     editado_anteriormente: Optional[EditadoAnteriormente] = None
-    criado_em: datetime
+    criado_em: Optional[datetime] = None
 
 
 class InboxOut(BaseModel):
@@ -294,3 +294,27 @@ class ResolverPendenciaOut(BaseModel):
     status_fila: Optional[StatusFila] = Field(
         default=None, description="da solicitação da pendência; null quando não há (PRE-24, evento órfão)")
     fila_publicada: bool = Field(description="false: o verificador reprovou e a fila anterior segue publicada (I-07)")
+
+
+# US-22
+class IndicadoresOut(BaseModel):
+    total: int
+    violacoes_regra_ouro: int
+    posicao_mediana_oncologicos: Optional[float] = None
+    pct_oncologicos_primeiro_terco: float
+    pct_ps_recente_primeira_metade: float
+    pct_sem_urgencia_ultimo_terco: float
+
+
+class DestaqueOut(BaseModel):
+    solicitacao_id: str
+    posicao_antes: Optional[int] = None
+    posicao_depois: Optional[int] = None
+    camada_depois: Optional[int] = None
+
+
+class ComparacaoOut(BaseModel):
+    antes: IndicadoresOut
+    depois: Optional[IndicadoresOut] = None
+    publicada: bool
+    destaques: list[DestaqueOut]

@@ -61,6 +61,7 @@ class Solicitacao:
     alertas: list[str] = field(default_factory=list)
     # override do regulador (C-10)
     classe_medico: Classe | None = None
+    classe_confirmada: Classe | None = None
     score_medico: float | None = None
     editado_manualmente: bool = False
     editado_por: str | None = None

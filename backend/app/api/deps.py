@@ -8,13 +8,17 @@ from fastapi import Depends
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
+from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
 from app.application.detectar_bloqueantes import DetectarBloqueantes
+from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
+from app.application.listar_fila import ListarFila
+from app.application.listar_inbox import ListarInbox
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.application.resolver_pendencia import ResolverPendencia
@@ -102,3 +106,37 @@ def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEv
 def get_decidir(session: Session = Depends(get_session),
                 gerar_fila: GerarFila = Depends(get_gerar_fila)) -> DecidirClasse:
     return DecidirClasse(SqlSolicitacaoRepository(session), decisoes=None, gerar_fila=gerar_fila)
+
+
+# US-20
+def get_listar_fila(session: Session = Depends(get_session)) -> ListarFila:
+    return ListarFila(SqlFilaRepository(session), SqlSolicitacaoRepository(session))
+
+
+# US-22
+DESTAQUES_PADRAO = ["SOL-2023-00010", "SOL-2025-00048", "SOL-2026-00637", "SOL-2026-00757",
+                    "SOL-2023-00060"]
+
+
+def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas:
+    return CompararFilas(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         SqlFilaRepository(session), settings.ref_date, DESTAQUES_PADRAO)
+
+
+# US-12
+def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
+    return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
+                       SqlEventoRepository(session), get_scorer())
+
+
+# US-21
+def get_detalhar_solicitacao(session: Session = Depends(get_session)) -> DetalharSolicitacao:
+    return DetalharSolicitacao(
+        solicitacoes=SqlSolicitacaoRepository(session),
+        eventos=SqlEventoRepository(session),
+        correcoes=SqlCorrecaoRepository(session),
+        pendencias=SqlPendenciaRepository(session),
+        fila=SqlFilaRepository(session),
+        scorer=get_scorer(),
+        ref_date=settings.ref_date,
+    )

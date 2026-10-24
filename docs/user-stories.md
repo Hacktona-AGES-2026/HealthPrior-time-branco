@@ -168,6 +168,8 @@ Como **equipe**, quero listar no `DECISOES.md` quem ficou fora da fila e por qu�
 ### E4 · Regulador (C-08, C-09, C-10)
 
 #### US-12 · Inbox do regulador — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-12-inbox`): `GET /inbox` calculado na leitura; 296 itens no dataset. Registro: `docs/implementacao/US-12-inbox.md` (D-64..D-67). Tela do front pendente.
+
 Como **regulador**, quero ver só os pacientes com classe nova ou alterada, com motivo e evidência, para decidir rápido sem revisar a fila inteira.
 - **CA**
   - Item entra no inbox quando `classe_sugerida != classe_atual` (ou classe nova de entrada nova). Eventos sem mudança de classe **não** entram (D-02).
@@ -257,6 +259,8 @@ Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto 
 ### E7 · Visualização e navegação
 
 #### US-20 · Ver a fila priorizada — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-20-fila-api`): `GET /fila` real a partir da fila publicada. Registro: `docs/implementacao/US-20-fila-api.md` (D-56..D-58). Tela do front pendente.
+
 Como **regulador ou gestor**, quero ver a fila ordenada com camada, classe, % do prazo, dias de espera, flag de edição manual e alertas.
 - **CA**
   - Paginação; filtros por camada, procedimento, especialidade; busca por `solicitacao_id`.
@@ -266,6 +270,8 @@ Como **regulador ou gestor**, quero ver a fila ordenada com camada, classe, % do
 - **Depende de:** US-08
 
 #### US-21 · "Por que este paciente está aqui?" — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-21-detalhe-paciente`): `GET /solicitacoes/{id}` com explicação, score, motivos, eventos, pendências e correções. Registro: `docs/implementacao/US-21-detalhe-paciente.md` (D-68..D-70). Tela do front pendente.
+
 Como **regulador**, quero abrir um paciente e ver a explicação da posição dele.
 - **CA**
   - Mostra: camada e por quê, classe (sistema × médico), % do prazo, motivos com evidência, linha do tempo de eventos (histórico separado), decisões, pendências e correções automáticas.
@@ -275,6 +281,8 @@ Como **regulador**, quero abrir um paciente e ver a explicação da posição de
 - **Depende de:** US-08
 
 #### US-22 · Antes × depois — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-22-antes-depois`): `GET /metricas/comparacao`. "Antes": 177 violações, mediana dos oncológicos 287. Registro: `docs/implementacao/US-22-antes-depois.md` (D-59..D-62). Tela do front pendente.
+
 Como **apresentador**, quero comparar a fila atual (prioridade manual + data) com a proposta.
 - **CA**
   - Métricas: violações da regra de ouro (hoje 177 → 0), posição mediana dos oncológicos, % PS/internação recente na 1ª metade, % sem urgência no último terço.
@@ -512,7 +520,7 @@ Erros: `404 SOLICITACAO_NAO_ENCONTRADA` (vira pendência de evento órfão quand
 
 - `status_fila` é o da solicitação da pendência depois de resolver, ou `null` quando não há solicitação (PRE-24, evento órfão).
 - `fila_publicada = false`: a resolução valeu, mas o verificador reprovou (ou a publicação falhou) e a fila anterior segue publicada (I-07).
-- `observacao` é obrigatória em `confirmar_saida`. Cada regra aceita só algumas resoluções (D-62); `fundir_com` é a solicitação que permanece (padrão: a mais antiga das duas duplicadas).
+- `observacao` é obrigatória em `confirmar_saida`. Cada regra aceita só algumas resoluções (D-80); `fundir_com` é a solicitação que permanece (padrão: a mais antiga das duas duplicadas).
 - Erros: `404 PENDENCIA_NAO_ENCONTRADA`, `409 PENDENCIA_JA_RESOLVIDA`, `422 RESOLUCAO_INVALIDA`, `422 OBSERVACAO_OBRIGATORIA`.
 - Depois de resolvida, a pendência traz `resolvido_por`, `resolvido_em`, `resolucao` e `observacao` em `GET /pendencias?status=resolvida|descartada` (`null` enquanto aberta).
 
