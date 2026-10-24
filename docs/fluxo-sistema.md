@@ -219,9 +219,9 @@ Os problemas se dividem em três tipos:
 | PRE-24 | Evento órfão (solicitação fora da fila) | 9 casos. EVT-000287 → SOL-2023-00941: "Registro de solicitacao removida da fila." | Evento não é aplicado; pendência para verificar ID |
 | PRE-25 | Fontes contraditórias | SOL-2026-00305: call center diz "desistiu"; observação diz "operou pelo convenio" | Pendência com **as duas evidências lado a lado** |
 
-> Exceção de segurança: **um oncológico nunca é suspenso automaticamente** por PRE-21/22/23 sem confirmação humana registrada (ver `I-02`). Fica ativo com a pendência aberta e o alerta `saida_a_confirmar` (D-73).
+> Exceção de segurança: **um oncológico nunca é suspenso automaticamente** por PRE-21/22/23 sem confirmação humana registrada (ver `I-02`). Fica ativo com a pendência aberta e o alerta `saida_a_confirmar` (D-80).
 >
-> Observação e call center que dizem coisas diferentes sobre a saída viram **PRE-25**, não PRE-21/22/23 (D-71). Na carga atual: PRE-20 = 22, PRE-21 = 1, PRE-22 = 2, PRE-23 = 10, PRE-24 = 9, PRE-25 = 12; 41 suspensas.
+> Observação e call center que dizem coisas diferentes sobre a saída viram **PRE-25**, não PRE-21/22/23 (D-78). Na carga atual: PRE-20 = 22, PRE-21 = 1, PRE-22 = 2, PRE-23 = 10, PRE-24 = 9, PRE-25 = 12; 41 suspensas.
 
 - **CA:**
   - Rodar o pré-processamento duas vezes sobre o mesmo dado produz o mesmo resultado (idempotente).
@@ -234,7 +234,7 @@ Os problemas se dividem em três tipos:
 - **Saídas da resolução:**
   - volta ao pré-processamento e segue o fluxo normal; ou
   - sai da fila **com motivo registrado** (nunca deletada).
-  - Na prática (US-07, D-80..D-84): `confirmar_saida` e `fundir` tiram a solicitação da fila (`removida`, motivo = regra); `reativar` e `descartar` a devolvem, se nenhuma outra pendência bloqueante seguir aberta. A fila é recalculada e publicada depois de confirmar a resolução.
+  - Na prática (US-07, D-87..D-91): `confirmar_saida` e `fundir` tiram a solicitação da fila (`removida`, motivo = regra); `reativar` e `descartar` a devolvem, se nenhuma outra pendência bloqueante seguir aberta. A fila é recalculada e publicada depois de confirmar a resolução.
 - **Entrega do hackathon:** suspensos ficam **fora** do `fila_priorizada.csv` e são listados no `DECISOES.md` com o motivo.
 - **Por quê:** Inglaterra (14% das saídas sem motivo registrado), Portugal e Nova Zelândia (remoções administrativas maquiando indicadores). Regra de design: **sinalizar, não apagar**.
 - **Achado para o pitch:** não há **nenhum óbito** registrado numa fila com mediana de 268 dias. Isso é um sinal de que a informação não está chegando.
@@ -303,6 +303,7 @@ Documentado à parte. Este fluxo só depende do **contrato**:
   3. detecta pacientes sem evento há N dias → gera recontato (C-04);
   4. passa pela trava (C-11) e pelo verificador (C-12).
 - Não passa pelo regulador. Eventos que **mudam a classe** não esperam o job: vão direto ao regulador (importante para A1).
+- **Implementado (US-16, D-76)** como disparo manual: `POST /admin/atualizacao-diaria` avança a data de referência simulada e republica (passos 1, 2 e 4). Passo 3 = US-17.
 
 ### C-14 · Ciclo de aprendizado (offline)
 Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + procedimento → classe), nunca a fórmula de tempo/prazo.
@@ -331,7 +332,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-21) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
 | `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-28/D-29) |
-| `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-50); `saida_a_confirmar` em oncológico com achado bloqueante (D-73) |
+| `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-50); `saida_a_confirmar` em oncológico com achado bloqueante (D-80) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
 | `status_fila` | enum | `ativa`, `suspensa`, `removida` |

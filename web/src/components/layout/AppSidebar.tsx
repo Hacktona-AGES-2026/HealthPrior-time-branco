@@ -17,11 +17,11 @@ import { useTema } from "@/store/tema"
 
 const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: string }[] = [
   { id: "fila", rotulo: "Fila", icone: ListOrdered, tecla: "1" },
-  { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "2" },
-  { id: "analise", rotulo: "Análise geral", icone: BarChart3, tecla: "3" },
-  { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "4" },
-  { id: "inbox", rotulo: "Inbox", icone: Inbox, tecla: "6" },
-  { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "5" },
+  { id: "inbox", rotulo: "Inbox", icone: Inbox, tecla: "2" },
+  { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "3" },
+  { id: "analise", rotulo: "Análise geral", icone: BarChart3, tecla: "4" },
+  { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
+  { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
 ]
 
 export function AppSidebar() {

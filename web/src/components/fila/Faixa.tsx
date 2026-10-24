@@ -11,7 +11,7 @@ import { useStore } from "@/store/useStore"
 
 const SOBRA_DETALHE = 12
 
-const MAIS_MUDARAM = [...PACIENTES]
+const maisMudaram = () => [...PACIENTES]
   .sort((a, b) => Math.abs(b.posicao_antiga - b.posicao_nova) - Math.abs(a.posicao_antiga - a.posicao_nova))
   .slice(0, 10)
 
@@ -29,6 +29,7 @@ const caminhoArco = (x1: number, x2: number, yArco: number) => {
 type Tip = { x: number; slot: SlotFila }
 
 export function Faixa() {
+  const MAIS_MUDARAM = maisMudaram()
   const ALTURA = useColunas((c) => c.alturaFaixa)
   const setFaixaOculta = useColunas((c) => c.setFaixaOculta)
   const TOPO_BARRA = ALTURA - 100

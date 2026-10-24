@@ -8,9 +8,6 @@ export type Resolucao = components["schemas"]["ResolucaoPendencia"]
 export type ResolverPendenciaIn = components["schemas"]["ResolverPendenciaIn"]
 export type ResultadoResolucao = components["schemas"]["ResolverPendenciaOut"]
 
-export type Inbox = components["schemas"]["InboxOut"]
-export type ItemInbox = components["schemas"]["ItemInboxOut"]
-export type ResultadoDecisao = components["schemas"]["DecisaoResultadoOut"]
 
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
@@ -69,33 +66,4 @@ export async function resolverPendencia(pendenciaId: string, corpo: ResolverPend
   }
   if (!resposta.ok) throw await lerErro(resposta)
   return (await resposta.json()) as ResultadoResolucao
-}
-
-/** US-12 · GET /inbox. Os itens já vêm na ordem em que o regulador deve revisar. */
-export async function listarInbox(sinal?: AbortSignal): Promise<Inbox> {
-  let resposta: Response
-  try {
-    resposta = await fetch(`${URL_API}/inbox`, { signal: sinal })
-  } catch (e) {
-    if (sinal?.aborted) throw e
-    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
-  }
-  if (!resposta.ok) throw await lerErro(resposta)
-  return (await resposta.json()) as Inbox
-}
-
-/** US-13 · POST /decisoes (aprovar). Confirma a classe sugerida, registra no log e só então a API republica a fila. */
-export async function aprovarProposta(solicitacaoId: string, reguladorId: string): Promise<ResultadoDecisao> {
-  let resposta: Response
-  try {
-    resposta = await fetch(`${URL_API}/decisoes`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ solicitacao_id: solicitacaoId, regulador_id: reguladorId, acao: "aprovar" }),
-    })
-  } catch {
-    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
-  }
-  if (!resposta.ok) throw await lerErro(resposta)
-  return (await resposta.json()) as ResultadoDecisao
 }

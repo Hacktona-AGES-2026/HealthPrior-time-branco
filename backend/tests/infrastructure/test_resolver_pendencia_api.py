@@ -22,7 +22,7 @@ def api(session, tmp_path, monkeypatch):
     carregar(session)
     monkeypatch.setattr(roteador, "settings", dataclasses.replace(settings, use_mocks=False))
     monkeypatch.setattr(deps, "settings", dataclasses.replace(settings, output_dir=tmp_path))
-    monkeypatch.setattr(deps, "get_scorer", lambda: SwalisStub())
+    monkeypatch.setattr(deps, "get_scorer", lambda data=None: SwalisStub())
     app.dependency_overrides[get_session] = lambda: session
     yield TestClient(app)
     app.dependency_overrides.clear()

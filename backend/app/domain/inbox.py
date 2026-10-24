@@ -2,7 +2,8 @@
 
 Um paciente entra no inbox quando a classe sugerida pelo SWALIS merece revisão humana:
 - nunca confirmado: diverge 2 ou mais níveis da classe implícita da prioridade manual;
-- já confirmado: a sugerida difere da classe confirmada.
+- já confirmado: a sugerida difere da classe confirmada;
+- classe vigente congelada por evento (US-15): a sugerida difere da vigente.
 """
 from __future__ import annotations
 
@@ -24,17 +25,22 @@ def distancia(a: Classe, b: Classe) -> int:
 
 
 def classe_referencia(classe_status: ClasseStatus, classe_confirmada: Classe | None,
-                      prioridade_norm: str | None) -> Classe:
-    """Classe atual do paciente: a confirmada, se houver; senão a implícita da prioridade."""
+                      prioridade_norm: str | None, classe_vigente: Classe | None = None) -> Classe:
+    """Classe atual: a confirmada; senão a vigente congelada; senão a implícita da prioridade."""
     if classe_status == ClasseStatus.CONFIRMADA and classe_confirmada is not None:
         return classe_confirmada
+    if classe_vigente is not None:
+        return classe_vigente
     return classe_implicita_prioridade(prioridade_norm)
 
 
 def entra_no_inbox(sugerida: Classe, classe_status: ClasseStatus,
-                   classe_confirmada: Classe | None, prioridade_norm: str | None) -> bool:
-    referencia = classe_referencia(classe_status, classe_confirmada, prioridade_norm)
+                   classe_confirmada: Classe | None, prioridade_norm: str | None,
+                   classe_vigente: Classe | None = None) -> bool:
+    referencia = classe_referencia(classe_status, classe_confirmada, prioridade_norm, classe_vigente)
     if classe_status == ClasseStatus.CONFIRMADA and classe_confirmada is not None:
+        return sugerida != referencia
+    if classe_vigente is not None:  # evento mudou a sugestão: qualquer mudança espera decisão
         return sugerida != referencia
     return distancia(sugerida, referencia) >= DISTANCIA_MINIMA_NAO_CONFIRMADO
 

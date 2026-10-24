@@ -157,3 +157,19 @@ def test_pendencias_e_correcoes_sao_repassadas():
     d = caso([sol()], correcoes=corr, pendencias=pend).executar("SOL-1")
     assert [c.regra for c in d.correcoes] == ["PRE-05"]
     assert [p.pendencia_id for p in d.pendencias] == ["PEN-0001"]
+
+
+def test_detalhe_traz_decisoes_do_regulador():
+    from datetime import datetime, timezone
+    from app.domain.enums import AcaoDecisao
+    from app.domain.models import Decisao
+
+    class DecisoesFalsas:
+        def listar_por_solicitacao(self, sid):
+            return [Decisao("DEC-1", sid, "REG-1", AcaoDecisao.APROVAR,
+                            datetime(2026, 10, 24, tzinfo=timezone.utc), Classe.B, Classe.B)]
+
+    c = caso([sol()], linhas=[linha()])
+    c._decisoes = DecisoesFalsas()
+    [d] = c.executar("SOL-1").decisoes
+    assert (d.decisao_id, d.acao) == ("DEC-1", AcaoDecisao.APROVAR)

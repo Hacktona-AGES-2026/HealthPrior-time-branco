@@ -12,6 +12,7 @@ from app.domain.enums import Classe
 from app.domain.inbox import chave_ordenacao, classe_referencia, distancia, entra_no_inbox
 from app.domain.models import Motivo
 from app.domain.ports import (
+    DecisaoRepository,
     EventoRepository,
     FilaRepository,
     SolicitacaoRepository,
@@ -41,7 +42,9 @@ class Inbox:
 
 class ListarInbox:
     def __init__(self, fila: FilaRepository, solicitacoes: SolicitacaoRepository,
-                 eventos: EventoRepository, scorer: SwalisScorer):
+                 eventos: EventoRepository, scorer: SwalisScorer,
+                 decisoes: DecisaoRepository | None = None):
+        self._decisoes = decisoes
         self._fila = fila
         self._solicitacoes = solicitacoes
         self._eventos = eventos
@@ -65,9 +68,12 @@ class ListarInbox:
             res = self._scorer.calcular(s, eventos_por_id.get(s.solicitacao_id, []))
             sugerida = res.classe_sistema
             if not entra_no_inbox(sugerida, s.classe_status, s.classe_confirmada,
-                                  s.prioridade_norm):
+                                  s.prioridade_norm, s.classe_vigente):
                 continue
-            atual = classe_referencia(s.classe_status, s.classe_confirmada, s.prioridade_norm)
+            if self._ja_avaliada(s.solicitacao_id, sugerida):
+                continue
+            atual = classe_referencia(s.classe_status, s.classe_confirmada, s.prioridade_norm,
+                                      s.classe_vigente)
             dist = distancia(sugerida, atual)
             gatilho = next((m.ref for m in res.motivos if m.fonte == "evento" and m.ref), None)
             editado = ((s.editado_por, s.editado_em)
@@ -82,3 +88,11 @@ class ListarInbox:
         candidatos.sort(key=lambda par: par[0])
         itens = [i for _, i in candidatos]
         return Inbox(len(itens), itens)
+
+    def _ja_avaliada(self, solicitacao_id: str, sugerida: Classe) -> bool:
+        """O regulador já decidiu sobre esta mesma sugestão (editou ou manteve): não volta ao inbox
+        até a sugestão mudar (D-77)."""
+        if self._decisoes is None:
+            return False
+        decisoes = self._decisoes.listar_por_solicitacao(solicitacao_id)
+        return bool(decisoes) and decisoes[-1].classe_sugerida == sugerida

@@ -4,7 +4,9 @@ import { PACIENTES, PACIENTE_POR_ID } from "@/data/fila"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { daApi } from "@/data/adaptador"
 import { AcoesDecisao } from "@/components/shared/AcoesDecisao"
+import { NovoEvento } from "@/components/shared/NovoEvento"
 import { AlertaRevisao, ConfiancaSelo, MudancaClasse, PrazoBar, SetaVariacao } from "@/components/shared/Basicos"
 import { RegrasChips } from "@/components/shared/RegrasChips"
 import { cn } from "@/lib/utils"
@@ -98,12 +100,12 @@ export function PainelAprovacao({ className }: { className?: string }) {
                     <PrazoBar pct={p.prazo_consumido_pct} />
                   </dd>
                 </div>
-                <div className="col-span-2 flex items-center justify-between">
+                {!daApi(p) && <div className="col-span-2 flex items-center justify-between">
                   <dt className="text-muted-foreground">Confiança</dt>
                   <dd>
                     <ConfiancaSelo valor={p.confianca} />
                   </dd>
-                </div>
+                </div>}
               </dl>
               <Separator />
               <p className="text-xs leading-relaxed text-muted-foreground">{p.justificativa}</p>
@@ -115,6 +117,7 @@ export function PainelAprovacao({ className }: { className?: string }) {
               </div>
             </div>
             <AcoesDecisao paciente={p} />
+            <NovoEvento solicitacaoId={p.solicitacao_id} />
             <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => abrirFicha(p.solicitacao_id)}>
               <ExternalLink aria-hidden /> Ver ficha completa
             </Button>

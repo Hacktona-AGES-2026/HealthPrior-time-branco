@@ -74,7 +74,7 @@ export const ACOES: Record<Resolucao, Acao> = {
 }
 
 /**
- * Quais resoluções cada regra aceita. Espelha `RESOLUCOES_POR_REGRA` do back (D-85): serve só para
+ * Quais resoluções cada regra aceita. Espelha `RESOLUCOES_POR_REGRA` do back (D-92): serve só para
  * mostrar os botões certos; quem valida de verdade é a API.
  */
 const SAIDA: Resolucao[] = ["confirmar_saida", "reativar", "descartar"]

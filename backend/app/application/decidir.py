@@ -1,26 +1,23 @@
 """US-13/14 · Decisão do regulador (C-09, C-10).
 
-- aprovar (US-13): confirma a classe sugerida.
-- editar / manter (US-14): override de classe ou score, com motivo + justificativa obrigatórios.
-  Bloqueia edição que rebaixe oncológico abaixo de não urgente (I-01) -> OncologicoRebaixadoError.
-Edita classe/score, nunca posição (D-03).
-
-Aprovar: valida que há proposta (a mesma regra do inbox), grava a confirmação e o registro no log de
-decisões, **confirma a transação** e só então recalcula e publica a fila (US-09/10), em transação
-própria: a publicação desfaz a *própria* transação quando o verificador reprova. Se ela falhar, a
-decisão continua valendo, a fila anterior segue publicada (I-07) e `fila_publicada = false` (D-90).
+- aprovar: confirma a classe sugerida.
+- editar: override de classe ou score, com motivo + justificativa obrigatórios.
+- manter: recusa a sugestão, com motivo + justificativa.
+Bloqueia edição que rebaixe oncológico (I-01) -> OncologicoRebaixadoError.
+Edita classe/score, nunca posição (D-03). Depois de gravar, refaz a fila pelo portão do
+verificador (C-11, C-12): se o verificador reprovar, a decisão fica e a fila anterior continua.
 """
 from __future__ import annotations
 
-import logging
+import uuid
 from dataclasses import dataclass
-from datetime import datetime
-from typing import Callable
+from datetime import date, datetime, timezone
+from typing import Callable, Protocol
 
-from app.application.publicar_fila import PublicarFila
-from app.domain.decisao import aprovar, validar_proposta
+from app.domain.decisao import aplicar_decisao, validar_decisao
 from app.domain.enums import AcaoDecisao, Classe, MotivoCodificado
 from app.domain.errors import NaoEncontradoError
+from app.domain.models import Decisao
 from app.domain.ports import (
     DecisaoRepository,
     EventoRepository,
@@ -29,8 +26,6 @@ from app.domain.ports import (
     SwalisScorer,
     UnidadeDeTrabalho,
 )
-
-log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -52,52 +47,54 @@ class ResultadoDecisao:
     fila_publicada: bool
 
 
+class Publicador(Protocol):
+    def executar(self): ...
+
+
+def _posicao(fila: FilaRepository, solicitacao_id: str) -> int | None:
+    return next((l.posicao for l in fila.obter_publicada() if l.solicitacao_id == solicitacao_id), None)
+
+
 class DecidirClasse:
     def __init__(self, solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
-                 decisoes: DecisaoRepository, fila: FilaRepository, scorer: SwalisScorer,
-                 uow: UnidadeDeTrabalho, publicar: PublicarFila, relogio: Callable[[], datetime]):
+                 decisoes: DecisaoRepository, scorer: SwalisScorer, uow: UnidadeDeTrabalho,
+                 publicar: Publicador, fila: FilaRepository, relogio: Callable[[], datetime],
+                 ref_date: date,
+                 gerar_id: Callable[[], str] = lambda: f"DEC-{uuid.uuid4().hex[:10]}"):
         self._solicitacoes = solicitacoes
         self._eventos = eventos
         self._decisoes = decisoes
-        self._fila = fila
         self._scorer = scorer
         self._uow = uow
         self._publicar = publicar
+        self._fila = fila
         self._relogio = relogio
+        self._ref_date = ref_date
+        self._gerar_id = gerar_id
 
-    def executar(self, comando: ComandoDecisao) -> ResultadoDecisao:
-        if comando.acao != AcaoDecisao.APROVAR:
-            raise NotImplementedError("US-14: editar e manter")
-        posicao_anterior = self._posicao(comando.solicitacao_id)
-        try:
-            decisao_id = self._aprovar(comando)
-            self._uow.confirmar()
-        except Exception:
-            self._uow.desfazer()
-            raise
-        publicada = self._republicar()
-        # sem republicar, a fila publicada é a anterior: a posição não mudou
-        posicao_nova = self._posicao(comando.solicitacao_id) if publicada else posicao_anterior
-        return ResultadoDecisao(decisao_id, posicao_anterior, posicao_nova, publicada)
-
-    def _aprovar(self, comando: ComandoDecisao) -> str:
-        s = self._solicitacoes.obter(comando.solicitacao_id)
+    def executar(self, c: ComandoDecisao) -> ResultadoDecisao:
+        s = self._solicitacoes.obter(c.solicitacao_id)
         if s is None:
-            raise NaoEncontradoError(f"Solicitação {comando.solicitacao_id} não encontrada.")
+            raise NaoEncontradoError(f"Solicitação {c.solicitacao_id} não encontrada.")
+        validar_decisao(s, c.acao, c.classe, c.score, c.motivo_codificado, c.justificativa)
         res = self._scorer.calcular(s, self._eventos.listar_por_solicitacao(s.solicitacao_id))
-        validar_proposta(s, res.classe_sistema)
-        decisao = aprovar(s, res.classe_sistema, comando.regulador_id, self._relogio(),
-                          res.versao_regras, self._decisoes.proximo_id())
-        self._solicitacoes.atualizar_decisao(s)
+        agora = self._relogio()  # auditoria (log de decisões)
+        # A fila envelhece a partir de REF, nunca do relógio da máquina.
+        editado_em = datetime(self._ref_date.year, self._ref_date.month, self._ref_date.day,
+                              tzinfo=timezone.utc)
+        decidida = aplicar_decisao(s, c.acao, res.classe_sistema, c.classe, c.score,
+                                   c.motivo_codificado, c.regulador_id, editado_em)
+        decisao = Decisao(
+            decisao_id=self._gerar_id(), solicitacao_id=s.solicitacao_id,
+            regulador_id=c.regulador_id, acao=c.acao, data=agora,
+            classe_sugerida=res.classe_sistema, classe_decidida=decidida,
+            score_decidido=c.score, motivo_codificado=c.motivo_codificado,
+            justificativa=(c.justificativa or "").strip() or None,
+            versao_regras=res.versao_regras)
+        anterior = _posicao(self._fila, s.solicitacao_id)
+        self._solicitacoes.salvar(s)
         self._decisoes.adicionar(decisao)
-        return decisao.decisao_id
-
-    def _posicao(self, solicitacao_id: str) -> int | None:
-        return next((l.posicao for l in self._fila.obter_publicada() if l.solicitacao_id == solicitacao_id), None)
-
-    def _republicar(self) -> bool:
-        try:
-            return self._publicar.executar().publicada
-        except Exception:  # a decisão já foi confirmada: não esconder isso atrás de um 500
-            log.exception("Decisão confirmada, mas a fila não foi republicada")
-            return False
+        self._uow.confirmar()  # a decisão vale mesmo se a nova fila não passar no verificador
+        publicada = self._publicar.executar().publicada
+        nova = _posicao(self._fila, s.solicitacao_id) if publicada else anterior
+        return ResultadoDecisao(decisao.decisao_id, anterior, nova, publicada)

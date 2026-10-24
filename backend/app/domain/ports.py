@@ -4,7 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -117,9 +117,10 @@ class CorrecaoRepository(Protocol):
 
 class FilaRepository(Protocol):
     def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
-                         publicada_em: datetime) -> None: ...
+                         publicada_em: datetime, data_referencia: date) -> None: ...
     def obter_publicada(self) -> list[LinhaFila]: ...
     def publicada_em(self) -> datetime | None: ...
+    def data_referencia(self) -> date | None: ...
 
 
 class SwalisScorer(Protocol):
