@@ -15,7 +15,7 @@ uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /
 python -m app.cli init-db              # cria as tabelas
 python -m app.cli carga                # US-01 + US-02 (carga e normalização, mesma transação)
 python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
-python -m app.cli gerar-fila           # US-08/09/10 (via banco, após US-01)
+python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e publica (exit 1 se reprovar)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
@@ -55,7 +55,7 @@ app/
     deps.py            composição: único lugar que instancia implementações concretas
     errors.py          DomainError -> {"erro","mensagem"}
     routers/           um arquivo por recurso
-  cli.py             comandos de linha (carga, gerar-fila, decisoes)
+  cli.py             comandos de linha (carga, normalizar, gerar-fila, gerar-fila-csv, decisoes)
   config.py          configuração (REF_DATE fixa = 2026-10-23)
 tests/               espelha app/ ; test_arquitetura.py protege a regra de dependência
 ```

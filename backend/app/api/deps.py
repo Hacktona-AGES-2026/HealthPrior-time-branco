@@ -2,6 +2,8 @@
 
 Rotas recebem casos de uso prontos via Depends; trocar SwalisStub pelo SWALIS real é só aqui.
 """
+from datetime import datetime, timezone
+
 from fastapi import Depends
 from sqlmodel import Session
 
@@ -9,6 +11,7 @@ from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
 from app.application.normalizar import Normalizar
 from app.application.gerar_fila import GerarFila
+from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.config import settings
 from app.infrastructure.csv_loader import LeitorDataset
@@ -18,10 +21,12 @@ from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
     SqlEventoRepository,
+    SqlFilaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.swalis_stub import SwalisStub
+from app.infrastructure.verificador import VerificadorOficial
 
 
 def get_scorer():
@@ -42,6 +47,22 @@ def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:
         exportador=ExportadorCsv(),
         ref_date=settings.ref_date,
     )
+
+
+def get_publicar_fila(session: Session = Depends(get_session),
+                      gerar: GerarFila = Depends(get_gerar_fila)) -> PublicarFila:
+    return PublicarFila(
+        gerar=gerar,
+        verificador=VerificadorOficial(),
+        fila=SqlFilaRepository(session),
+        uow=SqlUnidadeDeTrabalho(session),
+        relogio=lambda: datetime.now(timezone.utc),
+        output_dir=settings.output_dir,
+    )
+
+
+def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> ExportarFilaPublicada:
+    return ExportarFilaPublicada(SqlFilaRepository(session), ExportadorCsv(), settings.output_dir)
 
 
 def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEvento:

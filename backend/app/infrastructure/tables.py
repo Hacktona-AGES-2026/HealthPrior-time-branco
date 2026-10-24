@@ -163,7 +163,11 @@ class FilaPublicadaTable(SQLModel, table=True):
     solicitacao_id: str = Field(primary_key=True)
     posicao: int = Field(index=True)
     camada: int
+    classe: str
+    pct_prazo_consumido: float
+    dias_em_fila: int
     score_efetivo: float
     justificativa: str
+    editado_manualmente: bool = False
     versao_regras: str
     publicada_em: datetime

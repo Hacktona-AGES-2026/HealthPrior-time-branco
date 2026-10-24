@@ -5,15 +5,18 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 """
 from __future__ import annotations
 
-from sqlalchemy import bindparam, delete, select, update
+from datetime import datetime
+
+from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.enums import Classe, ClasseStatus, StatusFila
-from app.domain.models import Correcao, Evento, ResultadoTabela, Solicitacao
+from app.domain.models import Correcao, Evento, LinhaFila, ResultadoTabela, Solicitacao
 from app.infrastructure.tables import (
     CorrecaoTable,
     EventoTable,
+    FilaPublicadaTable,
     ProcedimentoTable,
     SolicitacaoTable,
 )
@@ -162,6 +165,43 @@ class SqlCorrecaoRepository:
         self._s.flush()
 
 
+class SqlFilaRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
+                         publicada_em: datetime) -> None:
+        """Substitui a fila publicada inteira. Não confirma: a unidade de trabalho confirma."""
+        self._s.execute(delete(FilaPublicadaTable))
+        self._s.add_all(
+            FilaPublicadaTable(
+                solicitacao_id=l.solicitacao_id, posicao=l.posicao, camada=l.camada,
+                classe=l.classe, pct_prazo_consumido=l.pct_prazo_consumido,
+                dias_em_fila=l.dias_em_fila, score_efetivo=l.score_efetivo,
+                justificativa=l.justificativa, editado_manualmente=l.editado_manualmente,
+                versao_regras=versao_regras, publicada_em=publicada_em,
+            )
+            for l in linhas
+        )
+        self._s.flush()
+
+    def obter_publicada(self) -> list[LinhaFila]:
+        rows = self._s.execute(
+            select(FilaPublicadaTable).order_by(FilaPublicadaTable.posicao)).scalars().all()
+        return [
+            LinhaFila(
+                solicitacao_id=t.solicitacao_id, posicao=t.posicao, justificativa=t.justificativa,
+                camada=t.camada, classe=t.classe, pct_prazo_consumido=t.pct_prazo_consumido,
+                dias_em_fila=t.dias_em_fila, score_efetivo=t.score_efetivo,
+                editado_manualmente=t.editado_manualmente, versao_regras=t.versao_regras,
+            )
+            for t in rows
+        ]
+
+    def publicada_em(self) -> datetime | None:
+        return self._s.execute(select(func.max(FilaPublicadaTable.publicada_em))).scalar()
+
+
 class SqlUnidadeDeTrabalho:
     def __init__(self, session: Session):
         self._s = session
@@ -173,4 +213,4 @@ class SqlUnidadeDeTrabalho:
         self._s.rollback()
 
 
-# Demais repositórios (Pendencia, Decisao, Correcao, Fila) seguem o mesmo padrão.
+# Demais repositórios (Pendencia, Decisao, Correcao) seguem o mesmo padrão.
