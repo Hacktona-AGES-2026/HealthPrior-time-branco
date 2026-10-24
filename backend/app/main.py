@@ -17,12 +17,23 @@ class TableResultOut(BaseModel):
     atualizados: int
 
 
+class NormalizacaoOut(BaseModel):
+    solicitacoes: int
+    correcoes: int
+    por_regra: Dict[str, int]
+
+
+class CargaOut(BaseModel):
+    tabelas: Dict[str, TableResultOut]
+    normalizacao: NormalizacaoOut
+
+
 @app.exception_handler(CargaError)
 def carga_error_handler(_, exc: CargaError) -> JSONResponse:
     return JSONResponse(status_code=422, content={"erro": "CARGA_INVALIDA", "mensagem": str(exc)})
 
 
-@app.post("/admin/carga", response_model=Dict[str, TableResultOut])
+@app.post("/admin/carga", response_model=CargaOut)
 def post_carga():
-    """Carga inicial (US-01). Idempotente: repetir não duplica registros."""
+    """Carga inicial (US-01) seguida da normalização (US-02). Idempotente."""
     return carga(get_engine(), config.DATA_DIR)

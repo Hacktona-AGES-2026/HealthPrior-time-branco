@@ -14,6 +14,7 @@ from sqlalchemy import Date, Engine, Integer, Numeric, literal_column
 from sqlalchemy.dialects.postgresql import insert
 
 from app.models import Base, Evento, Procedimento, Solicitacao
+from app.normalization import NormalizacaoResult, normalizar
 
 CHUNK_SIZE = 500
 
@@ -36,10 +37,15 @@ class TableResult:
     atualizados: int = 0
 
 
+@dataclass
+class CargaResult:
+    tabelas: Dict[str, TableResult]
+    normalizacao: NormalizacaoResult
+
+
 def _csv_columns(model: type) -> List[str]:
-    """Colunas da tabela que vêm do CSV: as anteriores ao estado do sistema."""
-    system = {"classe_status", "status_fila"}
-    return [c.name for c in model.__table__.columns if c.name not in system]
+    """Colunas da tabela que vêm do CSV (as de estado do sistema ficam de fora)."""
+    return [c.name for c in model.__table__.columns if not c.info.get("sistema")]
 
 
 def _coerce(column, raw: str) -> Any:
@@ -94,9 +100,10 @@ def _upsert(conn, model: type, rows: List[Dict[str, Any]]) -> TableResult:
     return result
 
 
-def carga(engine: Engine, data_dir: Path) -> Dict[str, TableResult]:
-    """Carrega os três CSVs numa única transação: ou entra tudo, ou nada."""
+def carga(engine: Engine, data_dir: Path) -> CargaResult:
+    """Carrega os três CSVs e normaliza (US-02) numa única transação: ou entra tudo, ou nada."""
     Base.metadata.create_all(engine)
     parsed = [(name, model, read_rows(data_dir / filename, model)) for name, filename, model in SOURCES]
     with engine.begin() as conn:
-        return {name: _upsert(conn, model, rows) for name, model, rows in parsed}
+        tabelas = {name: _upsert(conn, model, rows) for name, model, rows in parsed}
+        return CargaResult(tabelas=tabelas, normalizacao=normalizar(conn))

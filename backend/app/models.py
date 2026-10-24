@@ -15,6 +15,10 @@ class Base(DeclarativeBase):
     pass
 
 
+# Marca colunas que não vêm do CSV: a carga não as escreve nem as sobrescreve.
+SISTEMA = {"sistema": True}
+
+
 class Procedimento(Base):
     __tablename__ = "procedimentos"
 
@@ -69,11 +73,31 @@ class Solicitacao(Base):
     # D-01: a carga inicial não passa pelo regulador.
     classe_status: Mapped[str] = mapped_column(
         String, nullable=False, default="sugerida_nao_confirmada",
-        server_default="sugerida_nao_confirmada",
+        server_default="sugerida_nao_confirmada", info=SISTEMA,
     )
     status_fila: Mapped[str] = mapped_column(
-        String, nullable=False, default="ativa", server_default="ativa"
+        String, nullable=False, default="ativa", server_default="ativa", info=SISTEMA
     )
+
+    # --- colunas normalizadas (US-02); recalculadas a cada normalização ---
+    cid_norm: Mapped[Optional[str]] = mapped_column(String, info=SISTEMA)  # PRE-01
+    nome_norm: Mapped[Optional[str]] = mapped_column(String, info=SISTEMA)  # PRE-02
+    municipio_norm: Mapped[Optional[str]] = mapped_column(String, info=SISTEMA)  # PRE-03
+    prioridade_norm: Mapped[Optional[str]] = mapped_column(String, info=SISTEMA)  # PRE-04
+
+
+class CorrecaoLog(Base):
+    """Toda correção automática do pré-processamento: campo, original, novo e regra."""
+
+    __tablename__ = "correcoes_log"
+    __table_args__ = (Index("ix_correcoes_log_solicitacao_id", "solicitacao_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    solicitacao_id: Mapped[str] = mapped_column(ForeignKey("solicitacoes.solicitacao_id"))
+    campo: Mapped[str] = mapped_column(String, nullable=False)
+    original: Mapped[Optional[str]] = mapped_column(Text)
+    novo: Mapped[Optional[str]] = mapped_column(Text)
+    regra: Mapped[str] = mapped_column(String, nullable=False)
 
 
 class Evento(Base):

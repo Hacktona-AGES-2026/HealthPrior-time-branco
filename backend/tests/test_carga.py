@@ -20,7 +20,7 @@ def count(engine, model):
 
 
 def test_carga_conta_registros_do_dataset(engine):
-    r = carga(engine, DATA)
+    r = carga(engine, DATA).tabelas
 
     assert (r["procedimentos"].inseridos, r["solicitacoes"].inseridos, r["eventos"].inseridos) == (23, 941, 1505)
     assert count(engine, Procedimento) == 23
@@ -30,7 +30,7 @@ def test_carga_conta_registros_do_dataset(engine):
 
 def test_carga_e_idempotente(engine):
     carga(engine, DATA)
-    r = carga(engine, DATA)
+    r = carga(engine, DATA).tabelas
 
     assert all(t.inseridos == 0 for t in r.values())
     assert count(engine, Solicitacao) == 941
@@ -136,8 +136,8 @@ def test_post_admin_carga(engine, monkeypatch):
     second = client.post("/admin/carga")
 
     assert first.status_code == 200
-    assert first.json()["solicitacoes"] == {"lido": 941, "inseridos": 941, "atualizados": 0}
-    assert second.json()["solicitacoes"] == {"lido": 941, "inseridos": 0, "atualizados": 941}
+    assert first.json()["tabelas"]["solicitacoes"] == {"lido": 941, "inseridos": 941, "atualizados": 0}
+    assert second.json()["tabelas"]["solicitacoes"] == {"lido": 941, "inseridos": 0, "atualizados": 941}
 
 
 def test_post_admin_carga_com_arquivo_ausente(engine, monkeypatch, tmp_path):
