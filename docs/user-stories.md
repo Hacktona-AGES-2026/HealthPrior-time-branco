@@ -213,6 +213,8 @@ Como **sistema** (e, na demo, como **apresentador**), quero inserir um evento e 
 - **Front:** formulário "Novo evento" (tipo, resultado, data, descrição, origem).
 - **Depende de:** US-03, US-12
 
+> **Status: ✅ implementado** (D-96): a cena da demo funciona — PS para SOL-2023-00060 (D → B) vai ao inbox; ao aprovar, o paciente sobe.
+
 #### US-16 · Atualização diária — **P2** · Back + Front
 Como **sistema**, quero recalcular o % do prazo de todos uma vez por dia, para a fila envelhecer sozinha.
 - **CA**

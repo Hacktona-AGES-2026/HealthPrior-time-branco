@@ -34,5 +34,5 @@ Classe efetiva na fila: `classe_medico` → `classe_confirmada` (se confirmada) 
 - Qualquer decisão descongela.
 - O % do prazo segue a classe efetiva. `score_medico` envelhece a partir de `editado_em`, que é a **data de referência** (REF) da edição, nunca o relógio; o horário real fica no log `decisoes`.
 
-## Limitação conhecida (cena da demo)
-O SWALIS ainda **não usa eventos** (Q-SW2): um PS novo para SOL-2023-00060 não muda a classe (fica D), então o desfecho é `registrado`, não `enviado_inbox`. A camada muda (PS → camada 2) na próxima publicação. Para a cena "PS → inbox → aprova → sobe", o SWALIS precisa considerar eventos na espera (decisão pendente). Hoje dá para demonstrar com biópsia positiva em paciente benigno (ex.: SOL-2026-00239, C → A2 → inbox).
+## Cena da demo (resolvida pela D-96)
+O SWALIS passou a usar a piora na espera (Q-SW2): um PS novo para SOL-2023-00060 sobe a classe de D para B, o desfecho é `enviado_inbox`, o regulador aprova e o paciente sobe na fila (coberto em `test_cena_da_demo_ps_vai_ao_inbox_aprova_e_o_paciente_sobe`). A biópsia positiva em paciente benigno (ex.: SOL-2026-00239, B → A2) continua valendo como segunda cena.
