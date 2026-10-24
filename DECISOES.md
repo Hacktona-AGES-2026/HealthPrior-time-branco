@@ -74,6 +74,8 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-68 | 2026-10-24 | Detalhe do paciente: posição/camada da fila publicada; score e motivos do SWALIS calculados na leitura | Tela bate com a fila entregue e mostra a evidência atual | Persistir score | US-21 |
 | D-69 | 2026-10-24 | Explicação em 2–4 frases montada por função pura do domínio | Testável e igual em qualquer tela (explicabilidade) | Texto montado no front | US-21 |
 | D-70 | 2026-10-24 | Com `classe_medico`, prazo e % do prazo recalculados pela classe decidida | Detalhe e fila mostram o mesmo número | Usar sempre a classe do SWALIS | US-21 |
+| D-80 | 2026-10-24 | Prazos por classe seguem a tabela do desafio (A1 15, A2 21, B 60, C 180, D 360 dias), não a do SWALIS publicado (Valente et al., 2009: A1 8, A2 30, B/C/D iguais). O score (% do prazo) é o P(t) do SWALIS dividido por 3,6, então a ordem é a mesma do artigo | A tabela do desafio é a referência oficial da banca e do dataset; B/C/D coincidem com o artigo. No pitch, dizer "adaptado do SWALIS" (`docs/auditoria-parametros.md` X-01) | Prazos do artigo (8/30 dias) | C-07 |
+| D-81 | 2026-10-24 | Parâmetros sem fonte conferida na literatura ficam como **escolha provisória do time**, com os valores atuais, listados em `docs/auditoria-parametros.md` §7 (P-01..P-14), até validação com os mentores. A auditoria não muda valores; mudança de valor exige nova decisão | Issue #45: separar o que tem respaldo do que é escolha do time, sem inventar citação | Remover ou zerar parâmetros sem fonte; citar fontes não conferidas | C-07, C-11, US-12 |
 
 ## Solicitações fora da fila
 
