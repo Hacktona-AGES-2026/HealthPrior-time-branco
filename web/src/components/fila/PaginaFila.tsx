@@ -5,6 +5,8 @@ import { PainelAprovacao } from "./PainelAprovacao"
 import { Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useColunas } from "@/store/colunas"
+import { PainelDrawer } from "./PainelDrawer"
+import { BarraLote } from "./BarraLote"
 import { DivisorFaixa } from "./DivisorFaixa"
 import { DivisorPainel } from "./DivisorPainel"
 import { useStore } from "@/store/useStore"
@@ -47,6 +49,7 @@ export default function PaginaFila() {
             </>
           )}
           <FiltrosFila total={total} visiveis={visiveis} />
+          <BarraLote />
           <CabecalhoTabela table={table} />
         </div>
         <div className="px-3 pb-8">
@@ -55,6 +58,7 @@ export default function PaginaFila() {
       </div>
       <DivisorPainel />
       <PainelAprovacao className="hidden lg:flex" />
+      <PainelDrawer />
     </div>
   )
 }

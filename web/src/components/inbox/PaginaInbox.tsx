@@ -9,9 +9,7 @@ import { useStore } from "@/store/useStore"
 /** US-12: classe sugerida pelo SWALIS diferente da classe em vigor; só vale depois de um profissional decidir. */
 export default function PaginaInbox() {
   const abrirNaFila = useStore((s) => s.abrirNaFila)
-  const itens = PACIENTES.filter((p) => p.divergencia).sort(
-    (a, b) => CLASSES.indexOf(a.classe) - CLASSES.indexOf(b.classe) || a.posicao_nova - b.posicao_nova
-  )
+  const itens = PACIENTES.filter((p) => p.inbox).sort((a, b) => CLASSES.indexOf(a.classe) - CLASSES.indexOf(b.classe) || a.posicao - b.posicao)
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-4">
@@ -36,18 +34,18 @@ export default function PaginaInbox() {
           </TableHeader>
           <TableBody>
             {itens.map((p) => (
-              <TableRow key={p.solicitacao_id}>
-                <TableCell className="font-medium tabular-nums">{p.solicitacao_id}</TableCell>
+              <TableRow key={p.id}>
+                <TableCell className="font-medium tabular-nums">{p.id}</TableCell>
                 <TableCell className="max-w-56 truncate">{p.procedimento}</TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-1.5">
-                    <ClasseBadge classe={p.classe_antiga} /> → <ClasseBadge classe={p.classe} />
+                    {p.classe_vigente ? <ClasseBadge classe={p.classe_vigente} /> : <span className="text-xs text-muted-foreground">sem classe</span>} → <ClasseBadge classe={p.classe} />
                   </span>
                 </TableCell>
-                <TableCell className="tabular-nums">{p.posicao_nova}</TableCell>
-                <TableCell className="max-w-96 truncate text-xs text-muted-foreground">{p.evidencias[0]?.trecho ?? "—"}</TableCell>
+                <TableCell className="tabular-nums">{p.posicao}</TableCell>
+                <TableCell className="max-w-96 truncate text-xs text-muted-foreground">{p.inbox?.motivos[0] ?? "—"}</TableCell>
                 <TableCell>
-                  <Button size="xs" variant="outline" onClick={() => abrirNaFila(p.solicitacao_id)}>
+                  <Button size="xs" variant="outline" onClick={() => abrirNaFila(p.id)}>
                     Revisar
                   </Button>
                 </TableCell>
