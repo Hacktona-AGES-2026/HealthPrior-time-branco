@@ -4,6 +4,7 @@ import { limparJargao, motivoClaro } from "@/lib/regrasSwalis"
 import { ClasseBadge } from "@/components/shared/Basicos"
 import { useStore } from "@/store/useStore"
 import { useDetalheApi } from "./DetalheApi"
+import { EscalaClasses } from "./EscalaClasses"
 
 type Criterio = { nivel: number; motivos: string[] }
 
@@ -47,6 +48,7 @@ export function ComoClasse({ p }: { p: Paciente }) {
         <Linha nome="Progressão da doença" c={criterios.progressao} />
         <Linha nome="Sintomas" c={criterios.sintoma} />
       </ul>
+      <EscalaClasses p={p} />
       <button type="button" onClick={() => abrirSwalis(p)} className="inline-flex min-h-9 items-center text-sm text-primary underline underline-offset-2 outline-none focus-visible:ring-2 focus-visible:ring-ring">
         Ver todas as classes e prazos
       </button>
