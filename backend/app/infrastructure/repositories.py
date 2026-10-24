@@ -63,6 +63,7 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         classe_status=ClasseStatus(t.classe_status), alertas=json.loads(t.alertas_json),
         classe_medico=Classe(t.classe_medico) if t.classe_medico else None,
         classe_confirmada=Classe(t.classe_confirmada) if t.classe_confirmada else None,
+        classe_vigente=Classe(t.classe_sistema) if t.classe_sistema else None,
         score_medico=t.score_medico, editado_manualmente=t.editado_manualmente,
         editado_por=t.editado_por, editado_em=t.editado_em,
         motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
@@ -101,6 +102,7 @@ class SqlSolicitacaoRepository:
         t.classe_status = s.classe_status.value
         t.classe_confirmada = s.classe_confirmada.value if s.classe_confirmada else None
         t.classe_medico = s.classe_medico.value if s.classe_medico else None
+        t.classe_sistema = s.classe_vigente.value if s.classe_vigente else None  # classe vigente
         t.score_medico = s.score_medico
         t.editado_manualmente = s.editado_manualmente
         t.editado_por, t.editado_em = s.editado_por, s.editado_em

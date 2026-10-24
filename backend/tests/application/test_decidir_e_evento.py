@@ -72,7 +72,11 @@ class Repos:
 
 class Pendencias:
     def __init__(self, r):
+        self.r = r
         self.salvar = r.salvar_pendencia
+
+    def listar_por_solicitacao(self, sid):
+        return [p for p in self.r.pendencias if p.solicitacao_id == sid]
 
 
 @dataclass
@@ -91,7 +95,8 @@ class Publicador:
 
 
 def _decidir(r, passa=True):
-    return DecidirClasse(r, r, r, SCORER, r, Publicador(r, passa), r, lambda: AGORA, lambda: "DEC-1")
+    return DecidirClasse(r, r, r, SCORER, r, Publicador(r, passa), r, lambda: AGORA,
+                         settings.ref_date, lambda: "DEC-1")
 
 
 def _registrar(r):
@@ -162,13 +167,40 @@ def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
     assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "C"
 
 
-def test_evento_que_muda_a_classe_vai_ao_inbox(dataset):
+def test_evento_que_muda_a_classe_vai_ao_inbox_e_congela_a_classe(dataset):
     r = Repos(dataset)  # SOL-2026-00239: hérnia K40.9, classe C; biópsia positiva -> A2
     res = _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia",
                                             "positivo", descricao="AP: adenocarcinoma"))
     assert (res.classe_antes, res.classe_depois, res.desfecho) == (
         Classe.C, Classe.A2, DesfechoEvento.ENVIADO_INBOX)
     assert r.eventos["SOL-2026-00239"][-1].evento_id == "EVT-N1" and r.commits == 1
+    # Sem aprovação de um profissional, a fila continua com a classe anterior (I-04).
+    assert r.sols["SOL-2026-00239"].classe_vigente is Classe.C
+    r.publicar()
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "C"
+    # O regulador aprova: aí sim vale A2 e a classe deixa de estar congelada.
+    _decidir(r).executar(ComandoDecisao("SOL-2026-00239", "REG-1", AcaoDecisao.APROVAR))
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "A2"
+    assert r.sols["SOL-2026-00239"].classe_vigente is None
+
+
+def test_mudanca_de_um_nivel_sem_confirmacao_tambem_vai_ao_inbox(dataset):
+    # Sem congelamento, a regra do inbox (US-12) só pegaria divergência de 2+ níveis da
+    # prioridade manual; com a classe congelada, qualquer mudança espera decisão.
+    from app.domain.inbox import entra_no_inbox
+    from app.domain.enums import ClasseStatus
+    assert entra_no_inbox(Classe.B, ClasseStatus.SUGERIDA_NAO_CONFIRMADA, None, "media", Classe.C)
+    assert not entra_no_inbox(Classe.C, ClasseStatus.SUGERIDA_NAO_CONFIRMADA, None, "media", Classe.C)
+
+
+def test_score_editado_envelhece_a_partir_de_ref_e_nao_do_relogio(dataset):
+    r = Repos(dataset)
+    _decidir(r).executar(ComandoDecisao(
+        "SOL-2023-00060", "R", AcaoDecisao.EDITAR, score=50.0,
+        motivo_codificado=MotivoCodificado.OUTRO, justificativa="x"))
+    s = r.sols["SOL-2023-00060"]
+    assert s.editado_em.date() == settings.ref_date  # não o relógio (AGORA = 24/10)
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2023-00060").score_efetivo == 50.0
 
 
 def test_evento_sem_mudanca_de_classe_so_registra(dataset):
@@ -194,6 +226,11 @@ def test_contato_de_saida_abre_pendencia(dataset, resultado, regra):
     [p] = r.pendencias
     assert (p.regra, p.bloqueante, p.evidencias[0].ref) == (regra, True, "EVT-N1")
     assert r.sols["SOL-2023-00060"].status_fila.value == "ativa"  # nada sai sem humano (I-03)
+    # Segundo contato igual (não duplicado) não abre outra pendência.
+    r2 = _registrar(r)
+    r2._gerar_id = lambda: "EVT-N2"
+    res2 = r2.executar(NovoEvento("SOL-2023-00060", date(2026, 10, 21), "contato_telefonico", resultado))
+    assert res2.desfecho is DesfechoEvento.REGISTRADO and len(r.pendencias) == 1
 
 
 def test_tipo_de_evento_invalido(dataset):

@@ -92,7 +92,7 @@ def get_decidir(session: Session = Depends(get_session),
         solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
         decisoes=SqlDecisaoRepository(session), scorer=get_scorer(),
         uow=SqlUnidadeDeTrabalho(session), publicar=publicar, fila=SqlFilaRepository(session),
-        relogio=lambda: datetime.now(timezone.utc))
+        relogio=lambda: datetime.now(timezone.utc), ref_date=settings.ref_date)
 
 
 # US-20

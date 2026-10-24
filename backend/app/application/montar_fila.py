@@ -75,16 +75,22 @@ def classe_e_score_efetivos(sol: Solicitacao, res: ResultadoScore,
                             ref_date: date) -> tuple[Classe, float, float]:
     """(classe, score, % do prazo) usados na ordenação (C-10).
 
-    Classe: a do regulador (editar/manter); senão a confirmada (aprovar); senão a do SWALIS.
-    Assim um evento novo só muda a classe de quem já foi confirmado depois de nova decisão (C-08).
+    Classe: a do regulador (editar/manter); senão a confirmada (aprovar); senão a vigente
+    congelada por evento; senão a do SWALIS (só vale até a primeira mudança, carga = D-01).
+    Assim nenhuma classe sugerida depois da carga vale sem decisão humana (I-04, C-08).
     O % do prazo segue o prazo da classe efetiva; score editado continua envelhecendo a partir
     da edição, no ritmo do prazo da classe.
     """
     confirmada = sol.classe_confirmada if sol.classe_status == ClasseStatus.CONFIRMADA else None
-    classe = sol.classe_medico or confirmada or res.classe_sistema
+    classe = sol.classe_medico or confirmada or sol.classe_vigente or res.classe_sistema
     prazo = PRAZO_MAXIMO_DIAS[classe]
     dias = (ref_date - sol.data_entrada_fila).days
-    pct = res.pct_prazo_consumido if classe == res.classe_sistema else round(100 * dias / prazo, 1)
+    if classe == res.classe_sistema:
+        pct = res.pct_prazo_consumido
+        if sol.score_medico is None:
+            return classe, res.score_sistema, pct
+    else:
+        pct = round(100 * dias / prazo, 1)
     if sol.score_medico is None:
         return classe, pct, pct
     desde = max(0, (ref_date - sol.editado_em.date()).days) if sol.editado_em else 0

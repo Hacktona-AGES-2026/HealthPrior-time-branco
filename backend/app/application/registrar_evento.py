@@ -2,7 +2,8 @@
 
 Evento -> pré-processamento (PRE-07/08, flags) -> SWALIS -> desfecho:
 - pendencia: o evento indica saída da fila (desistência, operou em outro serviço) -> call center;
-- enviado_inbox: a classe sugerida mudou e o paciente entra na regra do inbox (US-12);
+- enviado_inbox: a classe sugerida mudou; a classe em vigor fica congelada até o regulador
+  decidir (I-04), então nenhuma classe nova vale sem aprovação de um profissional;
 - registrado: só grava; a ordenação é refeita na próxima publicação (D-02).
 Não republica a fila: a posição muda quando o regulador decide ou na atualização diária.
 """
@@ -13,7 +14,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Callable
 
-from app.domain.enums import Classe, DesfechoEvento, TipoEvento
+from app.domain.enums import Classe, ClasseStatus, DesfechoEvento, TipoEvento
 from app.domain.errors import EventoInvalidoError, NaoEncontradoError
 from app.domain.inbox import entra_no_inbox
 from app.domain.models import Evento, Motivo, Pendencia
@@ -88,7 +89,12 @@ class RegistrarEvento:
 
         pendencia_id = None
         saida = SAIDA_POR_CONTATO.get(n.resultado or "") if n.tipo_evento == "contato_telefonico" else None
-        if saida and not evento.duplicado_de:
+        regra = saida[0] if saida else None
+        ja_aberta = saida and any(p.regra == regra and p.status.value == "aberta"
+                                  for p in self._pendencias.listar_por_solicitacao(s.solicitacao_id))
+        if saida and (evento.duplicado_de or ja_aberta):
+            desfecho = DesfechoEvento.REGISTRADO  # já há pendência aberta para essa saída
+        elif saida:
             regra, titulo, acao = saida
             p = Pendencia(pendencia_id="", solicitacao_id=s.solicitacao_id, regra=regra,
                           titulo=titulo, bloqueante=True,
@@ -98,9 +104,16 @@ class RegistrarEvento:
             self._pendencias.salvar(p)
             pendencia_id = p.pendencia_id
             desfecho = DesfechoEvento.PENDENCIA
-        elif depois != antes and entra_no_inbox(depois, s.classe_status, s.classe_confirmada,
-                                                 s.prioridade_norm):
-            desfecho = DesfechoEvento.ENVIADO_INBOX
+        elif depois != antes:
+            # I-04: mudança de classe só vale com decisão humana. Quem nunca foi confirmado fica
+            # com a classe anterior congelada (a fila usa ela) até o regulador decidir.
+            if s.classe_status != ClasseStatus.CONFIRMADA and s.classe_vigente is None:
+                s.classe_vigente = antes
+                self._solicitacoes.salvar(s)
+            desfecho = (DesfechoEvento.ENVIADO_INBOX
+                        if entra_no_inbox(depois, s.classe_status, s.classe_confirmada,
+                                          s.prioridade_norm, s.classe_vigente)
+                        else DesfechoEvento.REGISTRADO)
         else:
             desfecho = DesfechoEvento.REGISTRADO
         self._uow.confirmar()

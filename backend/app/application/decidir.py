@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime, timezone
 from typing import Callable, Protocol
 
 from app.domain.decisao import aplicar_decisao, validar_decisao
@@ -59,6 +59,7 @@ class DecidirClasse:
     def __init__(self, solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
                  decisoes: DecisaoRepository, scorer: SwalisScorer, uow: UnidadeDeTrabalho,
                  publicar: Publicador, fila: FilaRepository, relogio: Callable[[], datetime],
+                 ref_date: date,
                  gerar_id: Callable[[], str] = lambda: f"DEC-{uuid.uuid4().hex[:10]}"):
         self._solicitacoes = solicitacoes
         self._eventos = eventos
@@ -68,6 +69,7 @@ class DecidirClasse:
         self._publicar = publicar
         self._fila = fila
         self._relogio = relogio
+        self._ref_date = ref_date
         self._gerar_id = gerar_id
 
     def executar(self, c: ComandoDecisao) -> ResultadoDecisao:
@@ -76,9 +78,12 @@ class DecidirClasse:
             raise NaoEncontradoError(f"Solicitação {c.solicitacao_id} não encontrada.")
         validar_decisao(s, c.acao, c.classe, c.score, c.motivo_codificado, c.justificativa)
         res = self._scorer.calcular(s, self._eventos.listar_por_solicitacao(s.solicitacao_id))
-        agora = self._relogio()
+        agora = self._relogio()  # auditoria (log de decisões)
+        # A fila envelhece a partir de REF, nunca do relógio da máquina.
+        editado_em = datetime(self._ref_date.year, self._ref_date.month, self._ref_date.day,
+                              tzinfo=timezone.utc)
         decidida = aplicar_decisao(s, c.acao, res.classe_sistema, c.classe, c.score,
-                                   c.motivo_codificado, c.regulador_id, agora)
+                                   c.motivo_codificado, c.regulador_id, editado_em)
         decisao = Decisao(
             decisao_id=self._gerar_id(), solicitacao_id=s.solicitacao_id,
             regulador_id=c.regulador_id, acao=c.acao, data=agora,

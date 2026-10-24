@@ -62,6 +62,9 @@ class Solicitacao:
     # override do regulador (C-10)
     classe_medico: Classe | None = None
     classe_confirmada: Classe | None = None
+    # Classe do sistema em vigor enquanto não há confirmação: congelada quando um evento muda a
+    # sugestão, para nenhuma mudança de classe valer sem decisão humana (I-04, C-08).
+    classe_vigente: Classe | None = None
     score_medico: float | None = None
     editado_manualmente: bool = False
     editado_por: str | None = None

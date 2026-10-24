@@ -67,3 +67,29 @@ def test_manter_fixa_a_classe_atual_e_recusa_a_sugestao():
     s = _sol(prioridade="media")
     assert aplicar_decisao(s, AcaoDecisao.MANTER, Classe.A1, None, None, MOTIVO, "R", AGORA) is Classe.C
     assert s.classe_medico is Classe.C and s.classe_status is ClasseStatus.CONFIRMADA
+
+
+def test_manter_oncologico_em_d_e_bloqueado_sem_mexer_no_estado():
+    # C61 com prioridade "baixa": classe atual implícita D; manter fixaria D -> recusado.
+    s = _sol("C61", prioridade="baixa")
+    with pytest.raises(OncologicoRebaixadoError):
+        aplicar_decisao(s, AcaoDecisao.MANTER, Classe.A2, None, None, MOTIVO, "R", AGORA)
+    assert s.classe_medico is None and s.classe_status is ClasseStatus.SUGERIDA_NAO_CONFIRMADA
+
+
+def test_editar_so_classe_descarta_score_de_outra_classe():
+    s = _sol(classe_medico=Classe.C, score_medico=300.0)
+    aplicar_decisao(s, AcaoDecisao.EDITAR, Classe.C, Classe.B, None, MOTIVO, "R", AGORA)
+    assert s.score_medico is None
+
+
+@pytest.mark.parametrize("score", [float("nan"), float("inf"), -1.0])
+def test_score_invalido(score):
+    with pytest.raises(DecisaoInvalidaError):
+        validar_decisao(_sol(), AcaoDecisao.EDITAR, None, score, MOTIVO, "x")
+
+
+def test_decisao_descongela_classe_vigente():
+    s = _sol(classe_vigente=Classe.C)
+    aplicar_decisao(s, AcaoDecisao.APROVAR, Classe.A2, None, None, None, "R", AGORA)
+    assert s.classe_vigente is None and s.classe_confirmada is Classe.A2

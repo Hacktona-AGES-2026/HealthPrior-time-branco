@@ -28,6 +28,7 @@ def test_salvar_grava_so_o_estado_da_decisao(session):
     s.classe_status, s.classe_confirmada, s.classe_medico = ClasseStatus.CONFIRMADA, Classe.B, Classe.B
     s.score_medico, s.editado_manualmente, s.editado_por, s.editado_em = 90.0, True, "REG-1", AGORA
     s.motivo_codificado = MotivoCodificado.PS_RECORRENTE
+    s.classe_vigente = Classe.C
     s.justificativa_clinica = "não deve ser gravado"
     repo.salvar(s)
     session.expire_all()
@@ -35,6 +36,7 @@ def test_salvar_grava_so_o_estado_da_decisao(session):
     assert (lido.classe_status, lido.classe_confirmada, lido.classe_medico, lido.score_medico) == (
         ClasseStatus.CONFIRMADA, Classe.B, Classe.B, 90.0)
     assert (lido.editado_por, lido.motivo_codificado) == ("REG-1", MotivoCodificado.PS_RECORRENTE)
+    assert lido.classe_vigente is Classe.C
     assert lido.justificativa_clinica == "orig"  # original intocado (I-10)
 
 
