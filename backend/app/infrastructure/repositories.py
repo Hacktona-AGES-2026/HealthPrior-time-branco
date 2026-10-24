@@ -99,6 +99,18 @@ class SqlSolicitacaoRepository:
         )
         self._s.expire_all()  # o update em lote não sincroniza os objetos já carregados
 
+    def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
+        if not solicitacoes:
+            return
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela).where(tabela.c.solicitacao_id == bindparam("b_id"))
+            .values(status_fila=bindparam("status_fila"), motivo_status=bindparam("motivo_status")),
+            [{"b_id": s.solicitacao_id, "status_fila": s.status_fila.value, "motivo_status": s.motivo_status}
+             for s in solicitacoes],
+        )
+        self._s.expire_all()
+
     def salvar_alertas(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
             return
@@ -152,9 +164,10 @@ class SqlEventoRepository:
         self._s.execute(
             update(tabela)
             .where(tabela.c.evento_id == bindparam("b_id"))
-            .values(duplicado_de=bindparam("duplicado_de"), historico=bindparam("historico")),
-            [{"b_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico}
-             for e in eventos],
+            .values(duplicado_de=bindparam("duplicado_de"), historico=bindparam("historico"),
+                    orfao=bindparam("orfao")),
+            [{"b_id": e.evento_id, "duplicado_de": e.duplicado_de, "historico": e.historico,
+              "orfao": e.orfao} for e in eventos],
         )
         self._s.expire_all()
 
@@ -235,6 +248,12 @@ class SqlPendenciaRepository:
 
     def salvar(self, pendencia: Pendencia) -> None:
         raise NotImplementedError("US-07")
+
+    def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:
+        linhas = self._s.execute(
+            select(PendenciaTable.solicitacao_id, PendenciaTable.regra)
+            .where(PendenciaTable.regra.in_(regras), PendenciaTable.status == "aberta")).all()
+        return {(sid, regra) for sid, regra in linhas}
 
     def sincronizar(self, regras: tuple[str, ...], pendencias: list[Pendencia]) -> ResultadoSincronizacao:
         existentes = {(t.solicitacao_id, t.regra): t for t in self._s.execute(

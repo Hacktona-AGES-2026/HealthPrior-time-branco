@@ -7,6 +7,7 @@ from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
+from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -38,8 +39,11 @@ def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
     inconsistencias = DetectarInconsistencias(
         SqlSolicitacaoRepository(session), SqlEventoRepository(session),
         SqlPendenciaRepository(session), settings.ref_date)
+    bloqueantes = DetectarBloqueantes(
+        SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+        SqlPendenciaRepository(session), settings.ref_date)
     return CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                        SqlUnidadeDeTrabalho(session), flags, inconsistencias)
+                        SqlUnidadeDeTrabalho(session), flags, inconsistencias, bloqueantes)
 
 
 def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:

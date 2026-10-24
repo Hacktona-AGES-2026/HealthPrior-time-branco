@@ -109,7 +109,7 @@ def detectar_eventos_orfaos(eventos: list[Evento], solicitacoes_existentes: set[
 
 
 def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
-    """PRE-20 (D-10): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
+    """PRE-20 (D-10, D-44): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
     com a data de entrada que já tem (a fusão dos eventos é da resolução, US-07)."""
     anteriores = [o for o in outras
                   if o.solicitacao_id != s.solicitacao_id and o.paciente_id == s.paciente_id
