@@ -8,6 +8,7 @@ from fastapi import Depends
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
+from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
@@ -81,3 +82,13 @@ def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEv
 def get_decidir(session: Session = Depends(get_session),
                 gerar_fila: GerarFila = Depends(get_gerar_fila)) -> DecidirClasse:
     return DecidirClasse(SqlSolicitacaoRepository(session), decisoes=None, gerar_fila=gerar_fila)
+
+
+# US-22
+DESTAQUES_PADRAO = ["SOL-2023-00010", "SOL-2025-00048", "SOL-2026-00637", "SOL-2026-00757",
+                    "SOL-2023-00060"]
+
+
+def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas:
+    return CompararFilas(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         SqlFilaRepository(session), settings.ref_date, DESTAQUES_PADRAO)

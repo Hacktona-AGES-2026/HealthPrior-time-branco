@@ -59,6 +59,10 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-50 | 2026-10-24 | Alertas em `Solicitacao.alertas`: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto`. Reprocessar troca só esses; alertas de outras regras ficam | O contrato (`GET /fila`) usa slugs, ex.: `contato_perdido`; várias US escrevem no mesmo campo | Sobrescrever a lista toda | US-05 |
 | D-51 | 2026-10-24 | Pendências automáticas (PRE-10..13): uma por (solicitação, regra), ids `PEN-0001…` estáveis, `aberta_em` = REF. Reprocessar abre as novas, atualiza a evidência das abertas e **encerra** (resolvida, por "sistema", resolução "deixou_de_valer") as abertas cujo achado sumiu. Nunca reabre nem altera pendência que uma pessoa resolveu ou descartou, e nunca apaga | Idempotência sem passar por cima do trabalho do administrativo (I-03) | Recriar todas a cada carga; reabrir as descartadas se o achado persistir | US-05 |
 | D-52 | 2026-10-24 | A detecção (`DetectarInconsistencias`) roda na carga depois das flags, na mesma transação (D-32), e avulsa (`python -m app.cli inconsistencias`). Precisa vir depois das flags porque PRE-10/12/13 ignoram eventos duplicados | Carga, normalização, flags e inconsistências entram juntas ou não entram | Rodar antes das flags | US-05 |
+| D-59 | 2026-10-24 | Indicadores do antes × depois com exatamente a definição do verificador oficial, conferidos por teste contra ele | Números do pitch auditáveis | Definição própria | US-22 |
+| D-60 | 2026-10-24 | Fila "antes" = prioridade manual (alta → média → baixa → vazia/desconhecida) + data de entrada + id | Reproduz a regra de hoje | Só data de entrada | US-22 |
+| D-61 | 2026-10-24 | Sem fila publicada, `depois = null` e `publicada = false` (200) | Mesmo padrão do `GET /fila` | Erro 409 | US-22 |
+| D-62 | 2026-10-24 | Destaques padrão definidos na composição (`DESTAQUES_PADRAO`) | Trocar pacientes da demo sem mexer em regra | Fixos no domínio | US-22 |
 
 ## Solicitações fora da fila
 
