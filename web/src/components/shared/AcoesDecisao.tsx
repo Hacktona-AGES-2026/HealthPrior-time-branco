@@ -181,10 +181,10 @@ export function AcoesDecisao({ paciente, variante = "painel" }: { paciente: Paci
   return (
     <>
       <div className={barra ? "inline-flex gap-2" : "grid grid-cols-2 gap-2"}>
-        <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta pendente" : "Aprovar (A)"} className="h-9 gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
+        <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta pendente" : "Aprovar"} className="h-9 gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
           <Check className="text-[var(--sobe)]" aria-hidden /> Aprovar
         </Button>
-        <Button variant="ghost" disabled={enviando} title="Editar (R)" className="h-9 gap-1.5 bg-muted text-foreground hover:bg-muted/70" onClick={() => setEditando(true)}>
+        <Button variant="ghost" disabled={enviando} title="Editar" className="h-9 gap-1.5 bg-muted text-foreground hover:bg-muted/70" onClick={() => setEditando(true)}>
           <Pencil aria-hidden /> Editar
         </Button>
       </div>

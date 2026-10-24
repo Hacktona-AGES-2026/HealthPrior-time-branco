@@ -28,8 +28,4 @@ python -m venv .venv && .venv/bin/pip install pandas pydantic fastapi sqlmodel h
 
 Os tipos da API são **gerados**: com o back no ar, `npm run gen:api` atualiza `src/api/schema.ts` (`OPENAPI_URL=... npm run gen:api` para outra URL). O gerador roda via `npx` porque exige TypeScript 5 e o projeto usa o 6 (D-85).
 
-## Atalhos
-
-`A` aprova · `R` edita a classe · `J`/`K` próximo/anterior pendente · `↑`/`↓` linha anterior/seguinte · `Enter` expande · `/` busca · `Ctrl K` abrir paciente · `Esc` recolhe · `[` menu · `]` painel · `?` ajuda. Na faixa: setas, `+`/`-`, `C`, `Home` e Ctrl+roda.
-
 O estado (filtros, página, paciente e, sem API, as decisões) fica salvo no navegador e na URL (`#/fila/SOL-...`).

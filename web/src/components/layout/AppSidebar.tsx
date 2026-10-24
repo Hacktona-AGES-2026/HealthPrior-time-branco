@@ -1,4 +1,4 @@
-import { BarChart3, BellRing, FileUp, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+import { BarChart3, BellRing, FileUp, BookOpen, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -14,7 +14,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { formatarContador, useContadores } from "@/components/layout/useContadores"
-import { PAGINAS_POR_TECLA } from "@/lib/atalhos"
 import type { Pagina } from "@/lib/filtros"
 import { useStore } from "@/store/useStore"
 import { useTema } from "@/store/tema"
@@ -49,7 +48,6 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
 export function AppSidebar() {
   const pagina = useStore((s) => s.pagina)
   const ir = useStore((s) => s.ir)
-  const setAtalhos = useStore((s) => s.setAtalhos)
   const { toggleSidebar, state, isMobile, setOpenMobile } = useSidebar()
   const fechar = () => { if (isMobile) setOpenMobile(false) }
   const resolvido = useTema((t) => t.resolvido)
@@ -83,11 +81,10 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {g.itens.map((item) => {
-                  const tecla = String(PAGINAS_POR_TECLA.indexOf(item.id) + 1)
                   const ct = contador(item.id)
                   return (
                     <SidebarMenuItem key={item.id}>
-                      <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${tecla})`} onClick={() => { ir(item.id); fechar() }}>
+                      <SidebarMenuButton isActive={pagina === item.id} tooltip={item.rotulo} onClick={() => { ir(item.id); fechar() }}>
                         <item.icone aria-hidden />
                         <span>{item.rotulo}</span>
                       </SidebarMenuButton>
@@ -120,19 +117,13 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton isActive={pagina === "swalis"} tooltip={`Classes e prazos (${PAGINAS_POR_TECLA.indexOf("swalis") + 1})`} onClick={() => { ir("swalis"); fechar() }}>
+            <SidebarMenuButton isActive={pagina === "swalis"} tooltip="Classes e prazos" onClick={() => { ir("swalis"); fechar() }}>
               <BookOpen aria-hidden />
               <span>Classes e prazos</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Atalhos (?)" onClick={() => { setAtalhos(true); fechar() }}>
-              <CircleHelp aria-hidden />
-              <span>Atalhos</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
           <SidebarMenuItem className="hidden md:block">
-            <SidebarMenuButton tooltip={state === "expanded" ? "Recolher menu ([)" : "Expandir menu ([)"} onClick={toggleSidebar}>
+            <SidebarMenuButton tooltip={state === "expanded" ? "Recolher menu" : "Expandir menu"} onClick={toggleSidebar}>
               <PanelLeft aria-hidden />
               <span>{state === "expanded" ? "Recolher menu" : "Expandir menu"}</span>
             </SidebarMenuButton>

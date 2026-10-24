@@ -32,33 +32,26 @@ type Estado = {
   zoom: Zoom
   decisoes: Record<string, Decisao>
   rejeitando: boolean
-  atalhosAbertos: boolean
-  paletaAberta: boolean
   versaoDados: number
   enviando: boolean
   recarregar: () => Promise<void>
   marcados: string[]
   ir: (pagina: Pagina) => void
   selecionar: (id: string | null, expandir?: boolean) => void
-  alternarExpandido: (id: string) => void
   recolher: () => void
   setSidebar: (aberta: boolean) => void
   setFiltros: (parcial: Partial<Filtros>) => void
   limparFiltros: () => void
   setZoom: (zoom: Zoom) => void
   setRejeitando: (v: boolean) => void
-  setAtalhos: (v: boolean) => void
-  setPaleta: (v: boolean) => void
   alternarMarcado: (id: string) => void
   marcarVarios: (ids: string[], ligado: boolean) => void
   limparMarcados: () => void
   aprovarLote: (ids: string[]) => void
-  mover: (direcao: 1 | -1) => void
   irParaPosicao: (posicao: number) => boolean
   aprovar: (id: string) => void
   editar: (id: string, classe: Classe, motivoCodificado: MotivoCodificado, motivo: string) => void
   desfazer: (id: string) => void
-  navegarPendente: (direcao: 1 | -1) => void
   abrirNaFila: (id: string) => void
   abrirFicha: (id: string) => void
   fecharFicha: () => void
@@ -126,8 +119,6 @@ export const useStore = create<Estado>((set, get) => {
     zoom: null,
     decisoes: ORIGEM_DADOS === "api" ? decisoesDaApi() : {},
     rejeitando: false,
-    atalhosAbertos: false,
-    paletaAberta: false,
     versaoDados: 0,
     enviando: false,
     recarregar: async () => {
@@ -139,20 +130,12 @@ export const useStore = create<Estado>((set, get) => {
     ir: (pagina) => set(pagina === "pacientes" ? { pagina, fichaId: null } : pagina === "swalis" ? { pagina, destaqueSwalis: null } : { pagina }),
     selecionar: (id, expandir = true) =>
       set({ selecionadoId: id, expandidoId: id && expandir ? id : null, rejeitando: false }),
-    alternarExpandido: (id) =>
-      set((s) =>
-        s.expandidoId === id
-          ? { expandidoId: null }
-          : { selecionadoId: id, expandidoId: id, rejeitando: false }
-      ),
     recolher: () => set({ expandidoId: null, rejeitando: false }),
     setSidebar: (aberta) => set({ sidebarAberta: aberta }),
     setFiltros: (parcial) => set((s) => ({ filtros: { ...s.filtros, ...parcial } })),
     limparFiltros: () => set({ filtros: FILTROS_VAZIOS }),
     setZoom: (zoom) => set({ zoom }),
     setRejeitando: (v) => set({ rejeitando: v }),
-    setAtalhos: (v) => set({ atalhosAbertos: v }),
-    setPaleta: (v) => set({ paletaAberta: v }),
     alternarMarcado: (id) => set((s) => ({ marcados: s.marcados.includes(id) ? s.marcados.filter((m) => m !== id) : [...s.marcados, id] })),
     marcarVarios: (ids, ligado) =>
       set((s) => ({ marcados: ligado ? [...new Set([...s.marcados, ...ids])] : s.marcados.filter((m) => !ids.includes(m)) })),
@@ -206,14 +189,6 @@ export const useStore = create<Estado>((set, get) => {
         },
       })
     },
-    mover: (direcao) => {
-      const { filtros, decisoes, selecionadoId } = get()
-      const lista = aplicarFiltros(PACIENTES, filtros, decisoes)
-      if (lista.length === 0) return
-      const idx = lista.findIndex((p) => p.id === selecionadoId)
-      const novo = idx === -1 ? (direcao === 1 ? 0 : lista.length - 1) : Math.min(lista.length - 1, Math.max(0, idx + direcao))
-      set({ selecionadoId: lista[novo].id, expandidoId: lista[novo].id, rejeitando: false })
-    },
     irParaPosicao: (posicao) => {
       const alvo = PACIENTES.find((p) => p.posicao === posicao)
       if (!alvo) return false
@@ -263,12 +238,6 @@ export const useStore = create<Estado>((set, get) => {
         delete copia[id]
         return { decisoes: copia }
       })
-    },
-    navegarPendente: (direcao) => {
-      const { selecionadoId } = get()
-      const proximo = proximoPendente(selecionadoId, direcao)
-      if (proximo) set({ selecionadoId: proximo, expandidoId: proximo, rejeitando: false })
-      else toast.info("Nenhum caso pendente na lista")
     },
     abrirNaFila: (id) => set({ pagina: "fila", selecionadoId: id, expandidoId: id, rejeitando: false }),
     abrirFicha: (id) => set({ pagina: "pacientes", fichaId: id, selecionadoId: id, rejeitando: false }),

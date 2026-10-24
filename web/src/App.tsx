@@ -1,13 +1,10 @@
-import { Suspense, lazy, useCallback } from "react"
+import { Suspense, lazy } from "react"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { CabecalhoMetricas } from "@/components/layout/CabecalhoMetricas"
-import { PaletaBusca } from "@/components/layout/PaletaBusca"
-import { ShortcutsDialog } from "@/components/layout/ShortcutsDialog"
 import { CarregandoPagina } from "@/components/shared/Carregando"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { useAtalhos } from "@/lib/atalhos"
 import { useStore } from "@/store/useStore"
 
 const PaginaFila = lazy(() => import("@/components/fila/PaginaFila"))
@@ -44,8 +41,6 @@ function Conteudo() {
 export default function App() {
   const sidebarAberta = useStore((s) => s.sidebarAberta)
   const setSidebar = useStore((s) => s.setSidebar)
-  const alternarMenu = useCallback(() => useStore.getState().setSidebar(!useStore.getState().sidebarAberta), [])
-  useAtalhos(alternarMenu)
 
   return (
     <>
@@ -57,8 +52,6 @@ export default function App() {
             <Conteudo />
           </SidebarInset>
         </SidebarProvider>
-        <ShortcutsDialog />
-        <PaletaBusca />
         <Toaster position="bottom-center" richColors closeButton offset={{ bottom: 16, left: 12, right: 12 }} mobileOffset={{ bottom: 16, left: 12, right: 12 }} />
       </TooltipProvider>
     </>
