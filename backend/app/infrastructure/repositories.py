@@ -6,17 +6,18 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
-from app.domain.enums import Classe, ClasseStatus, StatusFila
+from app.domain.enums import Classe, ClasseStatus, StatusFila, StatusPendencia
 from app.domain.models import (
     Correcao,
     Evento,
     LinhaFila,
+    Motivo,
     Pendencia,
     ResultadoSincronizacao,
     ResultadoTabela,
@@ -229,6 +230,21 @@ class SqlCorrecaoRepository:
         self._s.flush()
 
 
+def _para_pendencia(t: PendenciaTable) -> Pendencia:
+    """Table -> entidade. As evidências voltam no formato gravado por `_evidencias_json`."""
+    evidencias = [
+        Motivo(sinal=e.get("sinal") or "", evidencia=e["texto"], fonte=e["fonte"], ref=e.get("ref"),
+               data=date.fromisoformat(e["data"]) if e.get("data") else None)
+        for e in json.loads(t.evidencias_json)
+    ]
+    return Pendencia(
+        pendencia_id=t.pendencia_id, solicitacao_id=t.solicitacao_id, regra=t.regra, titulo=t.titulo,
+        bloqueante=t.bloqueante, evidencias=evidencias, acao_sugerida=t.acao_sugerida or "",
+        status=StatusPendencia(t.status), aberta_em=t.aberta_em, resolvido_por=t.resolvido_por,
+        resolvido_em=t.resolvido_em, resolucao=t.resolucao,
+    )
+
+
 def _evidencias_json(pendencia: Pendencia) -> str:
     """Mesmo formato de EvidenciaOut (fonte, ref, texto) + sinal e data da evidência."""
     return json.dumps(
@@ -246,7 +262,16 @@ class SqlPendenciaRepository:
 
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
-        raise NotImplementedError("US-06")
+        # D-59: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
+        consulta = select(PendenciaTable).order_by(
+            PendenciaTable.bloqueante.desc(), PendenciaTable.aberta_em, PendenciaTable.pendencia_id)
+        if bloqueante is not None:
+            consulta = consulta.where(PendenciaTable.bloqueante == bloqueante)
+        if regra is not None:
+            consulta = consulta.where(PendenciaTable.regra == regra)
+        if status is not None:
+            consulta = consulta.where(PendenciaTable.status == status)
+        return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
         raise NotImplementedError("US-07")

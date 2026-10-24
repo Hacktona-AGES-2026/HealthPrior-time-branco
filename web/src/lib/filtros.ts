@@ -1,6 +1,6 @@
 import type { Classe, Paciente } from "@/data/tipos"
 
-export type Pagina = "fila" | "pacientes" | "analise" | "swalis"
+export type Pagina = "fila" | "pacientes" | "analise" | "swalis" | "pendencias"
 
 export type Decisao = {
   status: "aprovado" | "rejeitado"

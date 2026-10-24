@@ -11,6 +11,7 @@ from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
 from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detectar_inconsistencias import DetectarInconsistencias
+from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
@@ -75,6 +76,10 @@ def get_publicar_fila(session: Session = Depends(get_session),
 
 def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> ExportarFilaPublicada:
     return ExportarFilaPublicada(SqlFilaRepository(session), ExportadorCsv(), settings.output_dir)
+
+
+def get_listar_pendencias(session: Session = Depends(get_session)) -> ListarPendencias:
+    return ListarPendencias(SqlPendenciaRepository(session))
 
 
 def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEvento:
