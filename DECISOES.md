@@ -62,6 +62,10 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-56 | 2026-10-24 | Sem fila publicada, `GET /fila` responde 200 com `publicada: false` e lista vazia | Front trata sem exceção | 404/409 | US-20 |
 | D-57 | 2026-10-24 | `GET /fila` lê só a fila publicada, juntando com a solicitação para exibição | Ninguém vê fila reprovada; mesma ordem do CSV entregue | Gerar na leitura | US-20 |
 | D-58 | 2026-10-24 | Paginação inválida → 422 `PAGINACAO_INVALIDA` no formato do contrato; `page_size` > 200 é limitado a 200 | Erros padronizados; resposta protegida | 422 padrão do FastAPI | US-20 |
+| D-59 | 2026-10-24 | Indicadores do antes × depois com exatamente a definição do verificador oficial, conferidos por teste contra ele | Números do pitch auditáveis | Definição própria | US-22 |
+| D-60 | 2026-10-24 | Fila "antes" = prioridade manual (alta → média → baixa → vazia/desconhecida) + data de entrada + id | Reproduz a regra de hoje | Só data de entrada | US-22 |
+| D-61 | 2026-10-24 | Sem fila publicada, `depois = null` e `publicada = false` (200) | Mesmo padrão do `GET /fila` | Erro 409 | US-22 |
+| D-62 | 2026-10-24 | Destaques padrão definidos na composição (`DESTAQUES_PADRAO`) | Trocar pacientes da demo sem mexer em regra | Fixos no domínio | US-22 |
 
 ## Solicitações fora da fila
 
