@@ -47,6 +47,7 @@ from app.infrastructure.repositories import (
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
+from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
@@ -151,7 +152,8 @@ def cmd_gerar_fila() -> None:
     """US-09/10: gera a fila do banco, roda o verificador e só publica se passar (I-07)."""
     with Session(engine) as session:
         gerar = GerarFila(
-            SqlSolicitacaoRepository(session), SqlEventoRepository(session), criar_swalis(),
+            SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+            com_regras(criar_swalis(), session),
             ExportadorCsv(), settings.ref_date,
         )
         resultado = PublicarFila(

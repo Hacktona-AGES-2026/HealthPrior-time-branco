@@ -113,3 +113,28 @@ GERAR_PROPOSTAS = s.GerarPropostasOut(
             motivo_descarte="Rebaixa classe de procedimento com paciente oncológico ativo (I-01)."),
     ],
 )
+
+
+_PROPOSTA_MOCK = dict(
+    proposta_id="PROP-PROC004-ps_recorrente-C-B", procedimento_id="PROC004",
+    procedimento="Colecistectomia videolaparoscopica", motivo="ps_recorrente", classe_de="C",
+    classe_para="B", direcao="subir", n_casos=8, n_reguladores=4, consistencia=0.89,
+    casos=[f"DEC-SEED-{i:03d}" for i in range(1, 9)], status="pendente")
+
+PROPOSTAS = s.PropostasOut(total=1, itens=[s.PropostaDetalheOut(
+    **_PROPOSTA_MOCK,
+    casos_origem=[s.CasoOrigemOut(
+        decisao_id="DEC-SEED-001", solicitacao_id="SOL-2023-00060", regulador_id="reg-01",
+        data=datetime(2026, 9, 1, 12, 0), acao="editar", classe_de="C", classe_para="B",
+        motivo="ps_recorrente", justificativa="Dois PS por colecistite em 60 dias.")],
+    impacto=s.ImpactoOut(afetados=12, oncologicos_afetados=0, oncologicos_rebaixados=0,
+                         exemplos=["SOL-2023-00060"]))])
+
+DECIDIR_PROPOSTA = s.DecidirPropostaOut(
+    proposta_id="PROP-PROC004-ps_recorrente-C-B", status="aprovada", versao=1,
+    versao_regras="swalis-regras-2+aprendizado-v1", enviados_ao_inbox=12)
+
+
+REVERTER_REGRA = s.ReverterRegraOut(
+    regra_id="PROP-PROC004-ps_recorrente-C-B", status="revertida",
+    versao_regras="swalis-regras-2", devolvidos_ao_inbox=12)

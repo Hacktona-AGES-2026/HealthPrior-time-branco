@@ -28,6 +28,10 @@ python -m venv .venv && .venv/bin/pip install pandas pydantic fastapi sqlmodel h
 
 Os tipos da API são **gerados**: com o back no ar, `npm run gen:api` atualiza `src/api/schema.ts` (`OPENAPI_URL=... npm run gen:api` para outra URL). O gerador roda via `npx` porque exige TypeScript 5 e o projeto usa o 6 (D-85).
 
+## Propostas (US-19)
+
+A página **Propostas** lê `GET /propostas` (abas: para decidir, aprovadas, rejeitadas, revertidas, descartadas), decide com `POST /propostas/{id}/decidir` e reverte regras aprovadas com `POST /regras/{id}/reverter`. Para ver propostas na demo: `python -m app.cli seed-aprendizado` e `python -m app.cli gerar-propostas` (back com `HP_USE_MOCKS=false`).
+
 ## Atalhos
 
 `A` aprova · `R` edita a classe · `J`/`K` próximo/anterior pendente · `↑`/`↓` linha anterior/seguinte · `Enter` expande · `/` busca · `Ctrl K` abrir paciente · `Esc` recolhe · `[` menu · `]` painel · `?` ajuda. Na faixa: setas, `+`/`-`, `C`, `Home` e Ctrl+roda.
