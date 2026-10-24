@@ -8,7 +8,7 @@ Edita classe/score, nunca posição (D-03).
 Aprovar: valida que há proposta (a mesma regra do inbox), grava a confirmação e o registro no log de
 decisões, **confirma a transação** e só então recalcula e publica a fila (US-09/10), em transação
 própria: a publicação desfaz a *própria* transação quando o verificador reprova. Se ela falhar, a
-decisão continua valendo, a fila anterior segue publicada (I-07) e `fila_publicada = false` (D-90).
+decisão continua valendo, a fila anterior segue publicada (I-07) e `fila_publicada = false` (D-101).
 """
 from __future__ import annotations
 

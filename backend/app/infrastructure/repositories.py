@@ -344,7 +344,7 @@ class SqlPendenciaRepository:
 
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
-        # D-77: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
+        # D-86: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
         consulta = select(PendenciaTable).order_by(
             PendenciaTable.bloqueante.desc(), PendenciaTable.aberta_em, PendenciaTable.pendencia_id)
         if bloqueante is not None:

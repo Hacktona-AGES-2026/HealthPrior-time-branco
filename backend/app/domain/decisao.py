@@ -37,7 +37,7 @@ def aprovar(solicitacao: Solicitacao, sugerida: Classe, regulador_id: str, agora
             versao_regras: str, decisao_id: str) -> Decisao:
     """Confirma a classe sugerida (D-66) e devolve o registro do log de decisões.
 
-    A solicitação fica `confirmada` na classe sugerida e perde o override anterior, se houver (D-89):
+    A solicitação fica `confirmada` na classe sugerida e perde o override anterior, se houver (D-100):
     aprovar a sugestão é escolhê-la no lugar da classe editada, e o log diz o que foi removido.
     A posição nunca é editada (D-03): quem mexe nela é a fila, ao ser recalculada.
     """

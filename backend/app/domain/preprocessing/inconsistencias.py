@@ -61,7 +61,7 @@ _RE_JUSTIFICATIVA_GENERICA = re.compile(
 )
 _CAMPOS_DE_COMPLETUDE = ("prioridade_regulacao", "intensidade_dor_eva", "asa", "distancia_hospital_km")
 
-# PRE-21/22/23: o que cada fonte diz sobre a saída do paciente (D-71).
+# PRE-21/22/23: o que cada fonte diz sobre a saída do paciente (D-78).
 _SAIDA_NA_OBSERVACAO = (
     ("operou_fora", PRE_OPEROU_FORA, re.compile(r"outro servico|operou em outro|operou fora")),
     ("operou_convenio", PRE_OPEROU_CONVENIO, re.compile(r"operou pelo convenio|cirurgia pelo convenio")),
@@ -109,7 +109,7 @@ def detectar_eventos_orfaos(eventos: list[Evento], solicitacoes_existentes: set[
 
 
 def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
-    """PRE-20 (D-10, D-72): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
+    """PRE-20 (D-10, D-79): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
     com a data de entrada que já tem (a fusão dos eventos é da resolução, US-07)."""
     anteriores = [o for o in outras
                   if o.solicitacao_id != s.solicitacao_id and o.paciente_id == s.paciente_id
@@ -129,7 +129,7 @@ def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
 
 
 def _saida_da_fila(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-21/22/23 (D-71): a observação ou o call center diz que o paciente saiu. Se as fontes dizem
+    """PRE-21/22/23 (D-78): a observação ou o call center diz que o paciente saiu. Se as fontes dizem
     coisas diferentes (ou uma só diz duas), é PRE-25, com as duas evidências lado a lado."""
     sinais: list[tuple[str, Motivo]] = []
     observacao = _chave(s.observacoes)

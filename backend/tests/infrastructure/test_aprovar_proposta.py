@@ -209,7 +209,7 @@ def test_aprovar_remove_o_override_e_o_paciente_sobe(api, session):
     assert r.json()["posicao_nova"] < antes  # sem o override D, vale a classe A2 do SWALIS
 
 
-# --- a decisão vale mesmo se a fila não for republicada (I-07, D-90) ---
+# --- a decisão vale mesmo se a fila não for republicada (I-07, D-101) ---
 
 def test_verificador_reprova_a_decisao_fica_e_a_posicao_nao_muda(api, session, monkeypatch):
     anterior = SqlFilaRepository(session).obter_publicada()

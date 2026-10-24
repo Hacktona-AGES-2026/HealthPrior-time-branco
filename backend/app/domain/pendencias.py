@@ -24,7 +24,7 @@ from app.domain.preprocessing.inconsistencias import (
 _SAIDA = frozenset({R.CONFIRMAR_SAIDA, R.REATIVAR, R.DESCARTAR})
 _SO_ALERTAM = frozenset({R.REATIVAR, R.DESCARTAR})  # não bloqueiam: não há saída a confirmar
 
-# D-80: o que cada regra aceita. Duplicata funde; saída da fila confirma; evento órfão só descarta.
+# D-89: o que cada regra aceita. Duplicata funde; saída da fila confirma; evento órfão só descarta.
 RESOLUCOES_POR_REGRA: dict[str, frozenset[R]] = {
     PRE_DUPLICATA: frozenset({R.FUNDIR, R.REATIVAR, R.DESCARTAR}),
     PRE_OPEROU_FORA: _SAIDA,
@@ -52,12 +52,12 @@ def validar_resolucao(regra: str, resolucao: R, observacao: str | None) -> None:
     if resolucao not in aceitas:
         opcoes = ", ".join(sorted(r.value for r in aceitas)) or "nenhuma"
         raise ResolucaoInvalidaError(f"A regra {regra} não aceita \"{resolucao.value}\". Aceita: {opcoes}.")
-    if resolucao == R.CONFIRMAR_SAIDA and not (observacao or "").strip():  # D-81
+    if resolucao == R.CONFIRMAR_SAIDA and not (observacao or "").strip():  # D-90
         raise ObservacaoObrigatoriaError("Confirmar a saída exige uma observação com o motivo.")
 
 
 def fundir(permanece: Solicitacao, removida: Solicitacao) -> list[Correcao]:
-    """PRE-20 (D-10, D-82): `removida` sai da fila e `permanece` fica com a data de entrada mais antiga.
+    """PRE-20 (D-10, D-91): `removida` sai da fila e `permanece` fica com a data de entrada mais antiga.
 
     Devolve as correções feitas em dado original (I-10). Os eventos são movidos pelo caso de uso.
     """

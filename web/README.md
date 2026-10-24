@@ -11,7 +11,7 @@ npm run build
 
 ## Inbox (US-12/13)
 
-A página **Inbox** lê `GET /inbox` e o botão **Aprovar** chama `POST /decisoes`: confirma a classe sugerida, registra no log e recalcula a fila (D-87..D-91). Para ver casos no inbox, publique a fila antes: `POST /admin/publicar-fila`.
+A página **Inbox** lê `GET /inbox` e o botão **Aprovar** chama `POST /decisoes`: confirma a classe sugerida, registra no log e recalcula a fila (D-98..D-102). Para ver casos no inbox, publique a fila antes: `POST /admin/publicar-fila`.
 
 ## Pendências (US-06): primeira tela ligada à API
 
@@ -30,7 +30,7 @@ Com `HP_USE_MOCKS=true` (padrão do back) a API devolve uma pendência fixa só 
 
 Os tipos da API são **gerados**, não escritos à mão: com o back no ar, `npm run gen:api` atualiza `src/api/schema.ts`
 (`OPENAPI_URL=... npm run gen:api` para outra URL). Mudou o contrato? Rode o comando e commite o arquivo gerado.
-O gerador roda via `npx` (versão fixa) porque exige TypeScript 5 e este projeto usa o 6 (D-78).
+O gerador roda via `npx` (versão fixa) porque exige TypeScript 5 e este projeto usa o 6 (D-87).
 
 ## Trocar o mock por dados reais
 
