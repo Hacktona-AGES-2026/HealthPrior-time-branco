@@ -136,17 +136,6 @@ class SqlSolicitacaoRepository:
                         .values(data_entrada_fila=solicitacao.data_entrada_fila))
         self._s.expire_all()
 
-    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
-        tabela = SolicitacaoTable.__table__
-        self._s.execute(
-            update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id).values(
-                classe_status=solicitacao.classe_status.value,
-                classe_confirmada=solicitacao.classe_confirmada.value if solicitacao.classe_confirmada else None,
-                classe_medico=solicitacao.classe_medico.value if solicitacao.classe_medico else None,
-                score_medico=solicitacao.score_medico, editado_manualmente=solicitacao.editado_manualmente,
-                editado_por=solicitacao.editado_por, editado_em=solicitacao.editado_em))
-        self._s.expire_all()
-
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
             return
