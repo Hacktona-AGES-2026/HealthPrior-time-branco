@@ -19,7 +19,7 @@ def registrar_evento(body: schemas.EventoIn, tarefas: BackgroundTasks,
     """Pré-processa o evento, reavalia o SWALIS e informa o desfecho (registrado/inbox/pendência).
 
     Biópsia positiva com CID não oncológico abre a PRE-12; a sugestão de CID pelo LLM roda depois
-    da resposta (alguns segundos) e aparece na pendência (D-117).
+    da resposta (alguns segundos) e aparece na pendência (D-125).
     """
     if settings.use_mocks:
         return schemas.EventoResultadoOut(evento_id="EVT-MOCK", desfecho="enviado_inbox",

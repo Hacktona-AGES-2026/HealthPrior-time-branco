@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import registrar_handlers
-from app.api.routers import admin, aprendizado, decisoes, eventos, fila, inbox, metricas, notificacoes, pendencias, propostas, solicitacoes
+from app.api.routers import admin, aprendizado, decisoes, eventos, fila, importacao, inbox, metricas, notificacoes, pendencias, propostas, solicitacoes
 from app.config import settings
 
 
@@ -15,12 +15,12 @@ def create_app() -> FastAPI:
     )
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_origins=list(settings.cors_origins),
         allow_methods=["*"],
         allow_headers=["*"],
     )
     registrar_handlers(app)
-    for r in (fila, solicitacoes, inbox, decisoes, eventos, pendencias, admin, metricas, aprendizado, propostas, notificacoes):
+    for r in (fila, solicitacoes, inbox, decisoes, eventos, pendencias, admin, metricas, aprendizado, propostas, notificacoes, importacao):
         app.include_router(r.router)
 
     @app.get("/health", tags=["infra"])

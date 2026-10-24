@@ -1,4 +1,4 @@
-"""PRE-12 · Cliente do LLM de CID (D-117), sem rede: transporte HTTP falso do httpx."""
+"""PRE-12 · Cliente do LLM de CID (D-125), sem rede: transporte HTTP falso do httpx."""
 import json
 
 import httpx

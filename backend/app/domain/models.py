@@ -95,6 +95,17 @@ class Evento:
 
 
 @dataclass
+class Procedimento:
+    """Procedimento do catálogo (dados de porte/risco para o regulador; só leitura)."""
+
+    procedimento_id: str
+    porte: str | None = None
+    risco_cirurgico: int | None = None
+    duracao_media_min: int | None = None
+    necessita_uti: str | None = None  # "sim" | "nao" | "eventual" (valores do catálogo)
+
+
+@dataclass
 class Motivo:
     """Sinal que levou a uma classe, com evidência citável (explicabilidade)."""
 

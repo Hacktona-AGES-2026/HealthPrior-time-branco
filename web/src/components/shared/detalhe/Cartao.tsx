@@ -6,7 +6,7 @@ export function CartaoGrafico({ titulo, descricao, children, className, atraso =
     <section className={cn("fx-fade-up min-w-0 rounded-xl bg-muted/40 p-3", className)} style={{ animationDelay: `${atraso}ms` }}>
       <header className="mb-2">
         <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{titulo}</h3>
-        {descricao && <p className="text-[11px] text-muted-foreground">{descricao}</p>}
+        {descricao && <p className="text-xs text-muted-foreground">{descricao}</p>}
       </header>
       {children}
     </section>

@@ -19,6 +19,7 @@ from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.detectar_recontato import DetectarRecontato
 from app.application.gerar_propostas import GerarPropostas
+from app.application.importar_solicitacoes import ImportarSolicitacoes
 from app.application.notificacoes import EnviarNotificacoes, NotificarMudancas
 from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
@@ -27,6 +28,7 @@ from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
 from app.application.listar_fila import ListarFila
 from app.application.listar_inbox import ListarInbox
+from app.application.prever_decisao import PreverDecisao
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.application.resolver_pendencia import ResolverPendencia
@@ -39,10 +41,12 @@ from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
     SqlDecisaoRepository,
+    SqlProcedimentoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
     SqlNotificacaoRepository,
     SqlPendenciaRepository,
+    SqlProcedimentoRepository,
     SqlPropostaRepository,
     SqlRegraRepository,
     SqlSolicitacaoRepository,
@@ -50,6 +54,7 @@ from app.infrastructure.repositories import (
 )
 from app.infrastructure.llm_cid import criar_sugestor_cid
 from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
+from app.infrastructure.importacao_csv import LeitorEmMemoria, ler_solicitacoes
 from app.infrastructure.notificador import criar_notificador
 from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
@@ -119,7 +124,7 @@ def _publicar_fila_em(session: Session, data: date) -> PublicarFila:
     output_dir = settings.output_dir if data == settings.ref_date else settings.output_dir / "simulada"
     return PublicarFila(
         gerar=_gerar_fila_em(session, data),
-        verificador=VerificadorOficial(),
+        verificador=VerificadorOficial(session=session),
         fila=SqlFilaRepository(session),
         uow=SqlUnidadeDeTrabalho(session),
         relogio=lambda: datetime.now(timezone.utc),
@@ -171,7 +176,7 @@ def get_resolver_pendencia(session: Session = Depends(get_session),
         tabela_cid=tabela_cid(settings.data_dir), scorer=_scorer(session))
 
 
-# PRE-12 · sugestão de CID pelo LLM (D-117)
+# PRE-12 · sugestão de CID pelo LLM (D-125)
 def montar_sugerir_cid(session: Session) -> SugerirCid:
     return SugerirCid(SqlPendenciaRepository(session), SqlSolicitacaoRepository(session),
                       criar_sugestor_cid(), tabela_cid(settings.data_dir), SqlUnidadeDeTrabalho(session))
@@ -229,9 +234,18 @@ def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas
 
 
 # US-12
-def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
+def get_listar_inbox(session: Session = Depends(get_session),
+                     data: date = Depends(get_data_referencia)) -> ListarInbox:
+    # Mesma data da fila publicada: a prévia (posição se aprovar) bate com a próxima publicação.
     return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
-                       SqlEventoRepository(session), _scorer(session), SqlDecisaoRepository(session))
+                       SqlEventoRepository(session), _scorer(session, data), SqlDecisaoRepository(session),
+                       ref_date=data)
+
+
+def get_prever_decisao(session: Session = Depends(get_session),
+                       data: date = Depends(get_data_referencia)) -> PreverDecisao:
+    return PreverDecisao(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         SqlFilaRepository(session), _scorer(session, data), data)
 
 
 # US-21
@@ -247,6 +261,7 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session),
         scorer=_scorer(session, data),
         ref_date=data,
         decisoes=SqlDecisaoRepository(session),
+        procedimentos=SqlProcedimentoRepository(session),
     )
 
 
@@ -311,3 +326,23 @@ def get_enviar_notificacoes(session: Session = Depends(get_session)) -> EnviarNo
 
 def get_notificacoes(session: Session = Depends(get_session)) -> SqlNotificacaoRepository:
     return SqlNotificacaoRepository(session)
+
+
+# Importação de solicitações por CSV
+def get_importar_solicitacoes(session: Session = Depends(get_session),
+                              publicar: PublicarFila = Depends(get_publicar_fila),
+                              data: date = Depends(get_data_referencia)) -> ImportarSolicitacoes:
+    def gravar(registros: list[dict]) -> None:
+        # a mesma carga do dataset (normaliza, flags, inconsistências e bloqueantes), só com as linhas novas
+        normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+        CargaInicial(LeitorEmMemoria(registros), SqlCargaRepository(session), normalizar,
+                     SqlUnidadeDeTrabalho(session),
+                     RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                     SqlCorrecaoRepository(session)),
+                     DetectarInconsistencias(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                             SqlPendenciaRepository(session), data),
+                     DetectarBloqueantes(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                         SqlPendenciaRepository(session), data)).executar()
+
+    return ImportarSolicitacoes(SqlSolicitacaoRepository(session), SqlProcedimentoRepository(session),
+                                ler_solicitacoes, gravar, publicar.executar, data)

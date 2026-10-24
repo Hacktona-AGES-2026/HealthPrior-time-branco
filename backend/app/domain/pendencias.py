@@ -36,7 +36,7 @@ RESOLUCOES_POR_REGRA: dict[str, frozenset[R]] = {
     PRE_CONTATO_PERDIDO: _SO_ALERTAM,
     PRE_SEM_TELEFONE: _SO_ALERTAM,
     REC_SEM_EVENTO: _SO_ALERTAM,  # US-17: a equipe liga e registra o retorno como evento
-    PRE_CANCER_ESCONDIDO: _SO_ALERTAM | {R.CORRIGIR_CID},  # D-117: o regulador corrige o CID
+    PRE_CANCER_ESCONDIDO: _SO_ALERTAM | {R.CORRIGIR_CID},  # D-125: o regulador corrige o CID
     PRE_DIABETES_FORA_DO_CADASTRO: _SO_ALERTAM,
 }
 

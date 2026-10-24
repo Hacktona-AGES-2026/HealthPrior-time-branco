@@ -1,4 +1,4 @@
-"""PRE-12 · Sugerir o CID a partir do laudo (D-117).
+"""PRE-12 · Sugerir o CID a partir do laudo (D-125).
 
 Para uma pendência "câncer escondido" aberta: manda o laudo ao LLM, valida a resposta (o código
 existe na tabela CID-10, é outro CID e a citação está literalmente no laudo) e guarda a sugestão

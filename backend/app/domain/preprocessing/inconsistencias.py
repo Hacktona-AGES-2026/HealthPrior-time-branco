@@ -194,7 +194,7 @@ def _sem_telefone(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
 
 
 def detectar_cancer_escondido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-12 avulsa: a mesma regra da carga, para o evento novo (US-15, D-117)."""
+    """PRE-12 avulsa: a mesma regra da carga, para o evento novo (US-15, D-125)."""
     return _cancer_escondido(s, eventos)
 
 

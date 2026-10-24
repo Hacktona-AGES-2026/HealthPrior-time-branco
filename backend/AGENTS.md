@@ -21,7 +21,7 @@ python -m app.cli inconsistencias      # US-05: recalcula alertas e pendências 
 python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e publica (exit 1 se reprovar)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
 python -m app.cli extrair-sinais       # SWALIS: pré-aquece o cache do LLM e mostra as classes
-python -m app.cli sugerir-cid          # PRE-12: LLM sugere o CID nas pendências de câncer escondido (D-117)
+python -m app.cli sugerir-cid          # PRE-12: LLM sugere o CID nas pendências de câncer escondido (D-125)
 pytest -q                              # testes (inclui guarda de arquitetura)
 pytest -q -n 4                         # idem em paralelo (pytest-xdist; um banco por worker, como na CI)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
@@ -38,7 +38,7 @@ app/
     errors.py          erros de domínio (ex.: OncologicoRebaixadoError -> 422)
     ports.py           interfaces (Protocol): repositórios, SwalisScorer, VerificadorFila
     cid.py             normalização e classificação de CID (I-09)
-    correcao_cid.py    PRE-12: valida a sugestão de CID do LLM e aplica a correção confirmada (D-117)
+    correcao_cid.py    PRE-12: valida a sugestão de CID do LLM e aplica a correção confirmada (D-125)
     urgencia.py        sinais de urgência (camada 2)
     swalis.py          SWALIS por regras: eixos progressão × sintoma (docs/swalis.md)
     fatores.py         fatores do score: comorbidade (Charlson) × idade/IRR (D-103)
@@ -54,10 +54,12 @@ app/
     detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-83)
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
-    registrar_evento.py US-15 (biópsia positiva com CID não C abre a PRE-12, D-117)
-    sugerir_cid.py     PRE-12: pede ao LLM o CID do laudo e guarda a sugestão na pendência (D-117)
+    registrar_evento.py US-15 (biópsia positiva com CID não C abre a PRE-12, D-125)
+    sugerir_cid.py     PRE-12: pede ao LLM o CID do laudo e guarda a sugestão na pendência (D-125)
     detectar_recontato.py US-17 (REC-01; passo 3 da atualização diária, D-113/D-114)
     notificacoes.py     demo: NotificarMudancas/EnviarNotificacoes (D-115/D-116, docs/notificacoes-demo.md)
+    importar_solicitacoes.py  importação por CSV (D-122/D-123, docs/importacao-csv.md)
+    (deploy) backend/Dockerfile, render.yaml, web/vercel.json e docs/deploy.md: Vercel + Render + Neon (D-124)
     decidir.py         US-13 (aprovar); US-14 (editar/manter)
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.
@@ -68,7 +70,7 @@ app/
     swalis_regras.py   SwalisRegras (C-07) + criar_swalis() a partir da config
     tabela_irr.py      tabela nacional de IRR (CSV de score/references) para os fatores
     llm_openrouter.py  extrator de sinais por LLM (Jev/OpenRouter) com cache em JSON
-    llm_cid.py         sugestor de CID pelo laudo (Luna/OpenRouter, tool calling) com cache em JSON (D-117)
+    llm_cid.py         sugestor de CID pelo laudo (Luna/OpenRouter, tool calling) com cache em JSON (D-125)
     tabela_cid.py      tabela CID-10 do DATASUS: valida e busca códigos (PRE-12)
     verificador.py     chama src/verificar_fila_priorizada.py
     exportador.py      escreve fila_priorizada.csv

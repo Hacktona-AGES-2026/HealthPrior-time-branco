@@ -354,6 +354,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/importacao/modelo.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Baixar Modelo
+         * @description Cabeçalho completo (as colunas de `fila_cirurgica.csv`) e uma linha de exemplo.
+         */
+        get: operations["baixar_modelo_importacao_modelo_csv_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/importacao/solicitacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Importar Solicitacoes
+         * @description Corpo `text/csv`: uma ou várias solicitações novas. Tudo ou nada: se houver erro (422), nada é gravado.
+         *
+         *     As que já existem são ignoradas (nunca sobrescritas). Com `publicar=true` (padrão) a fila é republicada.
+         */
+        post: operations["importar_solicitacoes_importacao_solicitacoes_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -573,6 +615,15 @@ export interface components {
             /** Mensagem */
             mensagem: string;
         };
+        /** ErroImportacaoOut */
+        ErroImportacaoOut: {
+            /** Linha */
+            linha: number;
+            /** Campo */
+            campo?: string | null;
+            /** Mensagem */
+            mensagem: string;
+        };
         /** EventoIn */
         EventoIn: {
             /** Solicitacao Id */
@@ -700,6 +751,25 @@ export interface components {
             oncologicos_rebaixados: number;
             /** Exemplos */
             exemplos: string[];
+        };
+        /** ImportacaoOut */
+        ImportacaoOut: {
+            /** Lidas */
+            lidas: number;
+            /** Novas */
+            novas: number;
+            /** Ja Existentes */
+            ja_existentes: string[];
+            /** Erros */
+            erros: components["schemas"]["ErroImportacaoOut"][];
+            /** Novas Ids */
+            novas_ids: string[];
+            /** Suspensas */
+            suspensas: number;
+            /** Fila Publicada */
+            fila_publicada?: boolean | null;
+            /** Total Fila */
+            total_fila?: number | null;
         };
         /** InboxOut */
         InboxOut: {
@@ -1869,6 +1939,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EnviosOut"];
+                };
+            };
+        };
+    };
+    baixar_modelo_importacao_modelo_csv_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+        };
+    };
+    importar_solicitacoes_importacao_solicitacoes_post: {
+        parameters: {
+            query?: {
+                publicar?: boolean;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportacaoOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportacaoOut"];
                 };
             };
         };

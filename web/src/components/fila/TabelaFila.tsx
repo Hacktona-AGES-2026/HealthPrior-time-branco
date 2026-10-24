@@ -8,12 +8,10 @@ import { indiceClasse } from "@/lib/cores"
 import { aplicarFiltros, statusDe, type Decisao } from "@/lib/filtros"
 import { cn } from "@/lib/utils"
 import { LinhaResumo } from "@/components/shared/LinhaResumo"
-import { PacienteDetalhe } from "@/components/shared/PacienteDetalhe"
-import { AlcaColuna } from "@/components/shared/AlcaColuna"
 import { estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 
-export const usarTabela = () => {
+export const useTabela = () => {
   const filtros = useStore((s) => s.filtros)
   const decisoes = useStore((s) => s.decisoes)
   const [sorting, setSorting] = useState<SortingState>([{ id: "pos", desc: false }])
@@ -21,14 +19,11 @@ export const usarTabela = () => {
 
   const colunas = useMemo<ColumnDef<Paciente>[]>(
     () => [
-      { id: "pos", header: "Nova", accessorFn: (p) => p.posicao_nova },
-      { id: "antiga", header: "Antiga", accessorFn: (p) => p.posicao_antiga - p.posicao_nova },
+      { id: "pos", header: "Posição", accessorFn: (p) => p.posicao },
+      { id: "paciente", header: "Paciente", enableSorting: false, accessorFn: (p) => p.iniciais },
       { id: "classe", header: "Classe", accessorFn: (p) => indiceClasse(p.classe) },
-      { id: "prazo", header: "Prazo", accessorFn: (p) => p.prazo_consumido_pct },
-      { id: "sinais", header: "Sinais", enableSorting: false, accessorFn: (p) => p.sinais.length },
-      { id: "justificativa", header: "Justificativa", enableSorting: false, accessorFn: (p) => p.justificativa },
-      { id: "alerta", header: "", enableSorting: false, accessorFn: (p) => Number(p.divergencia || p.confianca < 0.6) },
-      { id: "status", header: "Status", accessorFn: (p) => statusDe(decisoes, p.solicitacao_id) },
+      { id: "prazo", header: "Prazo", accessorFn: (p) => p.pct },
+      { id: "status", header: "Situação", accessorFn: (p) => statusDe(decisoes, p.id) },
     ],
     [decisoes]
   )
@@ -47,23 +42,40 @@ export const usarTabela = () => {
 
 export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
   const larguras = useColunas((c) => c.larguras)
+  const ocultas = useColunas((c) => c.ocultas)
+  const marcados = useStore((s) => s.marcados)
+  const marcarVarios = useStore((s) => s.marcarVarios)
+  const ids = table.getRowModel().rows.map((r) => r.original.id)
+  const todos = ids.length > 0 && ids.every((id) => marcados.includes(id))
+  const algum = !todos && ids.some((id) => marcados.includes(id))
   return (
-    <div className="@container">
-      <div className="flex items-center gap-2 border-b border-border/60 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" role="row">
+    <div className="@container min-w-0">
+      <div className="flex items-center gap-2 overflow-hidden border-b border-border px-3 py-1 text-xs font-medium text-muted-foreground" role="row">
+        <label className="-ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center md:size-7" title="Selecionar todos os visíveis">
+          <input
+            type="checkbox"
+            checked={todos}
+            ref={(el) => {
+              if (el) el.indeterminate = algum
+            }}
+            onChange={() => marcarVarios(ids, !todos)}
+            aria-label="Selecionar todos os pacientes visíveis"
+            className="size-4 cursor-pointer accent-[var(--primary)]"
+          />
+        </label>
         {table.getHeaderGroups()[0].headers.map((h) => {
           const ordenado = h.column.getIsSorted()
           const podeOrdenar = h.column.getCanSort()
           return (
-            <div key={h.id} className="relative" style={estiloColuna(h.column.id, larguras)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
+            <div key={h.id} className="min-w-0" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
               {podeOrdenar ? (
-                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex items-center gap-1 rounded px-0.5 uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex min-h-9 items-center md:min-h-7 gap-1 rounded px-0.5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
                   {flexRender(h.column.columnDef.header, h.getContext())}
                   {ordenado === "asc" ? <ArrowUp className="size-3" /> : ordenado === "desc" ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-50" />}
                 </button>
               ) : (
                 flexRender(h.column.columnDef.header, h.getContext())
               )}
-              {h.column.id !== "alerta" && <AlcaColuna id={h.column.id} />}
             </div>
           )
         })}
@@ -75,36 +87,33 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
 type LinhaProps = {
   paciente: Paciente
   selecionado: boolean
-  expandido: boolean
+  marcado: boolean
   decisao?: Decisao
   aoAlternar: (id: string) => void
 }
 
-const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, expandido, decisao, aoAlternar }: LinhaProps) {
+const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, marcado, decisao, aoAlternar }: LinhaProps) {
   return (
-    <div className="@container" role="row" aria-selected={selecionado} aria-expanded={expandido}>
+    <div className="@container" role="row" aria-selected={selecionado}>
       <div
         role="button"
+        aria-current={selecionado ? "true" : undefined}
         tabIndex={0}
-        onClick={() => aoAlternar(p.solicitacao_id)}
+        onClick={() => aoAlternar(p.id)}
         onKeyDown={(e) => {
+          if (e.target !== e.currentTarget) return
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault()
-            aoAlternar(p.solicitacao_id)
+            aoAlternar(p.id)
           }
         }}
         className={cn(
-          "relative flex h-11 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 text-sm outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-          selecionado && "bg-primary/5 shadow-[inset_2px_0_0_var(--primary)]"
+          "relative flex min-h-14 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          selecionado ? "bg-primary/15 text-foreground shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/15" : cn("hover:bg-muted/50", marcado && "bg-primary/5")
         )}
       >
-        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} />
+        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} comMarcacao />
       </div>
-      {expandido && (
-        <div className="fx-expand border-b border-border/50 px-1 pt-2 pb-5" onClick={(e) => e.stopPropagation()}>
-          <PacienteDetalhe paciente={p} />
-        </div>
-      )}
     </div>
   )
 })
@@ -117,45 +126,46 @@ type CorpoProps = {
 
 export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const selecionadoId = useStore((s) => s.selecionadoId)
-  const expandidoId = useStore((s) => s.expandidoId)
   const decisoes = useStore((s) => s.decisoes)
-  const alternarExpandido = useStore((s) => s.alternarExpandido)
+  const marcados = useStore((s) => s.marcados)
+  const selecionar = useStore((s) => s.selecionar)
   const listaRef = useRef<HTMLDivElement>(null)
   const [margem, setMargem] = useState(0)
   const linhas = table.getRowModel().rows
 
   useLayoutEffect(() => {
-    if (listaRef.current) setMargem(listaRef.current.offsetTop)
-  }, [alturaFixa, linhas.length])
+    const medir = () => {
+      if (listaRef.current) setMargem(listaRef.current.offsetTop)
+    }
+    medir()
+    const conteudo = rolagemRef.current?.firstElementChild
+    if (!conteudo) return
+    const obs = new ResizeObserver(medir)
+    obs.observe(conteudo)
+    return () => obs.disconnect()
+  }, [alturaFixa, linhas.length, rolagemRef])
 
   const virtualizador = useVirtualizer({
     count: linhas.length,
     getScrollElement: () => rolagemRef.current,
-    estimateSize: (i) => (linhas[i]?.original.solicitacao_id === expandidoId ? 1400 : 44),
+    estimateSize: () => 56,
     overscan: 8,
     scrollMargin: margem,
     scrollPaddingStart: alturaFixa + 4,
-    getItemKey: (i) => linhas[i]?.original.solicitacao_id ?? i,
+    getItemKey: (i) => linhas[i]?.original.id ?? i,
   })
 
-  const aoAlternar = useCallback((id: string) => alternarExpandido(id), [alternarExpandido])
+  const aoAlternar = useCallback((id: string) => selecionar(id), [selecionar])
 
   useEffect(() => {
-    if (!expandidoId) return
-    const idx = linhas.findIndex((l) => l.original.solicitacao_id === expandidoId)
-    if (idx < 0) return
-    const rolar = () => virtualizador.scrollToIndex(idx, { align: "start" })
-    const t1 = setTimeout(rolar, 30)
-    const t2 = setTimeout(rolar, 450)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
-  }, [expandidoId])
+    if (!selecionadoId) return
+    const idx = linhas.findIndex((l) => l.original.id === selecionadoId)
+    if (idx >= 0) virtualizador.scrollToIndex(idx, { align: "auto" })
+  }, [selecionadoId])
 
   if (linhas.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground fx-fade-up">
+      <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
         <SearchX className="size-8" aria-hidden />
         Nenhum caso corresponde aos filtros.
       </div>
@@ -173,7 +183,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
             ref={virtualizador.measureElement}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start - margem}px)` }}
           >
-            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.solicitacao_id} expandido={expandidoId === p.solicitacao_id} decisao={decisoes[p.solicitacao_id]} aoAlternar={aoAlternar} />
+            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} marcado={marcados.includes(p.id)} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
           </div>
         )
       })}

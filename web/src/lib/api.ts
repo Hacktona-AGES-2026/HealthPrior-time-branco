@@ -150,17 +150,18 @@ export type DetalheApi = {
     versao_regras: string | null
     motivos: MotivoApi[]
   }
-  eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean }[]
+  eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean; origem?: string | null; valor_numerico?: number | null }[]
+  procedimento_info?: { porte: string | null; risco_cirurgico: number | null; duracao_media_min: number | null; necessita_uti: "sim" | "nao" | "eventual" | null } | null
   decisoes: { decisao_id: string; data: string; regulador_id: string; acao: string; classe_decidida: Classe | null; motivo_codificado: string | null; justificativa: string | null }[]
   pendencias: PendenciaDetalheApi[]
   alertas: string[]
   cid: string
   cid_descricao: string | null
-  /** CID do cadastro quando o regulador corrigiu o CID a partir do laudo (PRE-12, D-117). */
+  /** CID do cadastro quando o regulador corrigiu o CID a partir do laudo (PRE-12, D-125). */
   cid_original: string | null
 }
 
-/** PRE-12 (D-117): CID sugerido pelo LLM a partir do laudo. Só sugestão: o regulador decide (I-05). */
+/** PRE-12 (D-125): CID sugerido pelo LLM a partir do laudo. Só sugestão: o regulador decide (I-05). */
 export type SugestaoCidApi = { cid: string; descricao: string; citacao: string; confianca: number; modelo: string; evento_id: string | null }
 
 export type PendenciaDetalheApi = {
@@ -185,3 +186,31 @@ export const corrigirCid = (pendenciaId: string, cid: string, usuarioId: string)
     method: "POST",
     body: JSON.stringify({ resolucao: "corrigir_cid", usuario_id: usuarioId, cid }),
   })
+
+// Cache do detalhe por solicitação (uma chamada por ficha aberta). Limpo a cada recarga da fila,
+// senão a ficha mostraria eventos/decisões de antes da última ação.
+const cacheDetalhe = new Map<string, Promise<DetalheApi>>()
+
+export const obterDetalheEmCache = (id: string): Promise<DetalheApi> => {
+  let pr = cacheDetalhe.get(id)
+  if (!pr) {
+    pr = obterDetalhe(id)
+    cacheDetalhe.set(id, pr)
+    pr.catch(() => cacheDetalhe.delete(id))
+  }
+  return pr
+}
+
+export const limparCacheDetalhe = () => cacheDetalhe.clear()
+
+/** Prévia de uma decisão (US-13/14): o que aprovar/editar/manter faria, sem gravar. */
+export type Previa = {
+  classe: Classe
+  pct_prazo_consumido: number
+  score: number
+  posicao_atual: number | null
+  posicao_estimada: number | null
+}
+
+export const preverDecisao = (id: string, acao: "aprovar" | "editar" | "manter", classe?: Classe) =>
+  pedir<Previa>(`/solicitacoes/${encodeURIComponent(id)}/previa?acao=${acao}${classe ? `&classe=${classe}` : ""}`)

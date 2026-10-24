@@ -1,4 +1,4 @@
-import { BellRing, Activity, BarChart3, BookOpen, CircleHelp, FileCheck2, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+import { Activity, BarChart3, BellRing, FileUp, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -19,10 +19,12 @@ const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: str
   { id: "fila", rotulo: "Fila", icone: ListOrdered, tecla: "1" },
   { id: "inbox", rotulo: "Inbox", icone: Inbox, tecla: "2" },
   { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "3" },
-  { id: "analise", rotulo: "Análise geral", icone: BarChart3, tecla: "4" },
+  { id: "analise", rotulo: "Análise", icone: BarChart3, tecla: "4" },
   { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
-  { id: "propostas", rotulo: "Propostas", icone: FileCheck2, tecla: "6" },
-  { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "7" },
+  { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
+  { id: "propostas", rotulo: "Propostas", icone: Gavel, tecla: "7" },
+  { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "8" },
+  { id: "importar", rotulo: "Importar", icone: FileUp, tecla: "9" },
 ]
 
 export function AppSidebar() {
@@ -30,7 +32,8 @@ export function AppSidebar() {
   const ir = useStore((s) => s.ir)
   const setAtalhos = useStore((s) => s.setAtalhos)
   const selecionadoId = useStore((s) => s.selecionadoId)
-  const { toggleSidebar, state } = useSidebar()
+  const { toggleSidebar, state, isMobile, setOpenMobile } = useSidebar()
+  const fechar = () => { if (isMobile) setOpenMobile(false) }
   const resolvido = useTema((t) => t.resolvido)
   const setTema = useTema((t) => t.setTema)
   const escuro = resolvido === "dark"
@@ -41,12 +44,11 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="HealthPrior" render={<div />} className="cursor-default hover:bg-transparent">
-              <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <Activity className="size-4" aria-hidden />
               </span>
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold">HealthPrior</span>
-                <span className="truncate text-xs text-muted-foreground">Regulação cirúrgica SUS</span>
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -58,11 +60,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {ITENS.map((item) => (
                 <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton isActive={pagina === item.id} tooltip={item.rotulo} onClick={() => ir(item.id)}>
+                  <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${item.tecla})`} onClick={() => { ir(item.id); fechar() }}>
                     <item.icone aria-hidden />
                     <span>{item.rotulo}</span>
                     {item.id === "pacientes" && selecionadoId && (
-                      <span className="fx-pop ml-auto size-2 rounded-full bg-primary group-data-[collapsible=icon]:hidden" aria-label="Paciente selecionado" />
+                      <span className="ml-auto size-2 rounded-full bg-primary group-data-[collapsible=icon]:hidden" aria-label="Paciente selecionado" />
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -80,16 +82,15 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Atalhos (?)" onClick={() => setAtalhos(true)}>
+            <SidebarMenuButton tooltip="Atalhos (?)" onClick={() => { setAtalhos(true); fechar() }}>
               <CircleHelp aria-hidden />
               <span>Atalhos</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="hidden md:block">
             <SidebarMenuButton tooltip={state === "expanded" ? "Recolher menu ([)" : "Expandir menu ([)"} onClick={toggleSidebar}>
               <PanelLeft aria-hidden />
-              <span>Recolher menu</span>
-              <kbd className="ml-auto rounded border bg-muted px-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">[</kbd>
+              <span>{state === "expanded" ? "Recolher menu" : "Expandir menu"}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -164,6 +164,8 @@ class EventoOut(BaseModel):
     descricao: Optional[str] = None
     historico: bool = False
     duplicado: bool = False
+    origem: Optional[str] = None
+    valor_numerico: Optional[float] = None
 
 
 class DecisaoOut(BaseModel):
@@ -183,7 +185,7 @@ class EvidenciaOut(BaseModel):
 
 
 class SugestaoCidOut(BaseModel):
-    """PRE-12 (D-117): CID sugerido pelo LLM a partir do laudo. Só sugestão; o regulador decide (I-05)."""
+    """PRE-12 (D-125): CID sugerido pelo LLM a partir do laudo. Só sugestão; o regulador decide (I-05)."""
     cid: str
     descricao: str = Field(description="descrição oficial da tabela CID-10")
     citacao: str = Field(description="trecho literal do laudo que justifica o CID")
@@ -209,6 +211,13 @@ class CorrecaoOut(BaseModel):
     regra: str
 
 
+class ProcedimentoInfoOut(BaseModel):
+    porte: Optional[str] = None
+    risco_cirurgico: Optional[int] = None
+    duracao_media_min: Optional[int] = None
+    necessita_uti: Optional[str] = None  # "sim" | "nao" | "eventual"
+
+
 class SolicitacaoDetalheOut(BaseModel):
     solicitacao_id: str
     paciente_id: str
@@ -220,7 +229,7 @@ class SolicitacaoDetalheOut(BaseModel):
     cid: str
     cid_descricao: Optional[str]
     cid_original: Optional[str] = Field(
-        default=None, description="CID do cadastro quando o regulador corrigiu o CID (PRE-12, D-117)")
+        default=None, description="CID do cadastro quando o regulador corrigiu o CID (PRE-12, D-125)")
     status_fila: StatusFila
     posicao: Optional[int]
     camada: Optional[CamadaInt]
@@ -232,12 +241,22 @@ class SolicitacaoDetalheOut(BaseModel):
     pendencias: list[PendenciaResumoOut] = []
     alertas: list[str] = []
     correcoes: list[CorrecaoOut] = []
+    procedimento_info: Optional[ProcedimentoInfoOut] = None
 
 
 # ---------- inbox ----------
 class EditadoAnteriormente(BaseModel):
     por: str
     em: date
+
+
+class PreviaOut(BaseModel):
+    """O que a decisão faria antes de gravar: classe, % do prazo, score e posição estimada."""
+    classe: Classe
+    pct_prazo_consumido: float
+    score: float
+    posicao_atual: Optional[int] = None
+    posicao_estimada: Optional[int] = None
 
 
 class ItemInboxOut(BaseModel):
@@ -251,6 +270,7 @@ class ItemInboxOut(BaseModel):
     evento_gatilho: Optional[str] = None
     editado_anteriormente: Optional[EditadoAnteriormente] = None
     criado_em: Optional[datetime] = None
+    previa: Optional[PreviaOut] = None  # se aprovar
 
 
 class InboxOut(BaseModel):
@@ -481,3 +501,20 @@ class EnviosOut(BaseModel):
     enviadas: int
     falhas: int
     pendentes: int
+
+
+class ErroImportacaoOut(BaseModel):
+    linha: int  # 1 = cabeçalho
+    campo: Optional[str] = None
+    mensagem: str
+
+
+class ImportacaoOut(BaseModel):
+    lidas: int
+    novas: int
+    ja_existentes: list[str]
+    erros: list[ErroImportacaoOut]
+    novas_ids: list[str]
+    suspensas: int
+    fila_publicada: Optional[bool] = None
+    total_fila: Optional[int] = None

@@ -35,7 +35,7 @@ def test_get_inbox_200_no_formato_do_contrato(client):
     item = corpo["itens"][0]
     assert set(item) == {"solicitacao_id", "procedimento", "camada", "dias_em_fila",
                          "classe_atual", "classe_sugerida", "motivos", "evento_gatilho",
-                         "editado_anteriormente", "criado_em"}
+                         "editado_anteriormente", "criado_em", "previa"}
     assert item["classe_atual"] == "D" and item["classe_sugerida"] == "A2"
     assert item["evento_gatilho"] == "EVT-1"
     assert item["editado_anteriormente"] == {"por": "reg-1", "em": "2026-05-01"}

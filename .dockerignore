@@ -1,0 +1,14 @@
+.git
+.github
+.claude
+**/__pycache__
+**/*.pyc
+backend/.venv
+backend/output
+backend/tests
+backend/.pytest_cache
+web
+docs
+score
+.env
+.env.*

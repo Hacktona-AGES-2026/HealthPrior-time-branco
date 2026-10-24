@@ -1,4 +1,4 @@
-"""Sugestor de CID por LLM (PRE-12, D-117): lê o laudo e escolhe o código na tabela CID-10.
+"""Sugestor de CID por LLM (PRE-12, D-125): lê o laudo e escolhe o código na tabela CID-10.
 
 Modelo padrão `openai/gpt-6-luna` com `reasoning.effort = low`, via OpenRouter (chat completions
 com tool calling): o modelo chama `buscar_cid` na tabela oficial e devolve CID + citação literal do

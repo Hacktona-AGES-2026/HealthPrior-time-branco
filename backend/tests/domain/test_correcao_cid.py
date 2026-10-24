@@ -1,4 +1,4 @@
-"""PRE-12 · D-117: validação da sugestão de CID e aplicação da correção (funções puras)."""
+"""PRE-12 · D-125: validação da sugestão de CID e aplicação da correção (funções puras)."""
 from datetime import date
 
 import pytest

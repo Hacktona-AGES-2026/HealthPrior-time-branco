@@ -16,6 +16,7 @@ from app.domain.models import (
     Evento,
     LinhaFila,
     Pendencia,
+    Procedimento,
     ResultadoScore,
     ResultadoSincronizacao,
     ResultadoTabela,
@@ -105,6 +106,10 @@ class PendenciaRepository(Protocol):
         uma pessoa já resolveu ou descartou, e nunca apaga.
         """
         ...
+
+
+class ProcedimentoRepository(Protocol):
+    def obter(self, procedimento_id: str) -> Procedimento | None: ...
 
 
 class DecisaoRepository(Protocol):
@@ -206,6 +211,12 @@ class NotificacaoRepository(Protocol):
     def registrar_envio(self, notificacao_id: str, status: str, em: datetime, detalhe: str | None) -> None: ...
     def listar(self, limite: int = 100) -> list[Notificacao]: ...
     def proximo_id(self) -> str: ...
+
+
+class ProcedimentoRepository(Protocol):
+    def mapa(self) -> dict[str, tuple[str | None, str | None]]:
+        """procedimento_id -> (nome, especialidade)."""
+        ...
 
 
 class TabelaCid(Protocol):

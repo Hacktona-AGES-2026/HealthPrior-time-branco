@@ -1,4 +1,4 @@
-"""PRE-12 · Tabela CID-10 do DATASUS: validação e busca usadas pela sugestão de CID (D-117)."""
+"""PRE-12 · Tabela CID-10 do DATASUS: validação e busca usadas pela sugestão de CID (D-125)."""
 import pytest
 
 from app.config import settings

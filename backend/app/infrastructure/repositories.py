@@ -30,6 +30,7 @@ from app.domain.models import (
     LinhaFila,
     Motivo,
     Pendencia,
+    Procedimento,
     ResultadoSincronizacao,
     ResultadoTabela,
     Solicitacao,
@@ -55,7 +56,7 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
     return Solicitacao(
         solicitacao_id=t.solicitacao_id, paciente_id=t.paciente_id,
         procedimento_id=t.procedimento_id,
-        # D-117: com CID confirmado pelo regulador, ele vale para tudo; o original fica no banco (I-10)
+        # D-125: com CID confirmado pelo regulador, ele vale para tudo; o original fica no banco (I-10)
         cid_principal=t.cid_confirmado or t.cid_principal,
         cid_confirmado=t.cid_confirmado, cid_original=t.cid_principal,
         data_entrada_fila=t.data_entrada_fila,
@@ -254,6 +255,29 @@ def _para_decisao(t: DecisaoTable) -> Decisao:
         motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
         justificativa=t.justificativa, versao_regras=t.versao_regras, procedimento_id=t.procedimento_id,
     )
+
+
+class SqlProcedimentoRepository:
+    """Catálogo de procedimentos (só leitura): consulta por id (`obter`) e o mapa de nomes (`mapa`)."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def obter(self, procedimento_id: str) -> Procedimento | None:
+        t = self._s.get(ProcedimentoTable, procedimento_id)
+        if t is None:
+            return None
+        uti = (t.necessita_uti or "").strip().lower()
+        return Procedimento(
+            procedimento_id=t.procedimento_id, porte=t.porte or None,
+            risco_cirurgico=t.risco_cirurgico, duracao_media_min=t.duracao_media_min,
+            necessita_uti={"sim": "sim", "nao": "nao", "não": "nao", "eventual": "eventual"}.get(uti))
+
+    def mapa(self) -> dict[str, tuple[str | None, str | None]]:
+        """procedimento_id -> (nome, especialidade): valida e completa a importação por CSV."""
+        linhas = self._s.execute(select(ProcedimentoTable.procedimento_id, ProcedimentoTable.procedimento,
+                                        ProcedimentoTable.especialidade)).all()
+        return {pid: (nome, esp) for pid, nome, esp in linhas}
 
 
 class SqlDecisaoRepository:

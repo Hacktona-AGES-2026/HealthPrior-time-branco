@@ -1,4 +1,4 @@
-"""PRE-12 · D-117: câncer escondido do laudo à fila, pela composição real (precisa do Postgres de teste).
+"""PRE-12 · D-125: câncer escondido do laudo à fila, pela composição real (precisa do Postgres de teste).
 
 Evento de biópsia -> PRE-12 -> LLM sugere o CID (aqui um sugestor falso, sem rede) -> regulador
 corrige -> o CID novo vale para tudo (oncológico, camada 1) e o original continua guardado.

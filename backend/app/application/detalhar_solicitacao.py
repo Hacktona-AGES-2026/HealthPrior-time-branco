@@ -11,13 +11,14 @@ from datetime import date
 from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, ClasseStatus, StatusFila
 from app.domain.errors import NaoEncontradoError
 from app.domain.explicacao import camada_motivo, montar_explicacao
-from app.domain.models import Correcao, Decisao, Evento, Motivo, Pendencia, ResultadoScore, Solicitacao
+from app.domain.models import Correcao, Decisao, Evento, Motivo, Pendencia, Procedimento, ResultadoScore, Solicitacao
 from app.domain.ports import (
     DecisaoRepository,
     CorrecaoRepository,
     EventoRepository,
     FilaRepository,
     PendenciaRepository,
+    ProcedimentoRepository,
     SolicitacaoRepository,
     SwalisScorer,
 )
@@ -46,6 +47,8 @@ class EventoVisao:
     descricao: str
     historico: bool
     duplicado: bool  # duplicado_de não nulo (PRE-07)
+    origem: str | None = None
+    valor_numerico: float | None = None
 
 
 @dataclass
@@ -60,13 +63,16 @@ class DetalheSolicitacao:
     correcoes: list[Correcao]
     pendencias: list[Pendencia]
     decisoes: list[Decisao] = field(default_factory=list)  # log do regulador (US-13/14)
+    procedimento: Procedimento | None = None  # catálogo (porte, risco, UTI)
 
 
 class DetalharSolicitacao:
     def __init__(self, solicitacoes: SolicitacaoRepository, eventos: EventoRepository,
                  correcoes: CorrecaoRepository, pendencias: PendenciaRepository,
                  fila: FilaRepository, scorer: SwalisScorer, ref_date: date,
-                 decisoes: DecisaoRepository | None = None):
+                 decisoes: DecisaoRepository | None = None,
+                 procedimentos: ProcedimentoRepository | None = None):
+        self._procedimentos = procedimentos
         self._decisoes = decisoes
         self._solicitacoes = solicitacoes
         self._eventos = eventos
@@ -116,6 +122,8 @@ class DetalharSolicitacao:
             pendencias=self._pendencias.listar_por_solicitacao(solicitacao_id),
             decisoes=(self._decisoes.listar_por_solicitacao(solicitacao_id)
                       if self._decisoes else []),
+            procedimento=(self._procedimentos.obter(sol.procedimento_id)
+                          if self._procedimentos and sol.procedimento_id else None),
         )
 
 
@@ -139,4 +147,5 @@ def _score(sol: Solicitacao, res: ResultadoScore, ref_date: date) -> ScoreDetalh
 def _evento_visao(e: Evento) -> EventoVisao:
     return EventoVisao(evento_id=e.evento_id, data_evento=e.data_evento, tipo_evento=e.tipo_evento,
                        resultado=e.resultado, descricao=e.descricao, historico=e.historico,
-                       duplicado=e.duplicado_de is not None)
+                       duplicado=e.duplicado_de is not None, origem=e.origem,
+                       valor_numerico=e.valor_numerico)

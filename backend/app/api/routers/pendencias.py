@@ -53,7 +53,7 @@ def resolver_pendencia(pendencia_id: str, body: schemas.ResolverPendenciaIn,
 
 @router.post("/{pendencia_id}/sugerir-cid", response_model=Optional[schemas.SugestaoCidOut])
 def sugerir_cid(pendencia_id: str, caso_de_uso: SugerirCid = Depends(get_sugerir_cid)):
-    """PRE-12 (D-117): pede (de novo) a sugestão de CID ao LLM. null se não houver sugestão válida."""
+    """PRE-12 (D-125): pede (de novo) a sugestão de CID ao LLM. null se não houver sugestão válida."""
     if settings.use_mocks:
         return None
     sugestao = caso_de_uso.executar(pendencia_id)

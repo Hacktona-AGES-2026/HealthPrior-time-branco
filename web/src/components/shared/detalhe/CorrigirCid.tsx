@@ -7,7 +7,7 @@ import { corrigirCid, type PendenciaDetalheApi, pedirSugestaoCid, type SugestaoC
 import { reguladorAtual } from "@/lib/usuario"
 
 /**
- * PRE-12 "câncer escondido" (D-117): laudo de biópsia positiva com CID não oncológico.
+ * PRE-12 "câncer escondido" (D-125): laudo de biópsia positiva com CID não oncológico.
  * O LLM sugere o CID e cita o laudo; o regulador confere, ajusta se quiser e confirma (I-05).
  */
 export function CorrigirCid({ pendencia, cidAtual, aoCorrigir }: { pendencia: PendenciaDetalheApi; cidAtual: string; aoCorrigir: () => void }) {
@@ -46,7 +46,8 @@ export function CorrigirCid({ pendencia, cidAtual, aoCorrigir }: { pendencia: Pe
   }
 
   return (
-    <div className="mt-1.5 space-y-2 rounded-md border border-dashed p-2">
+    <section aria-label="Conferir diagnóstico (CID)" className="space-y-2 rounded-md border border-dashed p-2 text-xs">
+      <h4 className="text-sm font-semibold">Conferir diagnóstico (CID {cidAtual})</h4>
       {laudos.map((l) => (
         <p key={l.ref ?? l.texto} className="text-muted-foreground">
           Laudo{l.ref ? ` (${l.ref})` : ""}: <q>{l.texto}</q>
@@ -79,6 +80,6 @@ export function CorrigirCid({ pendencia, cidAtual, aoCorrigir }: { pendencia: Pe
         </Button>
         <span className="text-muted-foreground">confira o laudo: quem decide é o regulador</span>
       </div>
-    </div>
+    </section>
   )
 }

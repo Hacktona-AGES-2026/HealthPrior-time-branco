@@ -1,7 +1,7 @@
 """US-07 · Resolver pendência (C-06). Reprocessa ou remove com motivo; nada é apagado (I-03).
 
 A pessoa escolhe uma resolução (confirmar saída, fundir, reativar, descartar ou, na PRE-12,
-corrigir o CID, D-117) e o caso de uso:
+corrigir o CID, D-125) e o caso de uso:
   1. valida (a regra aceita essa resolução? `confirmar_saida` tem observação?);
   2. grava o desfecho da pendência (quem, quando, resolução, observação) e muda a solicitação:
      `removida` com motivo (confirmar saída e fusão) ou de volta à fila (reativar e descartar);
@@ -166,7 +166,7 @@ class ResolverPendencia:
         return [removida, permanece], correcoes
 
     def _corrigir_cid(self, s: Solicitacao, cid: str | None) -> Correcao:
-        """D-117: o regulador confirmou o CID (o sugerido ou outro). Vale para tudo dali em diante."""
+        """D-125: o regulador confirmou o CID (o sugerido ou outro). Vale para tudo dali em diante."""
         codigo = (cid or "").strip().upper()
         if not codigo:
             raise ResolucaoInvalidaError("Corrigir o CID exige o CID novo.")
