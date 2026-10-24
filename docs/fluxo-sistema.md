@@ -61,7 +61,7 @@ Este arquivo é a **fonte de verdade** do comportamento do sistema. Agentes de I
 | **% do prazo consumido** | `dias_esperando / prazo_da_classe`. Ordena dentro da classe. Muda **sozinho** todo dia. |
 | **Score** | Valor numérico usado para ordenar (derivado da classe + tempo). Calculado pelo SWALIS (caixa-preta). |
 | **Regulador** | Médico regulador que confirma ou altera classes. Persona principal da tela clínica (ver `Q-01`). |
-| **Camada** | Bloco de ordenação imposto pela trava: 1 = oncológicos, 2 = urgentes não oncológicos, 3 = demais. |
+| **Camada** | Motivo da prioridade definido pela trava: 1 = oncológicos, 2 = urgentes não oncológicos, 3 = demais. As camadas 1 e 2 formam um bloco só, ordenado pelo score; a 3 fica abaixo (D-112). |
 | **Pendência** | Problema de dado/administrativo que precisa de ação humana (não clínica). |
 | **Override** | Classe ou score definido manualmente pelo regulador, sobrepondo o do sistema. |
 | **Versão de regras** | Versão da tabela de regras do SWALIS usada num cálculo (`regras v7`). |
@@ -275,17 +275,18 @@ Documentado à parte. Este fluxo só depende do **contrato**:
 - **Ordem efetiva:** usa `score_medico` se existir, senão `score_sistema`.
 
 ### C-11 · Trava da regra de ouro
-> **Implementado (US-08).** Decisões D-22 a D-25; registro em `docs/implementacao/US-08-trava-regra-de-ouro.md`.
+> **Implementado (US-08).** Decisões D-22 a D-25 e D-112; registro em `docs/implementacao/US-08-trava-regra-de-ouro.md`.
 
-- **Responsabilidade:** impor a ordem por **camadas**. Não rejeita: **corrige**.
-  1. **Camada 1 — oncológicos** (`cid_norm` começa com `C`), ordenados entre si pelo score efetivo.
+- **Responsabilidade:** impor a ordem por **blocos**. Não rejeita: **corrige**. Cada paciente recebe uma camada, que diz por que ele está onde está:
+  1. **Camada 1 — oncológicos** (`cid_norm` começa com `C`).
   2. **Camada 2 — urgentes não oncológicos** (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme no texto). Dor e limitação **não** definem camada: são sintomas, critério do SWALIS (D-27).
-  3. **Camada 3 — demais**, pelo score efetivo.
-- O score decide a ordem **dentro** da camada; nenhuma camada invade a de cima.
+  3. **Camada 3 — demais.**
+- **Dois blocos (D-112, revisa D-06):** as camadas 1 e 2 formam o **bloco prioritário**, ordenado pelo score efetivo; um urgente com score maior passa um oncológico. A camada 3 vem abaixo e nunca invade o bloco de cima.
 - Recebe de: regulador (sim), edição manual, carga inicial, atualização diária.
 - **Exemplo de por que existe:** um câncer de pele classe B com 15 dias (25% do prazo) ficaria abaixo de uma hérnia classe D com 400 dias (111%) se só o score ordenasse, violando a regra de ouro.
 - **Fila atual viola a regra:** pelo verificador, o primeiro paciente "sem urgência" está na posição 12, acima dos 177 oncológicos.
-- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida pela camada 1 (todo oncológico no topo), qualquer que seja a camada 2. Por isso a camada 2 usa só sinais clínicos (D-27), e não o complemento completo da definição do verificador.
+- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida porque todo oncológico fica acima da camada 3 e porque **todo sinal da camada 2 também é urgência para o verificador**: mesma lista de CIDs de complicação, mesmos termos de alarme e mesmos tipos de evento de piora (a camada 2 ainda exige que o evento seja durante a espera). Ou seja, quem passa um oncológico nunca é "sem urgência" para o verificador. Quem mexer na camada 2 precisa manter essa inclusão. A camada 2 usa só sinais clínicos (D-27), e não o complemento completo da definição do verificador.
+- **Efeito no dataset (D-112, `gerar-fila`, 900 ativos):** bloco prioritário com 376 (177 oncológicos + 199 urgentes); 198 urgentes passam pelo menos um oncológico; posição mediana dos oncológicos 89 → 251; oncológicos no primeiro terço 100% → 70%; verificador OK.
 
 ### C-12 · Verificador e publicação
 > **Implementado (US-09/US-10).** Decisões D-34..D-43; registros em `docs/implementacao/US-09-gerar-fila-banco.md` e `US-10-verificador-portao.md`.
@@ -400,7 +401,7 @@ Obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `cama
 | D-03 | Regulador edita **classe ou score**, não posição; flag `editado_manualmente` + colunas de override. | Posição é relativa e muda todo dia; score editado convive com o job diário e com a trava. |
 | D-04 | Pré-processamento único para carga inicial e eventos. | Mesmas regras para lote e fluxo contínuo. |
 | D-05 | Inconsistências são sinalizadas, nunca apagadas; bloqueantes suspendem até confirmação. | Auditabilidade; lições de Inglaterra, Portugal e Nova Zelândia. |
-| D-06 | Regra de ouro implementada como **camadas** (trava), não como peso no score. | Restrição dura; nenhum número supera. |
+| D-06 | Regra de ouro implementada como **camadas** (trava), não como peso no score. Revista por D-112: camadas 1 e 2 num bloco só. | Restrição dura; nenhum número supera. |
 | D-07 | Verificador oficial é portão de publicação; falha mantém a fila anterior. | Violação é eliminatória. |
 | D-08 | Ciclo de aprendizado propõe regras; comitê aprova; versões com impacto simulado. | Originalidade com controle humano (CFM 2.454/2026, LGPD art. 20). |
 | D-09 | Detalhes internos do SWALIS ficam fora deste documento. | Separação de responsabilidades. |

@@ -114,7 +114,7 @@ export default function PaginaAnalise() {
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="@container mx-auto max-w-7xl space-y-4 p-4">
         <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
-          <Resumo indice={0} icone={Layers} rotulo="Camada 1 · oncológicos" valor={oncologicos} cor="var(--cls-a2-fg)" detalhe="CID iniciado por C, sempre no topo" aoClicar={() => filtrarEIr({ camada: "1" })} />
+          <Resumo indice={0} icone={Layers} rotulo="Camada 1 · oncológicos" valor={oncologicos} cor="var(--cls-a2-fg)" detalhe="CID iniciado por C, sempre acima da camada 3" aoClicar={() => filtrarEIr({ camada: "1" })} />
           <Resumo indice={1} icone={Siren} rotulo="Camada 2 · urgentes" valor={urgentes} cor="var(--cls-b-fg)" detalhe="Sinal clínico de urgência" aoClicar={() => filtrarEIr({ camada: "2" })} />
           <Resumo indice={2} icone={TimerOff} rotulo="Vencidos (>100% do prazo)" valor={vencidos} cor="var(--prazo-vencido)" detalhe={`de ${TOTAL_FILA} na fila`} aoClicar={() => filtrarEIr({ vencidos: true })} />
           <Resumo indice={3} icone={CheckCheck} rotulo="Revisados" valor={revisados} cor="var(--sobe)" detalhe={`${aprovados} aprovados · ${editados} editados · ${TOTAL_FILA - revisados} pendentes`} aoClicar={() => filtrarEIr({ status: "revisados" })} />
