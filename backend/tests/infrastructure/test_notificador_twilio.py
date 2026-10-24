@@ -24,6 +24,21 @@ def test_envia_com_basic_auth_e_corpo_sem_acentos():
     assert vistos["form"] == {"To": "+5551999990000", "From": "+15005550006", "Body": "[DEMO] situacao atualizada"}
 
 
+def test_whatsapp_prefixa_o_destino_e_mantem_os_acentos():
+    vistos = {}
+
+    def handler(request):
+        vistos["form"] = dict(httpx.QueryParams(request.content.decode()))
+        return httpx.Response(201, json={"sid": "SMwa"})
+
+    t = NotificadorTwilio("ACtest", "segredo", "whatsapp:+14155238886", cliente(handler))
+    assert t.enviar("+5551999990000", "situação atualizada").ok
+    assert vistos["form"] == {"To": "whatsapp:+5551999990000", "From": "whatsapp:+14155238886",
+                              "Body": "situação atualizada"}
+    t.enviar("whatsapp:+5551999990000", "x")  # já com prefixo: não duplica
+    assert vistos["form"]["To"] == "whatsapp:+5551999990000"
+
+
 def test_erro_do_twilio_vira_falha_sem_vazar_a_credencial():
     def handler(request):
         return httpx.Response(400, json={"code": 21608, "message": "The number is unverified (trial account)"})

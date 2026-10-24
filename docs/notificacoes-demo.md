@@ -19,6 +19,19 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
 3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
 4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
 
+## WhatsApp (sandbox do Twilio)
+O remetente **não** é o seu número: é o número do sandbox do Twilio. O destino é o seu.
+1. No console do Twilio: **Messaging**, depois **Try it out**, depois **Send a WhatsApp message**. Aparecem o número do sandbox (em geral `+1 415 523 8886`) e um código de adesão (`join palavra-palavra`).
+2. No seu WhatsApp, mande esse `join ...` para o número do sandbox. A confirmação chega na hora.
+3. `.env`:
+   ```bash
+   HP_NOTIFICA_CANAL=twilio
+   TWILIO_FROM=whatsapp:+14155238886
+   HP_NOTIFICA_DESTINO=+55SEUDDDSEUNUMERO
+   ```
+   O sistema acrescenta `whatsapp:` ao destino e mantém os acentos.
+4. O sandbox só aceita texto livre por 24 h depois da última mensagem que **você** enviou a ele; passado esse prazo, mande qualquer mensagem de novo para reabrir. O `join` vale por alguns dias e pode ser refeito.
+
 ## Limites conhecidos
 - Não é produção: não há consentimento do paciente, opt-out, nem telefone do paciente usado (LGPD).
-- WhatsApp não está implementado (exige a API oficial e modelos aprovados).
+- O WhatsApp real (produção) exige a API oficial, número aprovado e modelos de mensagem; aqui só o sandbox de teste.

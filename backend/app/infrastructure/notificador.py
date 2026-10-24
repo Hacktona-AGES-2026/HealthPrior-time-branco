@@ -2,6 +2,10 @@
 
 O Twilio é chamado pela API REST (`httpx`), sem SDK. A conta de teste só entrega a números verificados e
 acrescenta um aviso de "trial" à mensagem; por isso o destino é sempre o número da demo, nunca o do paciente.
+
+WhatsApp: se `TWILIO_FROM` começa com `whatsapp:` (o número do sandbox do Twilio, `whatsapp:+14155238886`), o
+destino também vai como `whatsapp:+55...` e o texto segue com acentos. No sandbox a pessoa precisa antes mandar
+`join <código>` ao número do sandbox, e só recebe texto livre por 24 h depois da última mensagem dela.
 """
 from __future__ import annotations
 
@@ -35,9 +39,11 @@ class NotificadorTwilio:
 
     def enviar(self, destino: str, texto: str) -> ResultadoEnvio:
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self._sid}/Messages.json"
+        whatsapp = self._from.lower().startswith("whatsapp:")
+        para = destino if not whatsapp or destino.lower().startswith("whatsapp:") else f"whatsapp:{destino}"
         try:
             r = self._client.post(url, auth=(self._sid, self._token),
-                                  data={"To": destino, "From": self._from, "Body": sem_acentos(texto)})
+                                  data={"To": para, "From": self._from, "Body": texto if whatsapp else sem_acentos(texto)})
         except httpx.HTTPError as e:
             return ResultadoEnvio(False, f"falha de rede: {e.__class__.__name__}")
         corpo = r.json() if r.headers.get("content-type", "").startswith("application/json") else {}
