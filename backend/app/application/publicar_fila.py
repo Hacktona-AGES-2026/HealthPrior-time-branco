@@ -26,6 +26,7 @@ class ResultadoPublicacao:
     versao_regras: str
     saida_verificador: str
     data_referencia: date
+    recontato: object | None = None  # US-17: ResumoRecontato, só na atualização diária
 
 
 class PublicarFila:

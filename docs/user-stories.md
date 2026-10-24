@@ -233,6 +233,8 @@ Como **equipe administrativa**, quero ser avisada de quem está sem eventos há 
   - Não altera prioridade.
 - **Depende de:** US-06, US-16
 
+> **Status: ✅ implementado** (D-113, D-114): pendência `REC-01` para ativas sem evento há N dias (`HP_RECONTATO_DIAS`, padrão 180), no passo 3 da atualização diária e em `python -m app.cli recontato`. No dataset: 260 de 900 ativas em 23/10/2026. Q-04 (N final e gatilho por prazo) segue aberta.
+
 ---
 
 ### E6 · Ciclo de aprendizado (C-14)

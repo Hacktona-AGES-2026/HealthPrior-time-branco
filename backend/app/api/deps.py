@@ -15,6 +15,7 @@ from app.application.decidir import DecidirClasse
 from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
+from app.application.detectar_recontato import DetectarRecontato
 from app.application.gerar_propostas import GerarPropostas
 from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
@@ -119,9 +120,16 @@ def get_publicar_fila(session: Session = Depends(get_session),
     return _publicar_fila_em(session, data)
 
 
+def _detectar_recontato_em(session: Session, data: date) -> DetectarRecontato:
+    return DetectarRecontato(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                             SqlPendenciaRepository(session), data, settings.recontato_dias)
+
+
 def get_atualizacao_diaria(session: Session = Depends(get_session)) -> AtualizacaoDiaria:
     return AtualizacaoDiaria(SqlFilaRepository(session), lambda data: _publicar_fila_em(session, data),
-                             settings.ref_date)
+                             settings.ref_date,
+                             recontato_em=lambda data: _detectar_recontato_em(session, data),
+                             uow=SqlUnidadeDeTrabalho(session))
 
 
 def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> ExportarFilaPublicada:

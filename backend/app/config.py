@@ -32,6 +32,7 @@ class Settings:
     llm_model: str
     llm_enabled: bool
     llm_cache_path: Path
+    recontato_dias: int
     fatores_enabled: bool
     irr_path: Path
 
@@ -54,6 +55,8 @@ def _load() -> Settings:
         llm_model=os.getenv("HP_LLM_MODEL", "typesafe/jev-1.14"),
         llm_enabled=os.getenv("HP_LLM_ENABLED", "true").lower() == "true",
         llm_cache_path=Path(os.getenv("HP_LLM_CACHE", REPO_ROOT / "data" / "processed" / "cache_llm.json")),
+        # Q-04 (provisório): dias sem evento até pedir o recontato (C-04).
+        recontato_dias=int(os.getenv("HP_RECONTATO_DIAS", "180")),
         # Fatores de comorbidade e idade/IRR no score (domain/fatores.py).
         fatores_enabled=os.getenv("HP_FATORES_ENABLED", "true").lower() == "true",
         irr_path=Path(os.getenv("HP_IRR_PATH", REPO_ROOT / "score" / "references"

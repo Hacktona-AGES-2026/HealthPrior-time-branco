@@ -11,6 +11,7 @@
     python -m app.cli extrair-sinais  SW-01..04: pré-aquece o cache do LLM e mostra as classes SWALIS
     python -m app.cli seed-aprendizado  US-18: grava ~33 decisões de exemplo (DEC-SEED-*); idempotente
     python -m app.cli gerar-propostas  US-18: agrupa as decisões em propostas de regra e as grava
+    python -m app.cli recontato   US-17: abre pendências de recontato (sem evento há N dias, HP_RECONTATO_DIAS)
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
@@ -221,6 +222,22 @@ def cmd_extrair_sinais() -> None:
     print(f"Cache: {settings.llm_cache_path}")
 
 
+def cmd_recontato() -> None:
+    """US-17 (C-04): pendência de recontato para quem está sem evento há N dias; não altera a fila."""
+    from app.application.detectar_recontato import DetectarRecontato
+
+    criar_tabelas()
+    with Session(engine) as session:
+        data = _data_referencia(session)
+        r = DetectarRecontato(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                              SqlPendenciaRepository(session), data, settings.recontato_dias).executar()
+        SqlUnidadeDeTrabalho(session).confirmar()
+    p = r.pendencias
+    print(f"recontato em {data:%d/%m/%Y}: {r.sem_evento} de {r.avaliadas} ativas sem evento há "
+          f"{r.n_dias}+ dias; pendências: {p.abertas} abertas, {p.atualizadas} atualizadas, "
+          f"{p.encerradas} encerradas")
+
+
 def _data_referencia(session: Session):
     return SqlFilaRepository(session).data_referencia() or settings.ref_date
 
@@ -275,7 +292,7 @@ COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normal
             "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "bloqueantes": cmd_bloqueantes,
             "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "extrair-sinais": cmd_extrair_sinais,
-            "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
+            "recontato": cmd_recontato, "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
             "decisoes": cmd_decisoes}
 
 

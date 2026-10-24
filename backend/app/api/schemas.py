@@ -80,6 +80,16 @@ class CargaOut(BaseModel):
     bloqueantes: Optional[BloqueantesOut] = None
 
 
+class RecontatoOut(BaseModel):
+    """US-17: quem passou de N dias sem evento e o que mudou nas pendências de recontato."""
+
+    n_dias: int
+    sem_evento: int
+    abertas: int
+    atualizadas: int
+    encerradas: int
+
+
 class PublicacaoOut(BaseModel):
     publicada: bool
     total: int
@@ -87,6 +97,7 @@ class PublicacaoOut(BaseModel):
     versao_regras: str
     saida_verificador: str
     data_referencia: date  # US-16: data usada no cálculo (avança na atualização diária)
+    recontato: Optional["RecontatoOut"] = None  # US-17: só na atualização diária
 
 
 # ---------- fila ----------

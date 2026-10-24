@@ -13,6 +13,7 @@ export const REGRAS_PENDENCIA: Record<string, string> = {
   "PRE-23": "Desistência",
   "PRE-24": "Evento órfão",
   "PRE-25": "Fontes contraditórias",
+  "REC-01": "Sem evento (recontato)",
 }
 
 export const STATUS_PENDENCIA: Record<StatusPendencia, string> = {
@@ -90,6 +91,7 @@ export const RESOLUCOES_POR_REGRA: Record<string, Resolucao[]> = {
   "PRE-23": SAIDA,
   "PRE-24": ["descartar"],
   "PRE-25": SAIDA,
+  "REC-01": SO_ALERTAM,
 }
 
 export const acoesDaRegra = (regra: string): Acao[] => (RESOLUCOES_POR_REGRA[regra] ?? []).map((r) => ACOES[r])
