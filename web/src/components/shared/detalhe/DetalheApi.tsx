@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react"
 import { ORIGEM_DADOS } from "@/data/fila"
 import type { Evento, Paciente, TipoEvento } from "@/data/tipos"
 import { type DetalheApi, MOTIVOS_CODIFICADOS, type MotivoCodificado, obterDetalheEmCache } from "@/lib/api"
+import { useStore } from "@/store/useStore"
+import { CorrigirCid } from "./CorrigirCid"
 import { HistoricoPaciente, type DecisaoHistorico } from "./HistoricoPaciente"
 
 const TIPOS: TipoEvento[] = ["biopsia", "hba1c", "pronto_socorro", "internacao", "exame_imagem", "consulta_reavaliacao", "contato_telefonico", "falta"]
@@ -72,6 +74,7 @@ const frasesDecisao = (d: DetalheApi["decisoes"][number]): string => {
 /** Detalhe da API com cache em memória por id (uma só chamada por solicitação). Nulo no modo offline. */
 export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean } {
   const [estado, setEstado] = useState<{ id: string; d: DetalheApi | null; erro: boolean } | null>(null)
+  const versaoDados = useStore((s) => s.versaoDados)  // depois de uma ação (ex.: CID corrigido) a ficha busca de novo
 
   useEffect(() => {
     if (ORIGEM_DADOS !== "api") return
@@ -80,7 +83,7 @@ export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean
     return () => {
       vivo = false
     }
-  }, [id])
+  }, [id, versaoDados])
 
   return estado && estado.id === id ? { d: estado.d, erro: estado.erro } : { d: null, erro: false }
 }
@@ -88,6 +91,7 @@ export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean
 /** Histórico e pendências com os registros reais da API somados aos do paciente. */
 export function DetalheApiPaciente({ p }: { p: Paciente }) {
   const { d, erro } = useDetalheApi(p.id)
+  const recarregar = useStore((s) => s.recarregar)
 
   const comApi = useMemo(() => {
     if (!d) return { p, decisoes: [] as DecisaoHistorico[] }
@@ -114,6 +118,16 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
     <>
       <HistoricoPaciente p={comApi.p} decisoes={comApi.decisoes} carregando={ORIGEM_DADOS === "api" && !d && !erro} />
       <PendenciasAlertas alertas={d ? d.alertas : p.alertas} pendencias={d?.pendencias} />
+      {d?.cid_original && (
+        <p className="text-sm text-muted-foreground">
+          CID corrigido pelo regulador: {d.cid_original} → <span className="font-medium text-foreground">{d.cid}</span>
+        </p>
+      )}
+      {d?.pendencias
+        .filter((x) => x.regra === "PRE-12" && x.status === "aberta")
+        .map((x) => (
+          <CorrigirCid key={x.pendencia_id} pendencia={x} cidAtual={d.cid} aoCorrigir={() => void recarregar()} />
+        ))}
     </>
   )
 }

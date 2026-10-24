@@ -89,6 +89,10 @@ class SolicitacaoTable(SQLModel, table=True):
     editado_em: Optional[datetime] = None
     motivo_codificado: Optional[str] = None
     justificativa_medico: Optional[str] = None
+    # PRE-12 (D-125): CID confirmado pelo regulador a partir de um laudo. `cid_principal` continua
+    # o original do CSV (a carga regrava ele); quem lê usa o confirmado quando existe.
+    cid_confirmado: Optional[str] = None
+    cid_confirmado_descricao: Optional[str] = None
 
 
 class EventoTable(SQLModel, table=True):
@@ -139,6 +143,8 @@ class PendenciaTable(SQLModel, table=True):
     resolvido_em: Optional[datetime] = None
     resolucao: Optional[str] = None
     observacao: Optional[str] = None
+    # PRE-12: CID sugerido pelo LLM (D-125). Fora de `evidencias_json`, que a ressincronização reescreve.
+    sugestao_cid_json: Optional[str] = None
 
 
 class DecisaoTable(SQLModel, table=True):

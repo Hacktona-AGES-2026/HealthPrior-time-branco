@@ -18,7 +18,7 @@ from app.application.detalhar_solicitacao import DetalharSolicitacao
 
 CHAVES_CONTRATO = {
     "solicitacao_id", "paciente_id", "nome_paciente", "idade", "sexo", "municipio", "procedimento",
-    "cid", "cid_descricao", "status_fila", "posicao", "camada", "camada_motivo", "score",
+    "cid", "cid_descricao", "cid_original", "status_fila", "posicao", "camada", "camada_motivo", "score",
     "explicacao", "eventos", "decisoes", "pendencias", "alertas", "correcoes", "procedimento_info",
 }
 

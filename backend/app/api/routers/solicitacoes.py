@@ -37,7 +37,8 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
     return schemas.SolicitacaoDetalheOut(
         solicitacao_id=s.solicitacao_id, paciente_id=s.paciente_id, nome_paciente=s.nome_paciente,
         idade=s.idade, sexo=s.sexo, municipio=s.municipio, procedimento=s.procedimento or "",
-        cid=s.cid_principal, cid_descricao=s.cid_descricao, status_fila=s.status_fila,
+        cid=s.cid_principal, cid_descricao=s.cid_descricao,
+        cid_original=s.cid_original if s.cid_confirmado else None, status_fila=s.status_fila,
         posicao=d.posicao, camada=d.camada, camada_motivo=d.camada_motivo,
         score=schemas.ScoreOut(
             classe_sistema=sc.classe_sistema, score_sistema=sc.score_sistema,
@@ -58,9 +59,12 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
                                      acao=x.acao, classe_decidida=x.classe_decidida,
                                      motivo_codificado=x.motivo_codificado,
                                      justificativa=x.justificativa) for x in d.decisoes],
-        pendencias=[schemas.PendenciaResumoOut(pendencia_id=p.pendencia_id, regra=p.regra,
-                                               bloqueante=p.bloqueante, status=p.status)
-                    for p in d.pendencias],
+        pendencias=[schemas.PendenciaResumoOut(
+            pendencia_id=p.pendencia_id, regra=p.regra, bloqueante=p.bloqueante, status=p.status,
+            titulo=p.titulo,
+            evidencias=[schemas.EvidenciaOut(fonte=m.fonte, ref=m.ref, texto=m.evidencia) for m in p.evidencias],
+            sugestao_cid=schemas.SugestaoCidOut(**vars(p.sugestao_cid)) if p.sugestao_cid else None)
+            for p in d.pendencias],
         alertas=list(s.alertas),
         correcoes=[schemas.CorrecaoOut(campo=c.campo, original=c.original, novo=c.novo,
                                        regra=c.regra) for c in d.correcoes],

@@ -193,6 +193,11 @@ def _sem_telefone(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
                   "Acionar o ACS para contatar o paciente")
 
 
+def detectar_cancer_escondido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
+    """PRE-12 avulsa: a mesma regra da carga, para o evento novo (US-15, D-125)."""
+    return _cancer_escondido(s, eventos)
+
+
 def _cancer_escondido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
     """PRE-12 (D-47): biópsia positiva e CID não oncológico. A classe segue o fluxo de eventos."""
     if is_oncologico(s.cid_principal):

@@ -66,6 +66,10 @@ class Solicitacao:
     # Classe do sistema em vigor enquanto não há confirmação: congelada quando um evento muda a
     # sugestão, para nenhuma mudança de classe valer sem decisão humana (I-04, C-08).
     classe_vigente: Classe | None = None
+    # CID confirmado pelo regulador a partir de um evento (PRE-12). Quando existe, `cid_principal`
+    # e `cid_descricao` acima já são os confirmados; o original do CSV fica em `cid_original` (I-10).
+    cid_confirmado: str | None = None
+    cid_original: str | None = None
     score_medico: float | None = None
     editado_manualmente: bool = False
     editado_por: str | None = None
@@ -149,6 +153,18 @@ class Correcao:
 
 
 @dataclass
+class SugestaoCid:
+    """CID sugerido pelo LLM para a PRE-12. Só sugestão: quem troca o CID é o regulador (I-05)."""
+
+    cid: str
+    descricao: str
+    citacao: str  # trecho literal do laudo que justifica o CID
+    confianca: float
+    modelo: str
+    evento_id: str | None = None
+
+
+@dataclass
 class Pendencia:
     pendencia_id: str
     solicitacao_id: str
@@ -163,6 +179,8 @@ class Pendencia:
     resolvido_em: datetime | None = None
     resolucao: str | None = None
     observacao: str | None = None
+    # PRE-12: guardada fora de `evidencias`, que a ressincronização das pendências reescreve.
+    sugestao_cid: SugestaoCid | None = None
 
 
 @dataclass
