@@ -33,6 +33,9 @@ class SolicitacaoRepository(Protocol):
     def atualizar_data_entrada(self, solicitacao: Solicitacao) -> None:
         """Grava só `data_entrada_fila` (fusão de duplicata, US-07); o chamador registra a correção (I-10)."""
         ...
+    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
+        """Grava só `classe_status`, `classe_confirmada` e o override (`classe_medico`, `score_medico`, `editado_*`)."""
+        ...
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `status_fila` e `motivo_status` (US-04); nenhuma coluna original muda."""
         ...
@@ -97,6 +100,9 @@ class PendenciaRepository(Protocol):
 
 
 class DecisaoRepository(Protocol):
+    def proximo_id(self) -> str:
+        """`DEC-0001`, `DEC-0002`...: o log de decisões só cresce (nada é apagado)."""
+        ...
     def adicionar(self, decisao: Decisao) -> None: ...
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]: ...
 

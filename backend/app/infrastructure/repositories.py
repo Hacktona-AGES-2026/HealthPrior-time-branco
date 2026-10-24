@@ -13,8 +13,10 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
 from app.domain.enums import Classe, ClasseStatus, StatusFila, StatusPendencia
+from app.domain.enums import AcaoDecisao, MotivoCodificado
 from app.domain.models import (
     Correcao,
+    Decisao,
     Evento,
     LinhaFila,
     Motivo,
@@ -25,6 +27,7 @@ from app.domain.models import (
 )
 from app.infrastructure.tables import (
     CorrecaoTable,
+    DecisaoTable,
     EventoTable,
     FilaPublicadaTable,
     PendenciaTable,
@@ -110,6 +113,17 @@ class SqlSolicitacaoRepository:
                         .values(data_entrada_fila=solicitacao.data_entrada_fila))
         self._s.expire_all()
 
+    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
+        tabela = SolicitacaoTable.__table__
+        self._s.execute(
+            update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id).values(
+                classe_status=solicitacao.classe_status.value,
+                classe_confirmada=solicitacao.classe_confirmada.value if solicitacao.classe_confirmada else None,
+                classe_medico=solicitacao.classe_medico.value if solicitacao.classe_medico else None,
+                score_medico=solicitacao.score_medico, editado_manualmente=solicitacao.editado_manualmente,
+                editado_por=solicitacao.editado_por, editado_em=solicitacao.editado_em))
+        self._s.expire_all()
+
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         if not solicitacoes:
             return
@@ -191,6 +205,46 @@ class SqlEventoRepository:
               "orfao": e.orfao} for e in eventos],
         )
         self._s.expire_all()
+
+
+def _para_decisao(t: DecisaoTable) -> Decisao:
+    return Decisao(
+        decisao_id=t.decisao_id, solicitacao_id=t.solicitacao_id, regulador_id=t.regulador_id,
+        acao=AcaoDecisao(t.acao), data=t.data,
+        classe_sugerida=Classe(t.classe_sugerida) if t.classe_sugerida else None,
+        classe_decidida=Classe(t.classe_decidida) if t.classe_decidida else None,
+        score_decidido=t.score_decidido,
+        motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
+        justificativa=t.justificativa, versao_regras=t.versao_regras, procedimento_id=t.procedimento_id,
+    )
+
+
+class SqlDecisaoRepository:
+    """Log de decisões do regulador (C-09/C-10): só acrescenta."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def proximo_id(self) -> str:
+        ultimo = self._s.execute(select(func.max(DecisaoTable.decisao_id))).scalar()
+        return f"DEC-{(int(ultimo.split('-')[1]) + 1) if ultimo else 1:04d}"
+
+    def adicionar(self, decisao: Decisao) -> None:
+        self._s.add(DecisaoTable(
+            decisao_id=decisao.decisao_id, solicitacao_id=decisao.solicitacao_id,
+            procedimento_id=decisao.procedimento_id, regulador_id=decisao.regulador_id,
+            acao=decisao.acao.value, data=decisao.data,
+            classe_sugerida=decisao.classe_sugerida.value if decisao.classe_sugerida else None,
+            classe_decidida=decisao.classe_decidida.value if decisao.classe_decidida else None,
+            score_decidido=decisao.score_decidido,
+            motivo_codificado=decisao.motivo_codificado.value if decisao.motivo_codificado else None,
+            justificativa=decisao.justificativa, versao_regras=decisao.versao_regras))
+        self._s.flush()
+
+    def listar_por_solicitacao(self, solicitacao_id: str) -> list[Decisao]:
+        consulta = (select(DecisaoTable).where(DecisaoTable.solicitacao_id == solicitacao_id)
+                    .order_by(DecisaoTable.data, DecisaoTable.decisao_id))
+        return [_para_decisao(t) for t in self._s.exec(consulta).scalars()]
 
 
 class SqlCargaRepository:
