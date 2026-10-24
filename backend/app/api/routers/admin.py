@@ -42,8 +42,11 @@ def atualizacao_diaria(data: date | None = None,
 def _resposta_publicacao(r: ResultadoPublicacao) -> JSONResponse:
     corpo = PublicacaoOut(publicada=r.publicada, total=r.total, por_camada=r.por_camada,
                           versao_regras=r.versao_regras, saida_verificador=r.saida_verificador,
-                          data_referencia=r.data_referencia, recontato=_recontato(r.recontato))
-    return JSONResponse(status_code=200 if r.publicada else 422, content=corpo.model_dump(mode="json"))
+                          data_referencia=r.data_referencia, recontato=_recontato(getattr(r, "recontato", None)))
+    conteudo = corpo.model_dump(mode="json")
+    if conteudo["recontato"] is None:  # só a atualização diária traz o recontato: o contrato do publicar-fila não muda
+        del conteudo["recontato"]
+    return JSONResponse(status_code=200 if r.publicada else 422, content=conteudo)
 
 
 def _recontato(r) -> RecontatoOut | None:

@@ -54,7 +54,7 @@ def test_as_outras_resolucoes_nao_exigem_observacao(regra, resolucao):
 
 
 def test_toda_regra_de_pendencia_tem_resolucao():
-    esperadas = {"PRE-10", "PRE-11", "PRE-12", "PRE-13", "PRE-20", "PRE-21", "PRE-22", "PRE-23", "PRE-24", "PRE-25"}
+    esperadas = {"PRE-10", "PRE-11", "PRE-12", "PRE-13", "PRE-20", "PRE-21", "PRE-22", "PRE-23", "PRE-24", "PRE-25", "REC-01"}
 
     assert set(RESOLUCOES_POR_REGRA) == esperadas and all(RESOLUCOES_POR_REGRA.values())
 
