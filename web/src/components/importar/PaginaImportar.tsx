@@ -79,7 +79,7 @@ export default function PaginaImportar() {
         </header>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" render={<a href={URL_MODELO_CSV} download />}>
+          <Button variant="outline" size="sm" nativeButton={false} render={<a href={URL_MODELO_CSV} download />}>
             <Download aria-hidden /> Baixar modelo
           </Button>
           <span className="text-xs text-muted-foreground">
