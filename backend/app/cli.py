@@ -182,9 +182,9 @@ def cmd_extrair_sinais() -> None:
     for sol in solicitacoes:
         c = swalis.classificar(sol, eventos.get(sol.solicitacao_id, []))
         classes[c.classe.value] += 1
-        por_llm += bool(swalis.alertas_llm(sol))
+        por_llm += bool(swalis.pontos_llm(sol))
     print("Classes: " + " | ".join(f"{k}: {classes[k]}" for k in ("A1", "A2", "B", "C", "D")))
-    print(f"Solicitações com alerta do LLM para o regulador (não mudam a classe): {por_llm}")
+    print(f"Solicitações com ponto apontado pelo Jev: {por_llm}")
     print(f"Cache: {settings.llm_cache_path}")
 
 

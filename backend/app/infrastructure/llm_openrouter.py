@@ -1,8 +1,8 @@
 """Extrator de sinais de alarme por LLM via OpenRouter (modelo Jev, da TypeSafe).
 
-Endpoint de decisões (/api/alpha/decisions): para cada frase do texto, o Jev escolhe uma
-categoria de alarme (ou "nenhum") com probabilidade. O LLM só APONTA a frase (I-05); o domínio
-valida (`domain/swalis.py`) e o sinal vira alerta para o regulador, sem mudar a classe.
+Endpoint de decisões (/api/alpha/decisions): para cada frase do texto, o Jev escolhe qual ponto
+do SWALIS ela descreve (ou "nenhum") com probabilidade. O LLM só APONTA e CITA a frase (I-05);
+o domínio valida e as regras cruzam os pontos para decidir a classe (`domain/swalis.py`).
 Respostas ficam em cache num JSON para a demo não depender de rede: mesma entrada
 (modelo + versão das perguntas + texto) devolve sempre o mesmo resultado.
 """
@@ -22,20 +22,35 @@ from app.domain.texto import frases
 log = logging.getLogger(__name__)
 
 URL = "https://openrouter.ai/api/alpha/decisions"
-VERSAO_PROMPT = "sinais-v2-decisoes"
-# Probabilidade mínima da categoria para virar alerta (provisório, ajustável).
-PROB_MINIMA = 0.7
+VERSAO_PROMPT = "pontos-v5-decisoes"
+# Guarda no cache tudo a partir desta probabilidade; o domínio decide o que conta ou vai a revisar.
+PROB_MINIMA = 0.4
 
 # Jev é um modelo de DECISÕES: não escreve texto, responde perguntas com probabilidades.
-# Por isso perguntamos frase a frase; a citação é a própria frase (literal por construção).
+# Por isso perguntamos frase a frase qual ponto do SWALIS ela descreve; a citação é a própria
+# frase (literal por construção). Quem transforma pontos em classe são as regras do domínio.
+# Descrições ancoradas na tabela SWALIS (data/referencias/swalis.csv), não nos textos do dataset.
 CRITERIOS = {
-    CategoriaSinal.RISCO_VIDA.value: "obstrução, encarceramento, irredutibilidade, sangramento ativo, "
-                                     "infecção grave, instabilidade cardíaca/respiratória, "
-                                     "risco de perda de órgão ou função",
-    CategoriaSinal.SUSPEITA_MALIGNIDADE.value: "perda de peso, crescimento rápido, linfonodo suspeito, "
-                                               "marcador tumoral em alta",
-    CategoriaSinal.SINTOMA_GRAVE.value: "paciente acamado, incapacitado, quedas, úlcera de pressão",
-    "nenhum": "nenhum sinal de alarme presente, ou o sinal está negado (sem, nega, ausência de, descarta)",
+    CategoriaSinal.OBSTRUCAO.value: "obstrução ou risco de estrangulamento AGORA: hérnia encarcerada, "
+                                    "irredutível ou que não volta, suboclusão/obstrução intestinal, "
+                                    "retenção urinária aguda",
+    CategoriaSinal.RISCO_VIDA.value: "risco de vida se esperar: sangramento ativo ou com transfusão, "
+                                     "sepse, colangite/icterícia, angina instável ou em repouso, síncope, "
+                                     "insuficiência respiratória, compressão de via aérea",
+    CategoriaSinal.PERDA_FUNCAO.value: "risco de perda IRREVERSÍVEL de órgão ou função se esperar: rim com "
+                                       "hidronefrose e função caindo, glaucoma agudo, dano neurológico ou "
+                                       "atrofia progressiva",
+    CategoriaSinal.CANCER_CONFIRMADO.value: "câncer/neoplasia maligna DO PRÓPRIO PACIENTE confirmada "
+                                            "por biópsia ou anatomopatológico",
+    CategoriaSinal.SUSPEITA_MALIGNIDADE.value: "suspeita de câncer DO PRÓPRIO PACIENTE ainda não confirmada: perda de peso, "
+                                               "crescimento rápido, linfonodo suspeito, marcador subindo",
+    CategoriaSinal.DOR_INTENSA.value: "dor intensa, incapacitante ou em repouso",
+    CategoriaSinal.SINTOMA_GRAVE.value: "incapacidade importante: acamado, dependente de terceiros, quedas "
+                                        "de repetição, úlcera de pressão, não consegue andar",
+    CategoriaSinal.SINTOMA_MODERADO.value: "dor ou limitação moderada: dor aos esforços, sintomas que "
+                                           "atrapalham atividades, baixa visão por catarata",
+    "nenhum": "nada disso, só dado administrativo/histórico, antecedente familiar (mãe, pai, irmã…), "
+              "ou o achado está negado (sem, nega, nunca, ausência de, descarta)",
 }
 
 class ExtratorSinaisLLM:
@@ -74,7 +89,8 @@ class ExtratorSinaisLLM:
                 return []
             with self._lock:
                 self._cache[chave] = brutos
-        return [SinalTexto(CategoriaSinal(b["categoria"]), b["termo"], b["trecho"], fonte, "llm")
+        return [SinalTexto(CategoriaSinal(b["categoria"]), b["termo"], b["trecho"], fonte, "llm",
+                           b.get("confianca", 1.0))
                 for b in brutos if b.get("categoria") in CategoriaSinal._value2member_map_]
 
     def _chamar(self, texto: str) -> list[dict]:
@@ -85,7 +101,7 @@ class ExtratorSinaisLLM:
             f"frase_{i}": {
                 "type": "choice",
                 "instructions": "Texto clínico de fila de cirurgia eletiva. Não classifique o paciente. "
-                                f'Qual sinal de alarme está PRESENTE nesta frase: "{frase}"?',
+                                f'Qual achado clínico está PRESENTE nesta frase: "{frase}"?',
                 "criteria": CRITERIOS,
             }
             for i, frase in enumerate(lista)
@@ -100,7 +116,8 @@ class ExtratorSinaisLLM:
             categoria = r.get("choice")
             prob = (r.get("probabilities") or {}).get(categoria, 0)
             if categoria in CategoriaSinal._value2member_map_ and prob >= PROB_MINIMA:
-                sinais.append({"categoria": categoria, "termo": f"jev p={prob:.2f}", "trecho": frase})
+                sinais.append({"categoria": categoria, "termo": "jev", "trecho": frase,
+                               "confianca": round(prob, 2)})
         return sinais
 
     def salvar_cache(self) -> None:

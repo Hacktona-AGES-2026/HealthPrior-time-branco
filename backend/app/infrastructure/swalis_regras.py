@@ -1,7 +1,8 @@
-"""SWALIS por regras (SW-01..SW-04): implementa o contrato C-07 (`SwalisScorer`).
+"""SWALIS por pontos + regras (SW-01..SW-04): implementa o contrato C-07 (`SwalisScorer`).
 
-Sinais do texto: palavra-chave com negação (mudam a classe) + LLM opcional (só alertas, I-05).
-O score dentro da classe continua sendo o % do prazo consumido, como no stub.
+Pontos do texto: palavra-chave com negação + Jev (frase citada, validada no domínio). As regras
+de `domain/swalis.py` cruzam os pontos e decidem a classe; cada motivo diz de onde veio.
+O score dentro da classe continua sendo o % do prazo consumido.
 """
 from __future__ import annotations
 
@@ -16,8 +17,6 @@ from app.domain.swalis import (
     ClassificacaoSwalis,
     SinalTexto,
     classificar,
-    alerta_redundante,
-    coberto_por_palavra_chave,
     sinais_por_palavra_chave,
     validar_sinal_llm,
 )
@@ -38,17 +37,15 @@ class SwalisRegras:
             texto = getattr(solicitacao, fonte) or ""
             sinais += sinais_por_palavra_chave(texto, fonte)
             if self.extrator:
-                # Só o que a palavra-chave não pegou, com trecho literal e não negado.
-                sinais += [s for s in self.extrator.extrair(texto, fonte)
-                           if validar_sinal_llm(s, texto) and not coberto_por_palavra_chave(s)
-                           and not alerta_redundante(s, solicitacao.cid_principal)]
+                # Frase literal e não negada (o Jev já diz "nenhum" para negação; checamos de novo).
+                sinais += [s for s in self.extrator.extrair(texto, fonte) if validar_sinal_llm(s, texto)]
         return sinais
 
     def classificar(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ClassificacaoSwalis:
         return classificar(solicitacao.cid_principal, solicitacao.intensidade_dor_eva,
                            solicitacao.limitacao_funcional, eventos, self.sinais(solicitacao))
 
-    def alertas_llm(self, solicitacao: Solicitacao) -> list[SinalTexto]:
+    def pontos_llm(self, solicitacao: Solicitacao) -> list[SinalTexto]:
         return [s for s in self.sinais(solicitacao) if s.origem == "llm"]
 
     def calcular(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ResultadoScore:
@@ -61,10 +58,12 @@ class SwalisRegras:
                           + "; ".join(c.progressao.motivos), "regra"),
                    Motivo("eixo_sintoma", f"sintoma {c.sintoma.nivel}: "
                           + "; ".join(c.sintoma.motivos), "regra")]
-        motivos += [Motivo(s.categoria.value, s.trecho, s.fonte) for s in c.sinais]
-        # Alertas do LLM: o regulador vê o trecho; a classe não muda por eles.
-        motivos += [Motivo(f"alerta_llm:{s.categoria.value}", s.trecho, s.fonte)
-                    for s in sinais if s.origem == "llm"]
+        # Trilha de auditoria: todos os pontos achados, com origem (palavra-chave ou Jev p=…).
+        motivos += [Motivo(f"ponto:{s.categoria.value}:{s.origem}", s.trecho, s.fonte,
+                           ref=f"{s.confianca:.2f}") for s in c.sinais]
+        # Pontos incertos do Jev: não mudam a classe, vão para o regulador revisar.
+        motivos += [Motivo(f"revisar:{s.categoria.value}", s.trecho, s.fonte, ref=f"{s.confianca:.2f}")
+                    for s in c.revisar]
         return ResultadoScore(c.classe, prazo, pct, pct, motivos, self.versao_regras)
 
 
