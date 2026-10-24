@@ -3,6 +3,7 @@ import { Check, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { resolverPendencia, type Pendencia, type Resolucao } from "@/api/cliente"
 import { ACOES, acoesDaRegra, rotuloDesfecho } from "@/lib/pendencias"
+import { mensagemDeErro } from "@/lib/mensagens"
 import { usuarioAtual } from "@/lib/usuario"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -42,17 +43,17 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
       })
       const desfecho = rotuloDesfecho(r.status_fila)
       if (r.fila_publicada) {
-        toast.success(`${p.pendencia_id} resolvida`, { description: `${desfecho} Fila recalculada e publicada.`.trim() })
+        toast.success("Pendência resolvida", { description: `${desfecho} Fila atualizada.`.trim() })
       } else {
-        toast.warning(`${p.pendencia_id} resolvida, mas a fila não foi republicada`, {
-          description: `${desfecho} O verificador reprovou ou houve falha: a fila anterior segue valendo.`.trim(),
+        toast.warning("Pendência resolvida, mas a fila não foi atualizada", {
+          description: `${desfecho} A fila anterior continua valendo; avise a equipe técnica.`.trim(),
           duration: 10000,
         })
       }
       cancelar()
       aoResolver()
     } catch (e) {
-      toast.error(`Não foi possível resolver ${p.pendencia_id}`, { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível resolver a pendência", { description: mensagemDeErro(e) })
       if (e instanceof Error && "status" in e && e.status === 409) aoResolver() // alguém resolveu antes: atualiza a lista
     } finally {
       setEnviando(false)
@@ -68,7 +69,7 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
             key={a.resolucao}
             size="sm"
             variant={escolhida === a.resolucao ? "default" : "outline"}
-            className="h-9 sm:h-8"
+            className="h-9 lg:h-8"
             aria-pressed={escolhida === a.resolucao}
             disabled={enviando}
             onClick={() => (escolhida === a.resolucao ? cancelar() : setEscolhida(a.resolucao))}
@@ -115,10 +116,10 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
           </label>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" className="h-9 sm:h-8" onClick={confirmar} disabled={enviando || faltaObservacao}>
+            <Button size="sm" className="h-9 lg:h-8" onClick={confirmar} disabled={enviando || faltaObservacao}>
               {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} {acao.resolucao === "confirmar_saida" ? "Confirmar a saída" : `${acao.rotulo}: confirmar`}
             </Button>
-            <Button size="sm" variant="ghost" className="h-9 sm:h-8" onClick={cancelar} disabled={enviando}>
+            <Button size="sm" variant="ghost" className="h-9 lg:h-8" onClick={cancelar} disabled={enviando}>
               Cancelar
             </Button>
             <span className="text-xs text-muted-foreground sm:ml-auto">por {usuarioAtual()}</span>

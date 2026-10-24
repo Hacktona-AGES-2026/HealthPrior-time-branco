@@ -17,8 +17,7 @@ const iniciar = async () => {
   raiz.render(createElement(StrictMode, null, createElement(App)))
   if (falha) {
     const { toast } = await import("sonner")
-    const { API_URL } = await import("@/lib/api")
-    setTimeout(() => toast.warning("API indisponível: usando os dados dos CSVs (somente leitura)", { description: `${API_URL} (${String(falha)})`, duration: 10000 }), 500)
+    setTimeout(() => toast.warning("Servidor indisponível", { description: "Mostrando uma cópia dos dados, só para leitura. Suas decisões não serão salvas.", duration: 10000 }), 500)
   }
 }
 

@@ -49,8 +49,6 @@ const BINS_POSICAO: [string, number, number][] = [
 
 const grupoAlerta = (a: string) => (a.startsWith("HbA1c") ? "HbA1c acima de 8,5%" : a)
 
-// Rótulos de eixo inclinados para caberem na largura do cartão no mobile.
-const ANGULO_EIXO = { angle: -35, textAnchor: "end" as const, height: 56 }
 
 export default function PaginaAnalise() {
   const decisoes = useStore((s) => s.decisoes)
@@ -137,13 +135,13 @@ export default function PaginaAnalise() {
     <CartaoGrafico titulo="Histograma do % do prazo consumido" descricao="Acima de 100% são vencidos">
       <div className="h-48 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dados.bins} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="faixa" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} {...ANGULO_EIXO} />
-            <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+          <BarChart data={dados.bins} layout="vertical" margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" tickCount={4} />
+            <YAxis type="category" dataKey="faixa" width={76} interval={0} tick={{ fontSize: 12, fill: "var(--foreground)" }} stroke="none" />
             <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-            <ReferenceLine x="100–200%" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
-            <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={1000}>
+            <ReferenceLine y="100–200%" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
+            <Bar dataKey="n" radius={[0, 4, 4, 0]} animationDuration={0}>
               {dados.bins.map((b) => (
                 <Cell key={b.faixa} fill={b.cor} />
               ))}
@@ -158,12 +156,12 @@ export default function PaginaAnalise() {
     <CartaoGrafico titulo="Mudança de posição: atual → proposta" descricao="Quantas posições cada solicitação sobe ou desce">
       <div className="h-48 sm:h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={dados.posicoes} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="faixa" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} {...ANGULO_EIXO} />
-            <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+          <BarChart data={dados.posicoes} layout="vertical" margin={{ top: 4, right: 16, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" tickCount={4} />
+            <YAxis type="category" dataKey="faixa" width={112} interval={0} tick={{ fontSize: 12, fill: "var(--foreground)" }} stroke="none" />
             <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-            <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={900}>
+            <Bar dataKey="n" radius={[0, 4, 4, 0]} animationDuration={0}>
               {dados.posicoes.map((b) => (
                 <Cell key={b.faixa} fill={b.faixa === "igual" ? "var(--muted-foreground)" : b.sobe ? "var(--sobe)" : "var(--desce)"} />
               ))}
@@ -213,7 +211,7 @@ export default function PaginaAnalise() {
           <BarChart data={dados.porEsp} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
             <XAxis type="number" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-            <YAxis type="category" dataKey="especialidade" width={150} interval={0} tick={{ fontSize: 12, fill: "var(--foreground)" }} stroke="none" />
+            <YAxis type="category" dataKey="especialidade" width={112} interval={0} tick={{ fontSize: 12, fill: "var(--foreground)" }} stroke="none" />
             <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
             <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
             <Bar name={`1 · ${NOME_CAMADA[1]}`} dataKey="c1" stackId="c" fill={corCamada.c1} animationDuration={900} />

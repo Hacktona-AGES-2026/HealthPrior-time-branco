@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
 import { AlertTriangle, BellRing, Loader2, RefreshCw, Send } from "lucide-react"
 import { toast } from "sonner"
-import { enviarNotificacoes, listarNotificacoes, URL_API, type ListaNotificacoes, type Notificacao } from "@/api/cliente"
+import { enviarNotificacoes, listarNotificacoes, type ListaNotificacoes, type Notificacao } from "@/api/cliente"
+import { mensagemDeErro, plural } from "@/lib/mensagens"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -30,7 +31,7 @@ export default function PaginaNotificacoes() {
     listarNotificacoes(controle.signal)
       .then((dados) => setEstado({ tipo: "ok", dados }))
       .catch((e: unknown) => {
-        if (!controle.signal.aborted) setEstado({ tipo: "erro", mensagem: e instanceof Error ? e.message : "Erro inesperado" })
+        if (!controle.signal.aborted) setEstado({ tipo: "erro", mensagem: mensagemDeErro(e) })
       })
     return () => controle.abort()
   }, [tentativa])
@@ -41,9 +42,11 @@ export default function PaginaNotificacoes() {
     setEnviando(true)
     try {
       const r = await enviarNotificacoes()
-      toast.success(`${r.enviadas} enviadas, ${r.falhas} com falha`, { description: r.pendentes ? `${r.pendentes} seguem pendentes (limite por rodada).` : undefined })
+      const descricao = [r.falhas > 0 ? `${plural(r.falhas, "falhou", "falharam")}.` : "", r.pendentes > 0 ? `Restam ${r.pendentes}: envie de novo.` : ""].filter(Boolean).join(" ") || undefined
+      if (r.enviadas === 0 && r.falhas > 0) toast.error("Nenhum aviso foi enviado", { description: descricao })
+      else toast.success(plural(r.enviadas, "aviso enviado", "avisos enviados"), { description: descricao })
     } catch (e) {
-      toast.error("Não foi possível enviar", { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível enviar os avisos", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
       recarregar()
@@ -74,10 +77,10 @@ export default function PaginaNotificacoes() {
           )}
           {dados && <span className="text-sm text-muted-foreground"><b className="tabular-nums text-foreground">{dados.total}</b> mensagens</span>}
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 lg:h-7" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw aria-hidden /> Atualizar
             </Button>
-            <Button size="sm" disabled={enviando} onClick={enviar}>
+            <Button size="sm" className="h-9 lg:h-7" disabled={enviando} onClick={enviar}>
               {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />} Enviar pendentes
             </Button>
           </div>
@@ -91,8 +94,8 @@ export default function PaginaNotificacoes() {
         )}
         {estado.tipo === "erro" && (
           <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm" role="alert">
-            <p className="flex items-center gap-2 font-semibold text-destructive"><AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar</p>
-            <p className="mt-1 text-muted-foreground">{estado.mensagem} (API em <code className="rounded bg-muted px-1">{URL_API}</code>)</p>
+            <p className="flex items-center gap-2 font-semibold text-destructive"><AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar os avisos</p>
+            <p className="mt-1 text-muted-foreground">{estado.mensagem}</p>
             <Button variant="outline" size="sm" className="mt-3" onClick={recarregar}><RefreshCw aria-hidden /> Tentar de novo</Button>
           </div>
         )}
@@ -109,7 +112,7 @@ export default function PaginaNotificacoes() {
                   <Badge variant={STATUS[n.status].variante}>{STATUS[n.status].rotulo}</Badge>
                   <span className="font-medium">{MOTIVO[n.motivo]}</span>
                   <span className="font-mono text-xs text-muted-foreground">{n.solicitacao_id}</span>
-                  <span className="ml-auto font-mono text-xs text-muted-foreground">{n.notificacao_id} · {n.canal}</span>
+                  <span className="ml-auto hidden font-mono text-xs text-muted-foreground md:inline">{n.notificacao_id} · {n.canal}</span>
                 </div>
                 <p className={cn("mt-1.5 leading-snug")}>{n.texto}</p>
                 {n.detalhe && <p className="mt-1 text-xs text-muted-foreground">{n.detalhe}</p>}

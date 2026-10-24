@@ -18,19 +18,22 @@ export default function PaginaPacientes() {
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="mx-auto max-w-4xl space-y-4 p-3 md:p-6">
-        <div className="no-print flex flex-wrap items-center gap-x-2 gap-y-2">
-          <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2" onClick={fecharFicha}>
-            <ArrowLeft aria-hidden /> Pacientes
-          </Button>
-          <Button variant="link" size="sm" className="h-9 px-1 text-muted-foreground" onClick={() => abrirNaFila(paciente.id)}>
-            Voltar à fila
-          </Button>
-          <div className="ml-auto flex flex-wrap items-center gap-2">
-            <div className="w-64 max-w-full">
-              <AcoesDecisao paciente={paciente} />
-            </div>
+        <div className="no-print flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-x-2">
+            <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2" onClick={fecharFicha}>
+              <ArrowLeft aria-hidden /> Pacientes
+            </Button>
+            <Button variant="link" size="sm" className="h-9 px-1 text-muted-foreground" onClick={() => abrirNaFila(paciente.id)}>
+              Voltar à fila
+            </Button>
+            <Button variant="ghost" size="icon-sm" className="ml-auto size-9 md:hidden" onClick={() => window.print()} title="Imprimir" aria-label="Imprimir ficha">
+              <Printer aria-hidden />
+            </Button>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <AcoesDecisao paciente={paciente} variante="barra" />
             <NovoEvento solicitacaoId={paciente.id} />
-            <Button variant="ghost" size="icon-sm" className="size-9" onClick={() => window.print()} title="Imprimir" aria-label="Imprimir ficha">
+            <Button variant="ghost" size="icon-sm" className="hidden size-9 md:inline-flex" onClick={() => window.print()} title="Imprimir" aria-label="Imprimir ficha">
               <Printer aria-hidden />
             </Button>
           </div>

@@ -26,7 +26,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
   if (oculto && modo === "lateral") {
     return (
       <aside className={cn("flex w-11 shrink-0 flex-col items-center border-l py-3", className)} aria-label="Painel de aprovação recolhido">
-        <Button variant="ghost" size="icon-sm" onClick={() => setOculto(false)} title="Mostrar painel (])" aria-label="Mostrar painel de aprovação">
+        <Button variant="ghost" size="icon-sm" onClick={() => setOculto(false)} title="Mostrar painel" aria-label="Mostrar painel de aprovação">
           <PanelRightOpen aria-hidden />
         </Button>
       </aside>
@@ -41,7 +41,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
         <div className="flex items-start justify-between gap-2">
           <p className="text-sm text-muted-foreground">Selecione um paciente.</p>
           {modo === "lateral" && (
-            <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel (])" aria-label="Ocultar painel de aprovação">
+            <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel" aria-label="Ocultar painel de aprovação">
               <PanelRightClose aria-hidden />
             </Button>
           )}
@@ -54,7 +54,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
                 <span className="font-semibold text-foreground">{p.iniciais}</span> · {p.idade} anos · {p.sexo}
               </div>
               {modo === "lateral" && (
-                <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel (])" aria-label="Ocultar painel de aprovação">
+                <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel" aria-label="Ocultar painel de aprovação">
                   <PanelRightClose aria-hidden />
                 </Button>
               )}

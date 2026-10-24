@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { AlertTriangle, ClipboardList, FilterX, RefreshCw, ShieldAlert } from "lucide-react"
-import { URL_API, type Evidencia, type Pendencia, type StatusPendencia } from "@/api/cliente"
+import { type Evidencia, type Pendencia, type StatusPendencia } from "@/api/cliente"
 import { ACOES, REGRAS_PENDENCIA, STATUS_PENDENCIA, rotuloFonte } from "@/lib/pendencias"
 import { formatarData } from "@/lib/datas"
 import { cn } from "@/lib/utils"
@@ -64,7 +64,7 @@ export default function PaginaPendencias() {
 
         <div className="flex flex-wrap items-center gap-2" role="search" aria-label="Filtros de pendências">
           <Select items={ITENS_TIPO} value={tipo} onValueChange={(v) => setTipo((v ?? "todas") as TipoFiltro)}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-44" aria-label="Filtrar por tipo">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-44" aria-label="Filtrar por tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -76,7 +76,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={ITENS_REGRA} value={regra} onValueChange={(v) => setRegra(v ?? "todas")}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-64" aria-label="Filtrar por regra">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-64" aria-label="Filtrar por regra">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,7 +88,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={STATUS_PENDENCIA} value={status} onValueChange={(v) => setStatus((v ?? "aberta") as StatusPendencia)}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-40" aria-label="Filtrar por status">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-40" aria-label="Filtrar por status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +100,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           {filtrando && (
-            <Button variant="ghost" size="sm" className="h-9 sm:h-8" onClick={limpar}>
+            <Button variant="ghost" size="sm" className="h-9 lg:h-8" onClick={limpar}>
               <FilterX aria-hidden /> Limpar
             </Button>
           )}
@@ -117,7 +117,7 @@ export default function PaginaPendencias() {
                 )}
               </>
             )}
-            <Button variant="outline" size="sm" className="h-9 sm:h-8" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 lg:h-8" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw className={cn(estado.tipo === "ok" && estado.atualizando && "animate-spin")} aria-hidden /> Atualizar
             </Button>
           </div>
@@ -230,10 +230,7 @@ function ErroApi({ mensagem, onTentar }: { mensagem: string; onTentar: () => voi
         <AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar as pendências
       </p>
       <p className="mt-1 text-muted-foreground">{mensagem}</p>
-      <p className="mt-2 text-muted-foreground">
-        Confira se o back está no ar em <code className="break-all rounded bg-muted px-1">{URL_API}</code> (<code className="rounded bg-muted px-1">uvicorn app.main:app</code>, com{" "}
-        <code className="rounded bg-muted px-1">HP_USE_MOCKS=false</code> para ver os dados reais) e se a carga foi feita.
-      </p>
+      {!mensagem.includes("equipe técnica") && <p className="mt-2 text-muted-foreground">Se o problema continuar, avise a equipe técnica.</p>}
       <Button variant="outline" size="sm" className="mt-3" onClick={onTentar}>
         <RefreshCw aria-hidden /> Tentar de novo
       </Button>

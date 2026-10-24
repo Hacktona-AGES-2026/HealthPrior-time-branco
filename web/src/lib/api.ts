@@ -148,6 +148,11 @@ export type DetalheApi = {
     classe_medico: Classe | null
     classe_status: string
     versao_regras: string | null
+    score_sistema?: number | null
+    score_medico?: number | null
+    score_efetivo?: number | null
+    prazo_dias?: number | null
+    pct_prazo_consumido?: number | null
     motivos: MotivoApi[]
   }
   eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean; origem?: string | null; valor_numerico?: number | null }[]

@@ -81,7 +81,7 @@ export function SetaVariacao({ antiga, nova, animada = true }: { antiga: number;
   )
 }
 
-export const formatarPct = (pct: number) => (pct >= 1000 ? `${(pct / 1000).toFixed(1).replace(".", ",")}k%` : `${Math.round(pct)}%`)
+export const formatarPct = (pct: number) => `${Math.round(pct).toLocaleString("pt-BR")}%`
 
 export function PrazoBar({ pct, className, compacto = false }: { pct: number; className?: string; compacto?: boolean }) {
   const largura = Math.min(100, pct)

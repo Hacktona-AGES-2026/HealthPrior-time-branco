@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { AlertTriangle, CheckCircle2, Download, FileUp, Loader2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { importarSolicitacoes, URL_MODELO_CSV, type ResultadoImportacao } from "@/api/cliente"
+import { mensagemDeErro, plural } from "@/lib/mensagens"
 import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 import { Badge } from "@/components/ui/badge"
@@ -35,7 +36,7 @@ export default function PaginaImportar() {
   async function lerArquivo(f: File | undefined) {
     if (!f) return
     if (f.size > TAMANHO_MAX) {
-      toast.error("Arquivo maior que 2 MB", { description: "Divida em partes menores." })
+      toast.error("O arquivo passa de 2 MB", { description: "Divida em arquivos menores e envie um de cada vez." })
       return
     }
     setTexto(await f.text())
@@ -51,15 +52,15 @@ export default function PaginaImportar() {
       if (r.ok && r.resultado.novas > 0) {
         setTexto("")
         setArquivo(null)
-        toast.success(`${r.resultado.novas} ${r.resultado.novas === 1 ? "solicitação importada" : "solicitações importadas"}`, {
-          description: r.resultado.fila_publicada ? "Fila recalculada e publicada." : undefined,
+        toast.success(plural(r.resultado.novas, "solicitação importada", "solicitações importadas"), {
+          description: r.resultado.fila_publicada ? "Fila atualizada." : undefined,
         })
         await recarregar() // a fila e o inbox passam a mostrar as novas
       } else if (!r.ok) {
-        toast.error("Nada foi importado", { description: "Corrija os erros abaixo e envie de novo." })
+        toast.error("Nada foi importado", { description: "Corrija os erros listados abaixo e envie de novo." })
       }
     } catch (e) {
-      toast.error("Não foi possível importar", { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível importar", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
     }
@@ -79,7 +80,7 @@ export default function PaginaImportar() {
         </header>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" nativeButton={false} render={<a href={URL_MODELO_CSV} download />}>
+          <Button variant="outline" className="h-10 sm:h-9" nativeButton={false} render={<a href={URL_MODELO_CSV} download />}>
             <Download aria-hidden /> Baixar modelo
           </Button>
           <span className="text-xs text-muted-foreground">
@@ -96,7 +97,7 @@ export default function PaginaImportar() {
           <Upload className="mx-auto mb-2 size-5 text-muted-foreground" aria-hidden />
           <p>
             Arraste o arquivo aqui ou{" "}
-            <button type="button" className="font-medium text-primary underline underline-offset-2" onClick={() => entrada.current?.click()}>
+            <button type="button" className="inline-flex min-h-9 items-center font-medium text-primary underline underline-offset-2" onClick={() => entrada.current?.click()}>
               escolha um CSV
             </button>
           </p>
@@ -110,11 +111,11 @@ export default function PaginaImportar() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <Button onClick={enviar} disabled={enviando || registros === 0}>
+          <Button className="h-10 w-full sm:h-9 sm:w-auto" onClick={enviar} disabled={enviando || registros === 0}>
             {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <FileUp aria-hidden />} Importar {registros > 0 ? `${registros} ${registros === 1 ? "linha" : "linhas"}` : ""}
           </Button>
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={publicar} onChange={(e) => setPublicar(e.target.checked)} /> Republicar a fila depois de importar
+          <label className="flex min-h-9 items-center gap-2 text-sm">
+            <input type="checkbox" className="size-4" checked={publicar} onChange={(e) => setPublicar(e.target.checked)} /> Republicar a fila depois de importar
           </label>
         </div>
 
@@ -151,7 +152,7 @@ function Resultado({ ok, r, aoVerFila }: { ok: boolean; r: ResultadoImportacao; 
           </tbody>
         </table>
       )}
-      {ok && r.novas > 0 && <Button variant="outline" size="sm" onClick={aoVerFila}>Ver na fila</Button>}
+      {ok && r.novas > 0 && <Button variant="outline" className="h-10 sm:h-9" onClick={aoVerFila}>Ver na fila</Button>}
     </section>
   )
 }

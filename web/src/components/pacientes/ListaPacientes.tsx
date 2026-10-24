@@ -64,7 +64,7 @@ export function ListaPacientes() {
                     </span>
                     <ClasseBadge classe={classeEmVigor(p)} />
                     <span className="hidden w-28 shrink-0 text-right text-xs text-muted-foreground tabular-nums sm:block">{p.dias_em_fila} dias em fila</span>
-                    <span className="w-20 shrink-0 text-right text-xs font-medium tabular-nums">Posição #{p.posicao}</span>
+                    <span className="w-12 shrink-0 text-right text-xs font-medium tabular-nums sm:w-24"><span className="hidden sm:inline">Posição </span>#{p.posicao}</span>
                   </button>
                 </li>
               )
