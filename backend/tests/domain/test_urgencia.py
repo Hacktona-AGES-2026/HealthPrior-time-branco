@@ -10,6 +10,8 @@ from app.domain.urgencia import (
     motivos_urgencia,
     tem_biopsia_positiva,
     tem_evento_de_piora_na_espera,
+    tem_sinal_alarme,
+    tem_sinal_alarme_nao_negado,
 )
 
 ENTRADA = date(2025, 1, 1)
@@ -84,6 +86,32 @@ def test_texto_com_colangite_gera_sinal_alarme():
     s = sinais(justificativa_clinica="paciente com episodio de colangite")
 
     assert "sinal_alarme" in motivos_urgencia(s)
+
+
+def test_alarme_negado_nao_gera_sinal_alarme():
+    s = sinais(justificativa_clinica="Hernia inguinal redutivel, abaulamento aos esforcos. Sem sinais de encarceramento.")
+
+    assert "sinal_alarme" not in motivos_urgencia(s)
+    assert is_urgente(s) is False
+
+
+def test_alarme_afirmado_depois_de_negacao_continua_valendo():
+    s = sinais(justificativa_clinica="Sem sinais de encarceramento ontem, mas hoje com encarceramento da hernia")
+
+    assert "sinal_alarme" in motivos_urgencia(s)
+
+
+def test_um_alarme_negado_e_outro_afirmado_geram_alarme():
+    s = sinais(justificativa_clinica="Sem sinais de encarceramento. Icterica ha dois dias.")
+
+    assert "sinal_alarme" in motivos_urgencia(s)
+
+
+def test_tem_sinal_alarme_segue_o_verificador_e_ignora_negacao():
+    texto = "Sem sinais de encarceramento."
+
+    assert tem_sinal_alarme(texto) is True
+    assert tem_sinal_alarme_nao_negado(texto) is False
 
 
 def test_evento_de_piora_depois_da_entrada_conta():

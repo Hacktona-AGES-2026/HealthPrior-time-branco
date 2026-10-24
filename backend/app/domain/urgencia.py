@@ -18,6 +18,7 @@ from datetime import date
 
 from app.domain.cid import is_cid_urgente
 from app.domain.models import Evento
+from app.domain.texto import buscar_termos
 
 _KW_ALARME = re.compile(
     r"encarcer|estrangul|colangite|icter|pancreatite|enterorragia|melena|hematemese|suboclus|"
@@ -48,7 +49,13 @@ class SinaisUrgencia:
 
 
 def tem_sinal_alarme(texto: str | None) -> bool:
+    """Palavra-chave de alarme em qualquer posição, como o verificador oficial (sem olhar negação)."""
     return bool(texto and _KW_ALARME.search(texto.lower()))
+
+
+def tem_sinal_alarme_nao_negado(texto: str | None) -> bool:
+    """Como `tem_sinal_alarme`, mas ignora o termo negado: "sem sinais de encarceramento" não é alarme."""
+    return any(not oc.negado for oc in buscar_termos(texto, _KW_ALARME))
 
 
 def evento_e_piora(tipo_evento: str, resultado: str | None) -> bool:
@@ -90,7 +97,7 @@ def motivos_urgencia(sinais: SinaisUrgencia) -> list[str]:
         motivos.append("evento_piora")
     if sinais.tem_biopsia_positiva:
         motivos.append("biopsia_positiva")
-    if tem_sinal_alarme(sinais.justificativa_clinica):
+    if tem_sinal_alarme_nao_negado(sinais.justificativa_clinica):
         motivos.append("sinal_alarme")
     return motivos
 
