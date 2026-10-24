@@ -1,50 +1,96 @@
 name: CI
 
 on:
+  # Branches de feature rodam pelo pull_request; push só na main (antes cada push de PR rodava 2x).
   push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read # paths-filter lista os arquivos do PR pela API
+
+# Push novo no mesmo PR cancela a run anterior. Na main cada merge roda até o fim.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  PG: postgresql+psycopg://healthprior:healthprior@localhost:5432
 
 jobs:
   backend:
     runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: healthprior
-          POSTGRES_PASSWORD: healthprior
-          POSTGRES_DB: healthprior
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U healthprior"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: backend
     steps:
+      # PR só de web/, docs ou .md pula o resto. O filtro fica dentro do job (e não em `on.paths`)
+      # para o check "backend" sempre reportar, mesmo se for obrigatório na main.
+      - uses: dorny/paths-filter@v3
+        id: mudou
+        if: github.event_name == 'pull_request'
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+              - 'data/**'
+              - 'src/**'
+              - '.github/workflows/ci.yml'
+      - name: Decide se roda
+        id: roda
+        working-directory: .
+        run: echo "sim=${{ github.event_name != 'pull_request' || steps.mudou.outputs.backend == 'true' }}" >> "$GITHUB_OUTPUT"
+
+      # Postgres em background: o pull e o initdb correm junto com checkout + instalação.
+      # (Um `services:` seguraria o job até ficar healthy.) Banco descartável: tmpfs e sem fsync.
+      - name: Sobe o Postgres (background)
+        if: steps.roda.outputs.sim == 'true'
+        working-directory: .
+        run: |
+          nohup docker run --name pg -p 5432:5432 --tmpfs /var/lib/postgresql/data \
+            -e POSTGRES_USER=healthprior -e POSTGRES_PASSWORD=healthprior -e POSTGRES_DB=healthprior \
+            postgres:16-alpine -c fsync=off -c synchronous_commit=off -c full_page_writes=off \
+            > "$RUNNER_TEMP/pg.log" 2>&1 &
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+        if: steps.roda.outputs.sim == 'true'
+      - uses: astral-sh/setup-uv@v6
+        if: steps.roda.outputs.sim == 'true'
         with:
           python-version: "3.12"
-          cache: pip
-          cache-dependency-path: backend/requirements.txt
-      - run: pip install -r requirements.txt
+          activate-environment: true
+          enable-cache: true
+          cache-dependency-glob: backend/requirements.txt
+      - if: steps.roda.outputs.sim == 'true'
+        run: uv pip install -r requirements.txt
+      - name: Espera o Postgres
+        if: steps.roda.outputs.sim == 'true'
+        # Pela porta TCP: durante o initdb o servidor temporário só escuta no socket unix.
+        run: |
+          for _ in $(seq 120); do
+            docker exec pg pg_isready -q -h 127.0.0.1 -U healthprior 2>/dev/null && exit 0
+            sleep 0.5
+          done
+          cat "$RUNNER_TEMP/pg.log"; exit 1
+
       - name: Testes
-        run: pytest -q
+        if: steps.roda.outputs.sim == 'true'
+        # -n auto: um worker por CPU, cada um com seus bancos healthprior_test_gwN (tests/conftest.py).
+        run: pytest -q -n auto --durations=10
         env:
-          TEST_DATABASE_URL: postgresql+psycopg://healthprior:healthprior@localhost:5432/healthprior_test
+          TEST_DATABASE_URL: ${{ env.PG }}/healthprior_test
       - name: Carga e publicação da fila (verificador oficial)
+        if: steps.roda.outputs.sim == 'true'
         env:
-          HP_DB_URL: postgresql+psycopg://healthprior:healthprior@localhost:5432/healthprior
+          HP_DB_URL: ${{ env.PG }}/healthprior
         run: |
           python -m app.cli init-db
           python -m app.cli carga
           python -m app.cli gerar-fila
       - uses: actions/upload-artifact@v4
-        if: always()
+        if: always() && steps.roda.outputs.sim == 'true'
         with:
           name: fila_priorizada
           path: backend/output/fila_priorizada.csv
