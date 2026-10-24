@@ -43,6 +43,13 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-34 | 2026-10-24 | Separar gerar (US-09, `GerarFila`) de publicar (US-10, `PublicarFila`) | Responsabilidade única; cada parte testável | Um caso de uso só com tudo | US-09/10 |
 | D-35 | 2026-10-24 | `LinhaFila` no domínio; `FilaRepository` usa `list[LinhaFila]` | Repositório precisa da justificativa; domínio não importa aplicação | Novo tipo duplicado na infraestrutura | US-09 |
 | D-36 | 2026-10-24 | `GET /fila/export` gera a fila na hora (US-09); na US-10 passa a servir só a fila publicada | Endpoint funcional já; segurança vem com a US-10 | Esperar a US-10 | US-09 |
+| D-37 | 2026-10-24 | Gerar um arquivo candidato e só promovê-lo a `fila_priorizada.csv` se o verificador aprovar | O arquivo bom anterior nunca é sobrescrito (I-07) | Sobrescrever direto | US-10 |
+| D-38 | 2026-10-24 | Publicar = substituir a fila inteira em `fila_publicada` na unidade de trabalho; reprovação/erro → rollback | Fila publicada sempre consistente | Atualizar linha a linha | US-10 |
+| D-39 | 2026-10-24 | Ordem: salvar no banco → copiar o arquivo → commit | Falha na cópia desfaz o banco; arquivo e banco seguem iguais | Copiar depois do commit | US-10 |
+| D-40 | 2026-10-24 | **Substitui D-36.** `GET /fila/export` serve só a fila publicada; 409 `FILA_NAO_PUBLICADA` se não houver | Ninguém baixa fila reprovada | Gerar na hora | US-10 |
+| D-41 | 2026-10-24 | `POST /admin/publicar-fila` responde 200 (publicada) ou 422 (reprovada) com o mesmo corpo | Front/demo sabem o resultado | Sempre 200 | US-10 |
+| D-42 | 2026-10-24 | CI (GitHub Actions) roda pytest com Postgres e a publicação real; falha se o verificador reprovar | Regra de ouro garantida a cada push/PR | CI sem banco | US-10 |
+| D-43 | 2026-10-24 | Relógio da publicação injetado no caso de uso | Sem `datetime.now()` na aplicação; testes determinísticos | `datetime.now()` direto | US-10 |
 
 ## Solicitações fora da fila
 

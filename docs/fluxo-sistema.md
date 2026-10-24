@@ -285,6 +285,8 @@ Documentado à parte. Este fluxo só depende do **contrato**:
 - A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida pela camada 1 (todo oncológico no topo), qualquer que seja a camada 2. Por isso a camada 2 usa só sinais clínicos (D-27), e não o complemento completo da definição do verificador.
 
 ### C-12 · Verificador e publicação
+> **Implementado (US-09/US-10).** Decisões D-34..D-43; registros em `docs/implementacao/US-09-gerar-fila-banco.md` e `US-10-verificador-portao.md`.
+
 - Antes de publicar, roda `verificar_fila_priorizada.py`.
 - **Passa** → publica `fila_priorizada.csv`.
 - **Falha** → **não publica**, mantém a fila anterior e alerta a equipe técnica (não o regulador). Publicar uma fila errada é pior do que manter a de ontem.

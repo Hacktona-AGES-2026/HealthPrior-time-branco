@@ -146,7 +146,7 @@ Como **equipe**, quero gerar o CSV de entrega com justificativa legível por pac
 - **Depende de:** US-08
 
 #### US-10 · Verificador como portão — **P0** · Back
-> **Status: 🟡 parcial** — o comando provisório roda o verificador e sai com erro se falhar. Falta persistir a fila publicada e o CI.
+> **Status: ✅ implementada** (branch `feat/US-10-verificador-portao`): `PublicarFila` (candidato → verificador → publica no banco e no arquivo), `POST /admin/publicar-fila`, `GET /fila/export` só da fila publicada e CI no GitHub Actions. Registro: `docs/implementacao/US-10-verificador-portao.md` (D-37..D-43). Banner no front (P2) pendente.
 
 Como **equipe**, quero que a fila só seja publicada se passar no verificador oficial, para nunca entregar uma fila desclassificada (I-07).
 - **CA**
