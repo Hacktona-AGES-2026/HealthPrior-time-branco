@@ -51,7 +51,7 @@ def test_falha_do_llm_nao_derruba(tmp_path):
 
 
 def test_probabilidade_baixa_e_ignorada(tmp_path):
-    ext = _extrator(tmp_path, lambda req: httpx.Response(200, json=_resposta_decisoes(["risco_vida"], 0.5)))
+    ext = _extrator(tmp_path, lambda req: httpx.Response(200, json=_resposta_decisoes(["risco_vida"], 0.3)))
     assert ext.extrair("Dor leve.", "observacoes") == []
 
 
@@ -85,19 +85,29 @@ def test_dataset_inteiro_sem_llm(dataset):
     assert r.classe_sistema is Classe.A2 and r.motivos[0].sinal == "eixo_progressao"
 
 
-def test_llm_vira_alerta_sem_mudar_a_classe(tmp_path, dataset):
-    sols, eventos = dataset
-    s = next(s for s in sols if s.solicitacao_id == "SOL-2026-00239")
-    texto = s.justificativa_clinica
-    # Frase 0 de "Hernia inguinal bilateral redutivel, abaulamento aos esforcos. Sem sinais…"
+def test_ponto_do_jev_entra_na_classe_com_trilha(tmp_path, dataset):
+    sols, _ = dataset
+    s = next(s for s in sols if s.solicitacao_id == "SOL-2026-00239")  # hérnia redutível, classe C
+    # Frase 0 "Hernia inguinal bilateral redutivel, abaulamento aos esforcos" → obstrução (forçado)
     ext = _extrator(tmp_path, lambda req: httpx.Response(200, json=_resposta_decisoes(
-        ["risco_vida", "nenhum"])))
+        ["obstrucao", "nenhum"])))
     sem_llm = SwalisRegras().calcular(s, [])
     com_llm = SwalisRegras(ext).calcular(s, [])
-    assert com_llm.classe_sistema is sem_llm.classe_sistema
-    [alerta] = [m.evidencia for m in com_llm.motivos
-                if m.sinal == "alerta_llm:risco_vida" and m.fonte == "justificativa_clinica"]
-    assert alerta == "Hernia inguinal bilateral redutivel, abaulamento aos esforcos" and alerta in texto
+    assert sem_llm.classe_sistema is Classe.C and com_llm.classe_sistema is Classe.A1
+    [ponto] = [m for m in com_llm.motivos
+               if m.sinal == "ponto:obstrucao:llm" and m.fonte == "justificativa_clinica"]
+    assert ponto.evidencia == "Hernia inguinal bilateral redutivel, abaulamento aos esforcos"
+    assert ponto.ref == "0.95"
+
+
+def test_ponto_incerto_aparece_como_revisar(tmp_path, dataset):
+    sols, _ = dataset
+    s = next(s for s in sols if s.solicitacao_id == "SOL-2026-00239")
+    ext = _extrator(tmp_path, lambda req: httpx.Response(200, json=_resposta_decisoes(
+        ["risco_vida", "nenhum"], prob=0.5)))
+    r = SwalisRegras(ext).calcular(s, [])
+    assert r.classe_sistema is Classe.C
+    assert any(m.sinal == "revisar:risco_vida" for m in r.motivos)
 
 
 def test_geracao_usa_so_cache(tmp_path):

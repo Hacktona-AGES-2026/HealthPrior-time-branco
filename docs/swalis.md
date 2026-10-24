@@ -1,42 +1,65 @@
-# SWALIS por regras (SW-01..SW-04)
+# SWALIS por pontos + regras (SW-01..SW-04)
 
-Implementa o contrato C-07 (`docs/fluxo-sistema.md`). Código: `backend/app/domain/swalis.py` (regras),
-`domain/texto.py` (negação), `infrastructure/swalis_regras.py` (composição) e
-`infrastructure/llm_openrouter.py` (extração por LLM).
+Implementa o contrato C-07 (`docs/fluxo-sistema.md`). Código: `backend/app/domain/swalis.py` (pontos e
+regras), `domain/texto.py` (frases e negação), `infrastructure/swalis_regras.py` (composição) e
+`infrastructure/llm_openrouter.py` (Jev).
 
-## Fluxo
+## Fluxo em duas etapas
 
 ```
-justificativa_clinica + observacoes
-   ├─ palavra-chave com negação (sempre)          → SinalTexto(origem="regra")  → muda a classe
-   └─ LLM Jev via OpenRouter (opcional, em cache) → SinalTexto(origem="llm")    → só ALERTA
-        só entra se o trecho existe LITERALMENTE no texto, não está negado
-        e a palavra-chave ainda não pegou
-eixo_progressao(CID, eventos, sinais) → 0..3
-eixo_sintoma(CID, dor, limitação, sinais) → 0..2
-cruzar_eixos → A1..D   (score = % do prazo consumido, como no stub)
+1. PONTOS (o que o paciente tem, cada um com evidência citada)
+   campos      CID, dor EVA, limitação, eventos (biópsia)         → origem "campo/CID"
+   palavra-chave com negação (justificativa + observações)       → origem "palavra-chave"
+   Jev: para cada frase, qual ponto ela descreve (+ probabilidade) → origem "Jev p=0,98"
+        frase literal (citação por construção), não negada
+        p ≥ 0,7 conta · 0,4 ≤ p < 0,7 vai para "revisar" · p < 0,4 ignorado
+
+2. DECISÃO (regras determinísticas)
+   eixo de progressão = MAIOR nível entre os pontos de progressão (0..3)
+   eixo de sintoma    = MAIOR nível entre os pontos de sintoma (0..2)
+   tabela SWALIS → A1..D   (score = % do prazo consumido)
 ```
 
-O LLM **extrai e cita**; não devolve classe e seus sinais **não mudam a classe** (I-05): a categoria
-do sinal vem do LLM, então usá-la na tabela seria o LLM decidindo. Os alertas aparecem nos motivos
-(`alerta_llm:<categoria>`) para o regulador decidir. A classe sai da tabela abaixo e continua
-`sugerida_nao_confirmada` até o regulador decidir (I-04).
+- **Rastreável:** cada motivo do eixo diz o ponto, a frase/campo e a origem. Ex.:
+  `progressão 3: "Hernia irredutivel nas ultimas semanas" → obstrucao (Jev p=1.00)`.
+- **O Jev só sobe, nunca baixa:** como o eixo é o máximo, sem o Jev a classe é a das regras; com ele,
+  só pode ficar igual ou maior.
+- **Quem decide é a tabela** e a classe continua `sugerida_nao_confirmada` até o regulador (I-04, I-05).
+- Sem chave e sem cache, roda só com campos + palavra-chave (o comportamento anterior).
 
-## SW-01 · Eixo de progressão
+## Pontos
 
-| Nível | Quando |
+| Ponto | Eixo · nível | Palavra-chave | Jev (descrição enviada) |
+|---|---|---|---|
+| `obstrucao` | progressão 3 | encarcer, estrangul, suboclus | obstrução/risco de estrangulamento agora, hérnia irredutível, retenção urinária aguda |
+| `risco_vida` | progressão 3 | colangite, icter, melena, sepse, transfund, síncope… | sangramento ativo/transfusão, sepse, colangite, angina instável, insuficiência respiratória, compressão de via aérea |
+| `perda_funcao` | progressão 3 | hidronefrose, perda de função, glaucoma facomórfico, dano neurológico | risco de perda irreversível de órgão/função |
+| `cancer_confirmado` | progressão 2 | — | câncer confirmado por biópsia/AP |
+| `suspeita_malignidade` | progressão 1 | perda ponderal, disfagia, rouquidão, crescimento rápido… | suspeita de câncer ainda não confirmada |
+| `dor_intensa` | sintoma 2 | — | dor intensa, incapacitante ou em repouso |
+| `sintoma_grave` | sintoma 2 | acamad, úlcera de pressão, quedas de repetição | acamado, dependente, quedas, não anda |
+| `sintoma_moderado` | sintoma 1 | — | dor/limitação moderada, baixa visão por catarata |
+
+As descrições do Jev são ancoradas nos exemplos da tabela SWALIS (`data/referencias/swalis.csv`),
+não nos textos do dataset.
+
+## SW-01 · Eixo de progressão (maior nível entre)
+
+| Nível | Pontos |
 |---|---|
-| 3 | CID de obstrução/instabilidade (K40.0, K40.3, K42.0, K43.0, N13.2, I20.0) ou sinal `risco_vida` no texto |
-| 2 | CID C* (exceto C44) ou biópsia positiva |
-| 1 | Lesão incerta (D37–D48, R91), carcinoma de pele (C44) ou sinal `suspeita_malignidade` |
-| 0 | Nenhum risco de progressão registrado |
+| 3 | CID de obstrução/instabilidade (K40.0, K40.3, K42.0, K43.0, N13.2, I20.0); `obstrucao`, `risco_vida`, `perda_funcao` |
+| 2 | CID C* (exceto C44); biópsia positiva; `cancer_confirmado` |
+| 1 | Lesão incerta (D37–D48, R91); C44; `suspeita_malignidade` |
+| 0 | nenhum ponto |
 
-## SW-02 · Eixo de sintoma
+C44 (pele não melanoma) fica em 1 mesmo com biópsia ou texto de câncer: confirmam o próprio C44.
 
-| Nível | Quando |
+## SW-02 · Eixo de sintoma (maior nível entre)
+
+| Nível | Pontos |
 |---|---|
-| 2 | Dor 7–10, limitação grave, CID com complicação (I83.2, K80.0) ou sinal `sintoma_grave` |
-| 1 | Dor 4–6 ou limitação moderada; também quando dor **ou** limitação está vazia |
+| 2 | Dor 7–10; limitação grave; CID com complicação (I83.2, K80.0); `dor_intensa`, `sintoma_grave` |
+| 1 | Dor 4–6; limitação moderada; dor **ou** limitação vazia (nunca rebaixar por falta de dado); `sintoma_moderado` |
 | 0 | Dor 0–3 e limitação nenhuma/leve |
 
 ## SW-03 · Tabela
@@ -48,43 +71,56 @@ do sinal vem do LLM, então usá-la na tabela seria o LLM decidindo. Os alertas 
 | 1 | B |
 | 0 | sintoma 0 → D · 1 → C · 2 → B |
 
-A justificativa mostra os dois eixos e o motivo de cada um.
-
 ## SW-04 · Negação
 
-Termo precedido de "sem", "nega", "ausência de", "não há" ou "descarta" **na mesma oração** é ignorado.
-A oração termina em `. ; : , ! ?` ou em "mas", "porém", "entretanto", "contudo", "evoluiu":
-"Sem melhora, evoluiu com suboclusão" mantém a suboclusão. Testado nas 10 hérnias K40.9 do dataset
-com "Sem sinais de encarceramento" (`tests/domain/test_swalis.py`).
+Termo precedido de "sem", "nega", "nunca", "ausência de", "não há", "não houve" ou "descarta" **na mesma
+oração** é ignorado. A oração termina em `. ; : , ! ?` ou em "mas", "porém", "entretanto", "contudo",
+"evoluiu": "Sem melhora, evoluiu com suboclusão" mantém a suboclusão. Vale para a palavra-chave e
+também para as frases apontadas pelo Jev. Testado nas 10 hérnias K40.9 com "Sem sinais de encarceramento".
 
-## LLM (Jev 1.14)
+## Jev 1.14
 
-- Modelo `typesafe/jev-1.14` (OpenRouter). É um modelo de **decisões**: não escreve texto e não
-  funciona em `/chat/completions`. Usa `POST https://openrouter.ai/api/alpha/decisions` com
-  `{model, state, questions}`; cada pergunta é `choice` e volta com `probabilities`.
-- Como usamos: o texto é dividido em frases (`domain/texto.frases`) e, para cada frase, o Jev escolhe
-  `risco_vida`, `suspeita_malignidade`, `sintoma_grave` ou `nenhum`. Vira alerta se a probabilidade
-  for ≥ 0,7 (`PROB_MINIMA`), a frase não estiver negada, a palavra-chave ainda não tiver pegado e
-  não for redundante (`suspeita_malignidade` em quem já tem CID C* é descartada).
-  A citação é a própria frase, então é literal por construção.
-- Configuração: `OPENROUTER_API_KEY` no `.env` da raiz (chave de **API**; chave de gerenciamento dá
-  401); `HP_LLM_MODEL`, `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
-- Cache: `data/processed/cache_llm.json` (chave = modelo + versão das perguntas + texto). Com o cache,
-  roda sem chave e sem rede. Pré-aqueça com `cd backend && python -m app.cli extrair-sinais`
-  (887 textos em ~40 s, custo de centavos).
-- Falha de rede/modelo: segue só com palavra-chave (nunca derruba a fila).
-- A geração da fila lê **só o cache** (não chama a rede): saída reproduzível. Só `extrair-sinais` chama o LLM.
-- Resultado no dataset (2026-10-24): alertas em 215 solicitações (risco_vida 102, suspeita_malignidade
-  43, sintoma_grave 108); 63 alertas de risco de vida fora de A1 (ex.: SOL-2025-00216 bócio com
-  desvio traqueal e dispneia, classe D; SOL-2026-00773 lesões coronárias >70% em 3 vasos, classe D).
-- Concordância com a palavra-chave do verificador: o Jev marca 110/116 (95%) das frases com alarme e
-  0/6 frases negadas. Amostra manual de 20 alertas extras (antes do filtro de redundância): ~7 úteis,
-  ~10 redundantes (câncer já confirmado), ~3 exagerados (ex.: HPB com ITU de repetição como risco_vida).
+- `typesafe/jev-1.14` (OpenRouter) é um modelo de **decisões**: não escreve texto e não funciona em
+  `/chat/completions`. Usa `POST https://openrouter.ai/api/alpha/decisions` com `{model, state, questions}`;
+  cada frase vira uma pergunta `choice` entre os 8 pontos e `nenhum`, e volta com `probabilities`.
+- Configuração: `OPENROUTER_API_KEY` no `.env` da raiz (chave de **API**; chave de gerenciamento dá 401);
+  `HP_LLM_MODEL`, `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
+- Cache: `data/processed/cache_llm.json` (chave = modelo + `VERSAO_PROMPT` + texto). Mudou as perguntas?
+  Troque `VERSAO_PROMPT` e rode `cd backend && python -m app.cli extrair-sinais` (887 textos, ~40 s, centavos).
+- A geração da fila lê **só o cache**: saída reproduzível, sem rede. Falha do modelo cai para palavra-chave.
+
+## Resultados (2026-10-24)
+
+**Dataset da entrega** (941 solicitações):
+
+| | A1 | A2 | B | C | D |
+|---|---|---|---|---|---|
+| Só regras (campos + palavra-chave) | 84 | 168 | 199 | 250 | 240 |
+| Regras + pontos do Jev | 98 | 166 | 226 | 328 | 123 |
+
+144 classes mudaram, todas para cima (D→C 99, C→B 17, D→B 13, para A1 14). 257 solicitações têm ponto a
+revisar. Verificador oficial OK. Exemplos de subida para A1: SOL-2026-00773 (lesões coronárias >70% em
+3 vasos, D→A1), SOL-2024-00181 (hérnia irredutível, D→A1), SOL-2026-00250 (câncer com lesão
+subestenosante, A2→A1). Discutível: SOL-2025-00283 ("HB 7,8" em hemorroidas → risco_vida).
+
+**Robustez a texto reescrito** (36 frases fora dos templates do dataset; sinônimos, abreviações, leigo):
+
+| | Detecta o achado | Classe certa |
+|---|---|---|
+| Só palavra-chave | 1/24 (4%) | 8/36 (22%) |
+| Palavra-chave + Jev | 21/24 (88%) | 32/36 (89%) |
+
+As regras de palavra-chave estão ajustadas aos textos sintéticos (a lista veio do verificador, escrita
+para os templates); o Jev é o que generaliza. Erros do Jev: "recebeu 2 bolsas de sangue", "emagreceu 12 kg",
+"dificuldade para engolir". Ressalvas: amostra pequena, frases e gabarito escritos pelo agente, sem
+validação clínica.
 
 ## Questões abertas
 
 | ID | Questão | Provisório |
 |---|---|---|
-| Q-SW1 | Termos de "suspeita de malignidade" (perda ponderal, crescimento rápido, linfonodo…) contam como progressão 1 ou 2? | 1 (igual a lesão incerta) |
-| Q-SW2 | Eventos na espera (PS, internação, progressão em imagem, reavaliação com piora) devem subir o eixo de progressão? Hoje só definem a camada 2 | não sobem |
-| Q-SW3 | Quais termos do verificador são `risco_vida` × `sintoma_grave`? (separação em `TERMOS`) | ver `domain/swalis.py` |
+| Q-SW1 | "Suspeita de malignidade" conta como progressão 1 ou 2? | 1 (igual a lesão incerta) |
+| Q-SW2 | Eventos na espera (PS, internação, progressão em imagem) devem subir o eixo de progressão? Hoje só definem a camada 2 | não sobem |
+| Q-SW3 | Separação dos termos de palavra-chave por ponto (`TERMOS`) | ver `domain/swalis.py` |
+| Q-SW4 | A camada (`urgencia.py`) não usa os pontos do Jev: um A1 por "hérnia irredutível" pode ficar na camada 3 (ex.: SOL-2024-00181, posição 385). A camada 2 deve incluir progressão 3 do SWALIS? | não (cabe à US-08) |
+| Q-SW5 | Limiares de confiança do Jev (conta ≥ 0,7; revisar ≥ 0,4) | provisórios |
