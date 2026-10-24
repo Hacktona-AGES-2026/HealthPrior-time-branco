@@ -1,6 +1,6 @@
 # US-18 · Agrupar justificativas em propostas (C-14)
 
-Branch `feat/US-18-aprendizado`. Decisões D-98..D-103 em `DECISOES.md`.
+Branch `feat/US-18-aprendizado`. Decisões D-98..D-102 e D-106 em `DECISOES.md`.
 
 ## O que foi feito
 | Camada | Arquivo | O quê |
