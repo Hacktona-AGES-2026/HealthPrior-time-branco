@@ -1,39 +1,60 @@
 import type { Paciente } from "@/data/tipos"
+import { classeEmVigor, propostaPendente } from "@/data/adaptador"
 import type { Decisao } from "@/lib/filtros"
-import { cn } from "@/lib/utils"
 import { estiloColuna, useColunas } from "@/store/colunas"
-import { AlertaRevisao, ClasseBadge, PrazoBar, SetaVariacao, SinalChips, StatusAprovacao } from "./Basicos"
+import { useStore } from "@/store/useStore"
+import { corPrazo } from "@/lib/cores"
+import { AlertaRevisao, ClasseBadge, StatusAprovacao } from "./Basicos"
 
-export function LinhaResumo({ paciente: p, decisao, selecionado = false }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean }) {
-  const delta = p.posicao_antiga - p.posicao_nova
+export const textoDias = (dias: number) => (dias === 1 ? "1 dia" : `${dias.toLocaleString("pt-BR")} dias`)
+
+export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean; comMarcacao?: boolean }) {
   const l = useColunas((c) => c.larguras)
+  const o = useColunas((c) => c.ocultas)
+  const marcado = useStore((s) => s.marcados.includes(p.id))
+  const alternarMarcado = useStore((s) => s.alternarMarcado)
+  const pendente = !decisao
   return (
     <>
-      {selecionado && <span key={p.solicitacao_id} className="fx-row-sweep pointer-events-none absolute inset-0" aria-hidden />}
-      {selecionado && delta !== 0 && <span className={cn("pointer-events-none absolute inset-y-0 left-0 w-28", delta > 0 ? "fx-row-wave-up" : "fx-row-wave-down")} aria-hidden />}
-      <div className="relative shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l)}>#{p.posicao_nova}</div>
-      <div className="relative flex shrink-0 items-center gap-1.5" style={estiloColuna("antiga", l)}>
-        <span className="w-7 text-xs text-muted-foreground tabular-nums">{p.posicao_antiga}</span>
-        <SetaVariacao antiga={p.posicao_antiga} nova={p.posicao_nova} />
+      {comMarcacao && (
+        <label className="-ml-2 flex size-9 shrink-0 cursor-pointer items-center justify-center md:size-7" onClick={(e) => e.stopPropagation()}>
+          <input type="checkbox" checked={marcado} onChange={() => alternarMarcado(p.id)} aria-label={`Selecionar ${p.iniciais}`} className="size-4 cursor-pointer accent-[var(--primary)]" />
+        </label>
+      )}
+      <div className="shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
+        #{p.posicao}
       </div>
-      <div className="relative flex shrink-0 items-center gap-1" style={estiloColuna("classe", l)}>
-        <ClasseBadge classe={p.classe} />
-        {p.classe !== p.classe_antiga && <span className="text-[10px] text-muted-foreground">de {p.classe_antiga}</span>}
+      <div className="min-w-0" style={estiloColuna("paciente", l, o)}>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="truncate font-medium">
+            {p.iniciais}, {p.idade} a
+          </span>
+          {p.oncologico && <span className="shrink-0 text-xs font-semibold text-primary">Oncológico</span>}
+        </div>
+        <div className="truncate text-xs text-muted-foreground" title={p.procedimento}>
+          {p.procedimento}
+        </div>
       </div>
-      <div className="relative shrink-0" style={estiloColuna("prazo", l)}>
-        <PrazoBar pct={p.prazo_consumido_pct} />
+      <div className="shrink-0" style={estiloColuna("classe", l, o)}>
+        <span className="inline-flex items-center gap-1" title={propostaPendente(p) ? `Proposta ${p.classe} aguardando aprovação` : undefined}>
+          <ClasseBadge classe={classeEmVigor(p)} />
+          {propostaPendente(p) && (
+            <>
+              <span className="text-xs text-muted-foreground" aria-hidden>→</span>
+              <ClasseBadge classe={p.classe} />
+            </>
+          )}
+        </span>
       </div>
-      <div className="relative" style={estiloColuna("sinais", l)}>
-        <SinalChips sinais={p.sinais} />
+      <div className="min-w-0 shrink-0" style={estiloColuna("prazo", l, o)}>
+        <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(p.pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Prazo consumido" title={`${Math.round(p.pct)}% do prazo`}>
+          <span className="block h-full rounded-full" style={{ width: `${Math.min(100, p.pct)}%`, background: corPrazo(p.pct) }} />
+        </span>
+        <div className="mt-1 text-xs text-muted-foreground tabular-nums">{textoDias(p.dias_em_fila)}</div>
       </div>
-      <div className="relative truncate text-xs text-muted-foreground" style={estiloColuna("justificativa", l)} title={p.justificativa}>
-        {p.justificativa}
-      </div>
-      <div className="relative shrink-0" style={estiloColuna("alerta", l)}>
+      <div className="flex shrink-0 items-center gap-1" style={estiloColuna("status", l, o)}>
+        {pendente ? <span className="text-xs text-muted-foreground">A revisar</span> : <StatusAprovacao decisao={decisao} />}
         <AlertaRevisao paciente={p} />
-      </div>
-      <div className="relative shrink-0" style={estiloColuna("status", l)}>
-        <StatusAprovacao decisao={decisao} />
       </div>
     </>
   )

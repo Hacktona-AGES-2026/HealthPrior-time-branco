@@ -9,7 +9,8 @@ export type ResolverPendenciaIn = components["schemas"]["ResolverPendenciaIn"]
 export type ResultadoResolucao = components["schemas"]["ResolverPendenciaOut"]
 
 export type Inbox = components["schemas"]["InboxOut"]
-export type ItemInbox = components["schemas"]["ItemInboxOut"]
+// `previa` (o que aprovar faria) ainda não está no schema gerado; regenere com `npm run gen:api`.
+export type ItemInbox = components["schemas"]["ItemInboxOut"] & { previa?: import("@/lib/api").Previa | null }
 export type ResultadoDecisao = components["schemas"]["DecisaoResultadoOut"]
 
 

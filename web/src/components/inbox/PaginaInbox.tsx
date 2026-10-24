@@ -1,9 +1,11 @@
 import { useState } from "react"
+import { PreviaDecisao } from "@/components/shared/PreviaDecisao"
 import { AlertTriangle, ArrowRight, Check, Inbox as IconeInbox, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { aprovarProposta, URL_API, type ItemInbox } from "@/api/cliente"
 import { formatarData } from "@/lib/datas"
-import { usuarioAtual } from "@/lib/usuario"
+import { reguladorAtual } from "@/lib/usuario"
+import { useStore } from "@/store/useStore"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -80,7 +82,7 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
   async function aprovar() {
     setEnviando(true)
     try {
-      const r = await aprovarProposta(item.solicitacao_id, usuarioAtual())
+      const r = await aprovarProposta(item.solicitacao_id, reguladorAtual())
       const posicao =
         r.posicao_anterior !== null && r.posicao_nova !== null && r.posicao_anterior !== r.posicao_nova
           ? `Posição ${r.posicao_anterior} → ${r.posicao_nova}.`
@@ -89,6 +91,7 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
             : ""
       if (r.fila_publicada) {
         toast.success(`${item.solicitacao_id} aprovada como ${item.classe_sugerida}`, { description: `${posicao} Fila recalculada e publicada.`.trim() })
+        void useStore.getState().recarregar()  // a fila do front acompanha a nova publicação
       } else {
         toast.warning(`${item.solicitacao_id} aprovada, mas a fila não foi republicada`, {
           description: "A decisão ficou registrada; a fila anterior segue publicada até a próxima publicação válida.",
@@ -118,6 +121,7 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
         <Badge>{item.classe_sugerida}</Badge>
         {item.evento_gatilho && <span className="text-xs text-muted-foreground">gatilho: {item.evento_gatilho}</span>}
       </div>
+      {item.previa && <PreviaDecisao previa={item.previa} rotulo={`Se aprovar ${item.classe_sugerida}`} className="mt-2" />}
 
       {item.editado_anteriormente && (
         <p className="mt-2 text-sm text-muted-foreground">
@@ -145,7 +149,10 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
         <Button size="sm" onClick={aprovar} disabled={enviando}>
           <Check aria-hidden /> {enviando ? "Aprovando…" : `Aprovar ${item.classe_sugerida}`}
         </Button>
-        <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
+        <Button size="sm" variant="outline" onClick={() => useStore.getState().abrirNaFila(item.solicitacao_id)}>
+          Abrir na fila
+        </Button>
+        <span className="ml-auto text-xs text-muted-foreground">por {reguladorAtual()}</span>
       </div>
     </li>
   )

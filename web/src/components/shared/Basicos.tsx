@@ -1,6 +1,6 @@
 import { ArrowRight, ChevronDown, ChevronUp, Equal, TriangleAlert } from "lucide-react"
-import type { Classe, Paciente } from "@/data/tipos"
-import { COR_STATUS, corClasse, corPrazo, corTextoClasse, rotuloPrazo } from "@/lib/cores"
+import type { Camada, Classe, Paciente, Prioridade } from "@/data/tipos"
+import { COR_STATUS, DESCRICAO_CAMADA, NOME_CAMADA, corClasse, corPrazo, corTextoClasse, rotuloPrazo } from "@/lib/cores"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
@@ -22,13 +22,30 @@ export function ClasseBadge({ classe, className }: { classe: Classe; className?:
   )
 }
 
-export function MudancaClasse({ de, para }: { de: Classe; para: Classe }) {
+export function MudancaClasse({ de, para }: { de: Prioridade | null; para: Classe }) {
   return (
-    <span className="inline-flex items-center gap-1">
-      <ClasseBadge classe={de} className="opacity-70" />
+    <span className="inline-flex items-center gap-1.5">
+      <span className="rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">{de ? `prioridade ${de === "media" ? "média" : de}` : "sem prioridade"}</span>
       <ArrowRight className="size-3.5 text-muted-foreground" aria-hidden />
       <ClasseBadge classe={para} className="fx-pop" />
     </span>
+  )
+}
+
+export function CamadaBadge({ camada }: { camada: Camada }) {
+  const cor = camada === 1 ? "var(--cls-a2)" : camada === 2 ? "var(--cls-b)" : "var(--cls-d)"
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <span className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs" style={{ background: `color-mix(in oklab, ${cor} 14%, transparent)` }}>
+            <span className="font-semibold tabular-nums">{camada}</span>
+            <span className="text-muted-foreground">{NOME_CAMADA[camada]}</span>
+          </span>
+        }
+      />
+      <TooltipContent>{DESCRICAO_CAMADA[camada]}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -64,6 +81,8 @@ export function SetaVariacao({ antiga, nova, animada = true }: { antiga: number;
   )
 }
 
+export const formatarPct = (pct: number) => (pct >= 1000 ? `${(pct / 1000).toFixed(1).replace(".", ",")}k%` : `${Math.round(pct)}%`)
+
 export function PrazoBar({ pct, className, compacto = false }: { pct: number; className?: string; compacto?: boolean }) {
   const largura = Math.min(100, pct)
   return (
@@ -81,38 +100,22 @@ export function PrazoBar({ pct, className, compacto = false }: { pct: number; cl
               )}
             </span>
             <span className={cn("shrink-0 text-xs font-semibold tabular-nums", compacto ? "w-9" : "w-11 text-right")} style={{ color: pct > 100 ? "var(--prazo-vencido)" : undefined }}>
-              {Math.round(pct)}%
+              {formatarPct(pct)}
             </span>
           </span>
         }
       />
       <TooltipContent>
-        {Math.round(pct)}% do prazo consumido · {rotuloPrazo(pct)}
+        {Math.round(pct).toLocaleString("pt-BR")}% do prazo consumido · {rotuloPrazo(pct)}
       </TooltipContent>
     </Tooltip>
   )
 }
 
-export function ConfiancaSelo({ valor }: { valor: number }) {
-  const baixa = valor < 0.6
-  const media = valor < 0.8
-  const cor = baixa ? "var(--desce)" : media ? "var(--prazo-limite)" : "var(--sobe)"
-  return (
-    <span
-      className="inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold tabular-nums"
-      style={{ borderColor: cor, color: cor, background: `color-mix(in oklab, ${cor} 12%, transparent)` }}
-    >
-      {baixa && <TriangleAlert className="size-3" aria-hidden />}
-      {Math.round(valor * 100)}%<span className="sr-only"> de confiança</span>
-      <span className="text-[10px] font-medium uppercase tracking-wide">{baixa ? "baixa" : media ? "média" : "alta"}</span>
-    </span>
-  )
-}
-
 export function StatusAprovacao({ decisao }: { decisao?: Decisao }) {
   const status = decisao?.status ?? "pendente"
-  const rotulo = status === "pendente" ? "Pendente" : status === "aprovado" ? "Aprovado" : "Rejeitado"
-  const marca = status === "pendente" ? "○" : status === "aprovado" ? "✓" : "✕"
+  const rotulo = status === "pendente" ? "Pendente" : status === "aprovado" ? "Aprovado" : "Editado"
+  const marca = status === "pendente" ? "○" : status === "aprovado" ? "✓" : "✎"
   return (
     <span
       className={cn("inline-flex items-center gap-1.5 text-xs", status !== "pendente" && "fx-pop font-medium")}
@@ -126,7 +129,7 @@ export function StatusAprovacao({ decisao }: { decisao?: Decisao }) {
 
 export function AlertaRevisao({ paciente }: { paciente: Paciente }) {
   if (!precisaRevisar(paciente)) return null
-  const motivos = [paciente.divergencia && "Divergência com a prioridade humana", paciente.confianca < 0.6 && "Confiança baixa"].filter(Boolean).join(" · ")
+  const motivos = paciente.alertas.join(" · ")
   return (
     <Tooltip>
       <TooltipTrigger
@@ -142,18 +145,19 @@ export function AlertaRevisao({ paciente }: { paciente: Paciente }) {
 }
 
 export function SinalChips({ sinais, max = 3 }: { sinais: string[]; max?: number }) {
+  if (sinais.length === 0) return <span className="text-xs text-muted-foreground">—</span>
   const visiveis = sinais.slice(0, max)
   const resto = sinais.length - visiveis.length
   return (
     <span className="flex min-w-0 items-center gap-1 overflow-hidden [mask-image:linear-gradient(to_right,black_82%,transparent)]">
       {visiveis.map((s) => (
-        <Badge key={s} variant="secondary" className="shrink-0 bg-muted/70 px-1.5 text-[11px] font-normal whitespace-nowrap text-muted-foreground">
+        <Badge key={s} variant="secondary" className="shrink-0 bg-muted/70 px-1.5 text-xs font-normal whitespace-nowrap text-muted-foreground">
           {s}
         </Badge>
       ))}
       {resto > 0 && (
         <Tooltip>
-          <TooltipTrigger render={<Badge variant="outline" className="shrink-0 border-transparent px-1.5 text-[11px] font-normal text-muted-foreground">+{resto}</Badge>} />
+          <TooltipTrigger render={<Badge variant="outline" className="shrink-0 border-transparent px-1.5 text-xs font-normal text-muted-foreground">+{resto}</Badge>} />
           <TooltipContent>{sinais.slice(max).join(", ")}</TooltipContent>
         </Tooltip>
       )}

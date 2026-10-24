@@ -1,4 +1,5 @@
 """US-12 · Inbox do regulador."""
+from dataclasses import asdict
 from typing import Optional
 
 from fastapi import APIRouter, Depends
@@ -24,7 +25,8 @@ def _para_schema(inbox: Inbox) -> schemas.InboxOut:
             motivos=[schemas.MotivoOut(sinal=m.sinal, evidencia=m.evidencia, fonte=m.fonte,
                                        ref=m.ref, data=m.data) for m in i.motivos],
             evento_gatilho=i.evento_gatilho, editado_anteriormente=editado,
-            criado_em=i.criado_em))
+            criado_em=i.criado_em,
+            previa=schemas.PreviaOut(**asdict(i.previa)) if i.previa else None))
     return schemas.InboxOut(total=inbox.total, itens=itens)
 
 

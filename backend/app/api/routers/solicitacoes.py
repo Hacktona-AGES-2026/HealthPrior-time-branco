@@ -1,9 +1,14 @@
 """US-21 · Detalhe e explicação do paciente."""
+from dataclasses import asdict
+from typing import Optional
+
 from fastapi import APIRouter, Depends
 
 from app.api import mocks, schemas
-from app.api.deps import get_detalhar_solicitacao
+from app.api.deps import get_detalhar_solicitacao, get_prever_decisao
 from app.application.detalhar_solicitacao import DetalharSolicitacao, DetalheSolicitacao
+from app.application.prever_decisao import PreverDecisao
+from app.domain.enums import AcaoDecisao, Classe
 from app.config import settings
 
 router = APIRouter(prefix="/solicitacoes", tags=["solicitacoes"])
@@ -16,6 +21,15 @@ def obter_solicitacao(solicitacao_id: str,
     if settings.use_mocks:
         return mocks.DETALHE.model_copy(update={"solicitacao_id": solicitacao_id})
     return _para_schema(detalhar.executar(solicitacao_id))
+
+
+@router.get("/{solicitacao_id}/previa", response_model=schemas.PreviaOut,
+            responses={404: {"model": schemas.Erro}, 422: {"model": schemas.Erro}})
+def prever_decisao(solicitacao_id: str, acao: AcaoDecisao = AcaoDecisao.APROVAR,
+                   classe: Optional[Classe] = None, score: Optional[float] = None,
+                   prever: PreverDecisao = Depends(get_prever_decisao)):
+    """Classe, % do prazo, score e posição que a decisão daria, sem gravar nada (US-13/14)."""
+    return schemas.PreviaOut(**asdict(prever.executar(solicitacao_id, acao, classe, score)))
 
 
 def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
@@ -38,7 +52,8 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
         eventos=[schemas.EventoOut(evento_id=e.evento_id, data_evento=e.data_evento,
                                    tipo_evento=e.tipo_evento, resultado=e.resultado,
                                    descricao=e.descricao, historico=e.historico,
-                                   duplicado=e.duplicado) for e in d.eventos],
+                                   duplicado=e.duplicado, origem=e.origem,
+                                   valor_numerico=e.valor_numerico) for e in d.eventos],
         decisoes=[schemas.DecisaoOut(decisao_id=x.decisao_id, data=x.data, regulador_id=x.regulador_id,
                                      acao=x.acao, classe_decidida=x.classe_decidida,
                                      motivo_codificado=x.motivo_codificado,
@@ -49,4 +64,8 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
         alertas=list(s.alertas),
         correcoes=[schemas.CorrecaoOut(campo=c.campo, original=c.original, novo=c.novo,
                                        regra=c.regra) for c in d.correcoes],
+        procedimento_info=(schemas.ProcedimentoInfoOut(
+            porte=d.procedimento.porte, risco_cirurgico=d.procedimento.risco_cirurgico,
+            duracao_media_min=d.procedimento.duracao_media_min,
+            necessita_uti=d.procedimento.necessita_uti) if d.procedimento else None),
     )

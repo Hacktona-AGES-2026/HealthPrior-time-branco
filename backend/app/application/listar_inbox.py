@@ -6,9 +6,11 @@ from __future__ import annotations
 
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import date, datetime
 
-from app.domain.enums import Classe
+from app.application.previa import Previa, prever_decisao
+from app.domain.enums import AcaoDecisao, Classe
+from app.domain.errors import DomainError
 from app.domain.inbox import chave_ordenacao, classe_referencia, distancia, entra_no_inbox
 from app.domain.models import Motivo
 from app.domain.ports import (
@@ -32,6 +34,7 @@ class ItemInbox:
     evento_gatilho: str | None = None
     editado_anteriormente: tuple[str, datetime] | None = None
     criado_em: datetime | None = None
+    previa: Previa | None = None  # o que aprovar faria (posição, prazo, score), antes de gravar
 
 
 @dataclass
@@ -43,8 +46,9 @@ class Inbox:
 class ListarInbox:
     def __init__(self, fila: FilaRepository, solicitacoes: SolicitacaoRepository,
                  eventos: EventoRepository, scorer: SwalisScorer,
-                 decisoes: DecisaoRepository | None = None):
+                 decisoes: DecisaoRepository | None = None, ref_date: date | None = None):
         self._decisoes = decisoes
+        self._ref_date = ref_date  # sem data, o inbox não traz prévia
         self._fila = fila
         self._solicitacoes = solicitacoes
         self._eventos = eventos
@@ -60,6 +64,7 @@ class ListarInbox:
         for e in self._eventos.listar_todos():
             eventos_por_id[e.solicitacao_id].append(e)
 
+        entradas = {sid: s.data_entrada_fila for sid, s in por_id.items()}
         candidatos = []
         for linha in linhas:
             s = por_id.get(linha.solicitacao_id)
@@ -82,7 +87,8 @@ class ListarInbox:
                 solicitacao_id=s.solicitacao_id, procedimento=s.procedimento or "",
                 camada=linha.camada, dias_em_fila=linha.dias_em_fila,
                 classe_atual=atual, classe_sugerida=sugerida, motivos=list(res.motivos),
-                evento_gatilho=gatilho, editado_anteriormente=editado, criado_em=publicada_em)
+                evento_gatilho=gatilho, editado_anteriormente=editado, criado_em=publicada_em,
+                previa=self._previa(s, res, linhas, entradas))
             candidatos.append((chave_ordenacao(sugerida, dist, linha.posicao), item))
 
         candidatos.sort(key=lambda par: par[0])
@@ -96,3 +102,11 @@ class ListarInbox:
             return False
         decisoes = self._decisoes.listar_por_solicitacao(solicitacao_id)
         return bool(decisoes) and decisoes[-1].classe_sugerida == sugerida
+
+    def _previa(self, s, res, linhas, entradas) -> Previa | None:
+        if self._ref_date is None:
+            return None
+        try:
+            return prever_decisao(s, res, linhas, entradas, self._ref_date, AcaoDecisao.APROVAR)
+        except DomainError:  # ex.: aprovar levaria oncológico a C/D: sem prévia, o aprovar real recusa
+            return None
