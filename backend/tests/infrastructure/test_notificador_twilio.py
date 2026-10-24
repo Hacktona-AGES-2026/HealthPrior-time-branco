@@ -1,7 +1,14 @@
 """Twilio (conta de teste) pela API REST, sem rede: o transporte é simulado."""
 import httpx
 
-from app.infrastructure.notificador import NotificadorNtfy, NotificadorSimulado, NotificadorTwilio, sem_acentos
+from app.infrastructure.notificador import (
+    NotificadorMultiplo,
+    NotificadorNtfy,
+    NotificadorSimulado,
+    NotificadorTwilio,
+    NotificadorWaha,
+    sem_acentos,
+)
 
 
 def cliente(handler):
@@ -132,5 +139,72 @@ def test_ntfy_nao_exige_destino_e_cai_no_simulado_sem_topico():
         assert n.criar_notificador().canal == "simulado"
         n.settings = dataclasses.replace(original, notifica_canal="ntfy", ntfy_topic="meu-topico")
         assert n.criar_notificador().canal == "ntfy"
+    finally:
+        n.settings = original
+
+
+def test_waha_manda_texto_livre_para_cada_numero_com_o_chat_id_certo():
+    vistos = []
+
+    def handler(request):
+        import json
+        vistos.append((str(request.url), json.loads(request.content), request.headers.get("x-api-key")))
+        return httpx.Response(201, json={"id": "true_x"})
+
+    w = NotificadorWaha("http://waha:3000/", "default", "chave", cliente(handler))
+    r = w.enviar("+55 (51) 99999-0001, 5511999990002", "sua posição mudou")
+    assert (r.ok, r.detalhe) == (True, "waha: 2 enviada(s)")
+    assert [v[0] for v in vistos] == ["http://waha:3000/api/sendText"] * 2
+    assert [v[1]["chatId"] for v in vistos] == ["5511999990001@c.us", "5511999990002@c.us"]
+    assert vistos[0][1] == {"session": "default", "chatId": "5511999990001@c.us", "text": "sua posição mudou"}
+    assert vistos[0][2] == "chave"
+
+
+def test_waha_parcial_sem_numero_e_sessao_caida():
+    def handler(request):
+        import json
+        return httpx.Response(422 if "995492424" in json.loads(request.content)["chatId"] else 201, text="Session is not ready")
+
+    w = NotificadorWaha("http://waha:3000", client=cliente(handler))
+    parcial = w.enviar("+5511999990001,+5511999990002", "x")
+    assert parcial.ok is False and parcial.detalhe.startswith("1 enviada(s);") and "422" in parcial.detalhe
+    assert w.enviar("", "x").ok is False
+
+    def cai(request):
+        raise httpx.ConnectError("sem waha")
+
+    assert "ConnectError" in NotificadorWaha("http://waha:3000", client=cliente(cai)).enviar("+55519", "x").detalhe
+
+
+def test_multiplo_conta_como_enviada_se_algum_canal_entregou():
+    class C:
+        def __init__(self, nome, ok, exige=True):
+            self.canal, self._ok, self.exige_destino = nome, ok, exige
+
+        def enviar(self, destino, texto):
+            from app.domain.ports import ResultadoEnvio
+            return ResultadoEnvio(self._ok, "x" if self._ok else "erro")
+
+    m = NotificadorMultiplo([C("waha", False), C("ntfy", True, exige=False)])
+    r = m.enviar("+55", "t")
+    assert (m.canal, r.ok) == ("waha+ntfy", True) and "waha: falhou (erro)" in r.detalhe and "ntfy: ok" in r.detalhe
+    assert m.exige_destino is True
+    assert NotificadorMultiplo([C("a", False), C("b", False)]).enviar("", "t").ok is False
+
+
+def test_criar_notificador_com_varios_canais_ignora_o_incompleto():
+    import dataclasses
+    from app.infrastructure import notificador as n
+
+    original = n.settings
+    try:
+        base = dataclasses.replace(original, ntfy_topic="meu-topico", notifica_destino="+5511999990001",
+                                   twilio_account_sid="", twilio_auth_token="")
+        n.settings = dataclasses.replace(base, notifica_canal="waha,ntfy")
+        assert n.criar_notificador().canal == "waha+ntfy"
+        n.settings = dataclasses.replace(base, notifica_canal="twilio,ntfy")  # twilio sem credenciais: só o ntfy
+        assert n.criar_notificador().canal == "ntfy"
+        n.settings = dataclasses.replace(base, notifica_canal="waha", notifica_destino="")  # sem destino
+        assert n.criar_notificador().canal == "simulado"
     finally:
         n.settings = original

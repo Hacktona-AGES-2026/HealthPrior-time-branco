@@ -20,6 +20,17 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
 3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
 4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
 
+## WhatsApp pelo WAHA (não oficial, só demo)
+Contêiner que controla o WhatsApp Web de um **chip descartável** e expõe uma API HTTP. Texto livre, sem modelo e sem Twilio.
+**Risco:** viola os termos do WhatsApp e o número pode ser bloqueado; use chip descartável, poucos envios, para gente que sabe
+(o limite de 3 por publicação e 5 por rodada já ajuda), e deixe o `ntfy` junto como plano B.
+1. `docker compose --profile whatsapp up -d waha` (em Intel/Linux troque a imagem por `devlikeapro/waha` no `docker-compose.yml`).
+2. Abra `http://localhost:3000/dashboard`, inicie a sessão `default` e escaneie o QR com o WhatsApp do chip da demo (Aparelhos conectados).
+3. `.env`: `HP_NOTIFICA_CANAL=waha,ntfy`, `HP_NOTIFICA_DESTINO=+5551...,+5551...` (um ou dois números da equipe, que já falaram com o chip) e `NTFY_TOPIC`.
+4. Se o back roda em contêiner, use `WAHA_URL=http://host.docker.internal:3000`.
+5. A tela Notificações mostra `WhatsApp+push (ntfy) → números mascarados`. Falha de um canal não derruba o outro: conta como enviada se algum entregou, e o detalhe mostra cada um.
+Com o remetente igual ao destino a mensagem cai no chat "Você" e pode não tocar: prefira outro número.
+
 ## ntfy.sh (push grátis, o caminho mais simples para a demo)
 Sem cadastro e com texto livre (o texto genérico sai como está, com acentos). No celular, instale o app **ntfy** e assine o tópico.
 1. `.env`: `HP_NOTIFICA_CANAL=ntfy` e `NTFY_TOPIC=<um nome difícil de adivinhar>` (no servidor público, o nome do tópico é o único controle de acesso; `NTFY_TOKEN` e `NTFY_URL` são opcionais).

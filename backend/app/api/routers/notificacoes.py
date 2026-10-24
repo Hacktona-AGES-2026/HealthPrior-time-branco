@@ -12,9 +12,13 @@ router = APIRouter(prefix="/notificacoes", tags=["notificacoes"])
 
 
 def _destino_para_tela() -> str | None:
-    if criar_notificador().canal == "ntfy":
-        return f"{settings.ntfy_url.split('://')[-1]}/{settings.ntfy_topic}"
-    return _mascarar(settings.notifica_destino)
+    canal = criar_notificador().canal
+    partes = []
+    if "waha" in canal or "twilio" in canal:
+        partes.append(", ".join(_mascarar(n.strip()) or "" for n in settings.notifica_destino.split(",") if n.strip()))
+    if "ntfy" in canal:
+        partes.append(f"{settings.ntfy_url.split('://')[-1]}/{settings.ntfy_topic}")
+    return " + ".join(p for p in partes if p) or None
 
 
 def _mascarar(numero: str) -> str | None:
