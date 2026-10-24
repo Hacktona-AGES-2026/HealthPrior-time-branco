@@ -15,6 +15,7 @@ from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
 from app.application.gerar_fila import GerarFila
 from app.application.listar_fila import ListarFila
+from app.application.listar_inbox import ListarInbox
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.config import settings
@@ -98,3 +99,9 @@ DESTAQUES_PADRAO = ["SOL-2023-00010", "SOL-2025-00048", "SOL-2026-00637", "SOL-2
 def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas:
     return CompararFilas(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                          SqlFilaRepository(session), settings.ref_date, DESTAQUES_PADRAO)
+
+
+# US-12
+def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
+    return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
+                       SqlEventoRepository(session), get_scorer())
