@@ -51,6 +51,8 @@ def montar_justificativa(
     editado_manualmente: bool = False,
     sintomas: list[str] | None = None,
     eixos: list[str] | None = None,
+    fatores: list[str] | None = None,
+    score: float | None = None,
 ) -> str:
     """Gera a justificativa legível em português para uma linha da fila."""
     if camada == 1:
@@ -66,6 +68,8 @@ def montar_justificativa(
         base += " SWALIS: " + "; ".join(eixos) + "."
     texto = (f"{base} Classe {classe} (prazo {prazo_dias} dias, regras {versao_regras}); "
              f"{dias_em_fila} dias em fila, {pct_prazo:g}% do prazo.")
+    if fatores and score is not None and score != pct_prazo:
+        texto += f" Fatores: {'; '.join(fatores)}; score {score:g}."
     if editado_manualmente:
         texto += " Editado manualmente pelo regulador."
     return texto
@@ -92,7 +96,8 @@ def classe_e_score_efetivos(sol: Solicitacao, res: ResultadoScore,
     else:
         pct = round(100 * dias / prazo, 1)
     if sol.score_medico is None:
-        return classe, pct, pct
+        # Os fatores de comorbidade e idade são do paciente, não da classe: valem também aqui.
+        return classe, round(pct * res.fator_contexto, 1), pct
     desde = max(0, (ref_date - sol.editado_em.date()).days) if sol.editado_em else 0
     return classe, round(sol.score_medico + 100 * desde / prazo, 1), pct
 
@@ -143,7 +148,11 @@ def montar_fila(
                                                pct, sol.editado_manualmente,
                                                sintomas=sintomas,
                                                eixos=[m.evidencia for m in res.motivos
-                                                      if m.sinal.startswith("eixo_")]),
+                                                      if m.sinal.startswith("eixo_")],
+                                               fatores=[m.evidencia for m in res.motivos
+                                                        if m.sinal.startswith("fator_")
+                                                        and float(m.ref or 1) != 1.0],
+                                               score=score),
             camada=camada,
             classe=classe_txt,
             pct_prazo_consumido=pct,

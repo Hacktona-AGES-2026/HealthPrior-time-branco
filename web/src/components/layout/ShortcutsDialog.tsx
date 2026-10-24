@@ -3,8 +3,12 @@ import { useStore } from "@/store/useStore"
 
 const ATALHOS = [
   ["A", "Aprovar o caso selecionado e avançar"],
-  ["R", "Rejeitar (abre classe final e motivo)"],
+  ["R", "Editar a classe (motivo e justificativa)"],
   ["J", "Próximo caso pendente"],
+  ["↑ ↓", "Linha anterior ou seguinte (inclui revisadas)"],
+  ["Enter", "Expandir ou recolher a linha selecionada"],
+  ["/", "Focar a busca da fila"],
+  ["Ctrl K", "Abrir um paciente de qualquer página"],
   ["K", "Caso pendente anterior"],
   ["Esc", "Recolher a linha expandida / cancelar rejeição"],
   ["[", "Recolher ou expandir o menu lateral"],

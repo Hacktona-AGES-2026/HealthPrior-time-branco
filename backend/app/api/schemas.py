@@ -327,3 +327,38 @@ class ComparacaoOut(BaseModel):
     depois: Optional[IndicadoresOut] = None
     publicada: bool
     destaques: list[DestaqueOut]
+
+
+# ---------- US-18 · aprendizado ----------
+class ParametrosAprendizadoIn(BaseModel):
+    """Parâmetros do agrupamento (Q-05, provisórios). Omitidos ficam no padrão."""
+
+    min_casos: Optional[int] = Field(default=None, gt=0)
+    min_reguladores: Optional[int] = Field(default=None, gt=0)
+    janela_dias: Optional[int] = Field(default=None, gt=0)
+    min_consistencia: Optional[float] = Field(default=None, gt=0, le=1)
+
+
+class PropostaRegraOut(BaseModel):
+    proposta_id: str
+    procedimento_id: str
+    procedimento: Optional[str] = None
+    motivo: MotivoCodificado
+    classe_de: Classe
+    classe_para: Classe
+    direcao: Literal["subir", "rebaixar"]
+    n_casos: int
+    n_reguladores: int
+    consistencia: float
+    casos: list[str]
+    status: Literal["pendente", "descartada"]
+    motivo_descarte: Optional[str] = None
+
+
+class GerarPropostasOut(BaseModel):
+    analisadas: int
+    consideradas: int
+    outros_reclassificados: int
+    outros_sem_grupo: int
+    propostas: list[PropostaRegraOut]
+    descartadas: list[PropostaRegraOut]

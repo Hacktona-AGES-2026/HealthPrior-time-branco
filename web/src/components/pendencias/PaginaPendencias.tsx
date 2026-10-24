@@ -8,7 +8,9 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ORIGEM_DADOS } from "@/data/fila"
 import { AcoesPendencia } from "./AcoesPendencia"
+import { AlertasDeDados } from "./AlertasDeDados"
 import { usePendencias } from "./usePendencias"
 
 type TipoFiltro = "todas" | "bloqueantes" | "nao-bloqueantes"
@@ -122,7 +124,7 @@ export default function PaginaPendencias() {
         </div>
 
         {estado.tipo === "carregando" && <ListaCarregando />}
-        {estado.tipo === "erro" && <ErroApi mensagem={estado.mensagem} onTentar={recarregar} />}
+        {estado.tipo === "erro" && (ORIGEM_DADOS === "csv" ? <AlertasDeDados onTentar={recarregar} /> : <ErroApi mensagem={estado.mensagem} onTentar={recarregar} />)}
         {estado.tipo === "ok" && itens.length === 0 && <Vazio filtrando={filtrando} onLimpar={limpar} />}
         {estado.tipo === "ok" && itens.length > 0 && (
           <ul className={cn("space-y-3 transition-opacity", estado.atualizando && "opacity-60")} aria-label="Lista de pendências">

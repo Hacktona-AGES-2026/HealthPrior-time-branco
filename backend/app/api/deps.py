@@ -15,6 +15,7 @@ from app.application.decidir import DecidirClasse
 from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
+from app.application.gerar_propostas import GerarPropostas
 from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -35,9 +36,11 @@ from app.infrastructure.repositories import (
     SqlEventoRepository,
     SqlFilaRepository,
     SqlPendenciaRepository,
+    SqlPropostaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
+from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
 from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
@@ -186,3 +189,31 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session),
         ref_date=data,
         decisoes=SqlDecisaoRepository(session),
     )
+
+
+# US-18
+def criar_classificador_motivo() -> ClassificadorMotivoLLM | None:
+    """LLM só com chave e LLM ligado; senão None (os `outro` ficam fora do agrupamento, D-99)."""
+    if not (settings.llm_enabled and settings.openrouter_api_key):
+        return None
+    return ClassificadorMotivoLLM(settings.openrouter_api_key, settings.llm_model,
+                                  settings.llm_cache_path.parent / "cache_llm_motivos.json")
+
+
+def get_gerar_propostas(session: Session = Depends(get_session),
+                        data: date = Depends(get_data_referencia)) -> GerarPropostas:
+    return GerarPropostas(
+        decisoes=SqlDecisaoRepository(session), solicitacoes=SqlSolicitacaoRepository(session),
+        propostas=SqlPropostaRepository(session), uow=SqlUnidadeDeTrabalho(session),
+        referencia=datetime(data.year, data.month, data.day, tzinfo=timezone.utc),
+        classificador=criar_classificador_motivo())
+
+
+def get_nomes_procedimentos(session: Session = Depends(get_session)) -> dict[str, str]:
+    """procedimento_id -> nome, para rotular as propostas. Sem banco, vazio."""
+    try:
+        solicitacoes = SqlSolicitacaoRepository(session).listar(apenas_ativas=False)
+    except SQLAlchemyError:
+        session.rollback()
+        return {}
+    return {s.procedimento_id: s.procedimento for s in solicitacoes if s.procedimento}

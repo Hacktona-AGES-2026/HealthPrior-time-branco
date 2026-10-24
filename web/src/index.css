@@ -282,3 +282,8 @@
   .overflow-y-auto, .overflow-hidden { overflow: visible !important; }
   header.sticky { position: static !important; }
 }
+
+@keyframes fx-flash-decisao { 0% { background-color: color-mix(in oklab, var(--flash) 45%, transparent); } 100% { background-color: transparent; } }
+.fx-flash-decisao { animation: fx-flash-decisao 1.4s ease-out both; }
+
+@keyframes fx-fluxo { to { stroke-dashoffset: -14; } }
