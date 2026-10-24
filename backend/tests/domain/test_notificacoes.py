@@ -7,7 +7,7 @@ from app.domain.notificacoes import POSICAO, RECONTATO, SITUACAO, mudancas_de_po
 def test_textos_sao_genericos_e_dizem_de_quem_seria():
     for motivo in (POSICAO, SITUACAO, RECONTATO):
         t = texto(motivo, "SOL-2023-00060", subiu=True)
-        assert t.startswith("[DEMO SOL-2023-00060] HealthPrior: ")
+        assert t.startswith("[DEMO SOL-2023-00060] Atualizacao da fila cirurgica: ")
         assert not any(p in t.lower() for p in ("classe", "score", "a1", "oncolog"))
     assert "subiu" in texto(POSICAO, "S", subiu=True) and "desceu" in texto(POSICAO, "S", subiu=False)
     assert all(ord(c) < 128 for c in texto(POSICAO, "S", True))  # cabe em SMS GSM-7

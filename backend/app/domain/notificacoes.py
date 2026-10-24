@@ -31,14 +31,14 @@ class Notificacao:
 
 def texto(motivo: str, solicitacao_id: str, subiu: bool | None = None) -> str:
     """Mensagem de demonstração: o prefixo diz de qual paciente seria (o destino real é o número da demo)."""
-    prefixo = f"[DEMO {solicitacao_id}] HealthPrior: "
+    prefixo = f"[DEMO {solicitacao_id}] Atualizacao da fila cirurgica: "
     if motivo == POSICAO:
         movimento = "subiu" if subiu else "desceu"
-        return f"{prefixo}sua posicao na fila cirurgica mudou ({movimento}). Detalhes na unidade de saude."
+        return f"{prefixo}sua posicao mudou ({movimento}). Detalhes na unidade de saude."
     if motivo == SITUACAO:
-        return f"{prefixo}sua situacao na fila cirurgica foi atualizada. Procure a unidade de saude."
+        return f"{prefixo}sua situacao foi atualizada. Procure a unidade de saude."
     if motivo == RECONTATO:
-        return f"{prefixo}faz tempo que nao temos noticias suas. Entre em contato com a unidade de saude."
+        return f"{prefixo}faz tempo que nao temos noticias suas. Entre em contato com a unidade."
     raise ValueError(f"motivo desconhecido: {motivo}")
 
 

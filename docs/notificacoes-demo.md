@@ -9,7 +9,7 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
   - *posição:* depois de cada publicação da fila, quem mudou `HP_NOTIFICA_MIN_POSICOES` ou mais, as maiores mudanças primeiro, até `HP_NOTIFICA_MAX_POR_PUBLICACAO`;
   - *situação:* decisão do regulador confirmada (aprovar/editar/manter) e resolução de pendência **bloqueante**;
   - *recontato:* pendências `REC-01` abertas na atualização diária (no máximo o mesmo limite).
-- **Texto genérico** (`domain/notificacoes.py`): sem classe, score nem posição exata, só "subiu" ou "desceu". Prefixo `[DEMO SOL-xxxx]` diz de qual paciente seria.
+- **Texto genérico** ("Atualização da fila cirúrgica: …") (`domain/notificacoes.py`): sem classe, score nem posição exata, só "subiu" ou "desceu". Prefixo `[DEMO SOL-xxxx]` diz de qual paciente seria.
 - **Segurança da demo:** canal `simulado` por padrão (nada sai). O Twilio só liga com `HP_NOTIFICA_CANAL=twilio` **e** credenciais **e** `HP_NOTIFICA_DESTINO`. Há limite de envios por rodada. Falha de envio não derruba a decisão nem a publicação: fica `falhou` e pode ser reenviada.
 - **Conta de teste do Twilio:** só entrega a números verificados e acrescenta um aviso de "trial" à mensagem; o corpo sai sem acentos (cabe em SMS GSM-7).
 
