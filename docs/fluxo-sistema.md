@@ -193,7 +193,7 @@ Os problemas se dividem em três tipos:
 | PRE-03 | Município inconsistente | "Porto Alegre" (347), "PORTO ALEGRE" (12), "porto alegre" (8); idem Canoas, Viamão, Pelotas, Osório… | Mapeia para nome oficial (IBGE) |
 | PRE-04 | Prioridade com grafia variada | `baixa`/`Baixa`, `media`/`Média`, `alta`/`Alta` | Normaliza para `alta`/`media`/`baixa` |
 | PRE-05 | Flag oncológica contradiz o CID | SOL-2025-00149 (C61, flag `nao`, prioridade baixa, 510 dias); SOL-2026-00583 (hérnia K40.9 com flag `sim`); SOL-2025-00196 (neoplasia **benigna** com flag `sim`) | Recalcula `oncologico = cid_norm começa com C`; guarda a flag original |
-| PRE-06 | Flags de diabetes/piora desatualizadas | 67 pacientes com PS/internação recente e `flag_piora_clinica = nao` | Recalcula a partir de eventos/texto; guarda original |
+| PRE-06 | Flags de diabetes/piora desatualizadas | 67 pacientes com PS/internação recente e `flag_piora_clinica = nao` | Recalcula a partir de eventos/texto; guarda original. Piora por evento: D-18/D-19. Diabetes: fica para a PRE-13 (alerta, US-05) |
 | PRE-07 | Evento duplicado | EVT-000050 e EVT-000051: mesma falta, mesma solicitação (SOL-2023-00083), mesmo dia | Mantém um; marca o outro como duplicado |
 | PRE-08 | Evento anterior à entrada na fila | 155 eventos. Ex.: SOL-2023-00017 com 2 PS em dez/2022, entrou em mar/2023 | Marca `historico = true`: **não conta como piora** durante a espera |
 
@@ -322,6 +322,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 |---|---|---|
 | `cid_norm` | texto | CID maiúsculo sem ponto (PRE-01) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
+| `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-18/D-19) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
 | `status_fila` | enum | `ativa`, `suspensa`, `removida` |

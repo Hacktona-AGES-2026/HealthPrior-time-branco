@@ -13,7 +13,8 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /docs
 python -m app.cli init-db              # cria as tabelas
-python -m app.cli carga                # US-01
+python -m app.cli carga                # US-01 (+ pré-processamento PRE-05..08, US-03)
+python -m app.cli preprocessar         # US-03: recalcula flags e marca eventos, sem recarregar
 python -m app.cli gerar-fila           # US-08/09/10
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
@@ -35,6 +36,7 @@ app/
     preprocessing/     regras PRE-xx (US-02..05)
   application/       CASOS DE USO. Orquestram domínio + portas. Um arquivo por caso de uso.
     carga_inicial.py   US-01
+    preprocessar.py    C-05: aplica PRE-xx ao que está no banco (hoje PRE-05..08, US-03)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
     decidir.py         US-13/14
@@ -52,7 +54,7 @@ app/
     deps.py            composição: único lugar que instancia implementações concretas
     errors.py          DomainError -> {"erro","mensagem"}
     routers/           um arquivo por recurso
-  cli.py             comandos de linha (carga, gerar-fila, decisoes)
+  cli.py             comandos de linha (carga, preprocessar, gerar-fila, decisoes)
   config.py          configuração (REF_DATE fixa = 2026-10-23)
 tests/               espelha app/ ; test_arquitetura.py protege a regra de dependência
 ```
@@ -72,6 +74,7 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 ## Convenções locais
 - Sem migrations (D-16): tabelas via `create_all`. Mudou o schema? `docker compose down -v` e rode a carga de novo.
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
+- Pré-processamento (US-03): `oncologico` pelo CID (nunca pela flag) e `piora_recalculada` pelos eventos; eventos recebem `duplicado_de`/`historico` (nunca são apagados). As flags originais ficam intactas e cada divergência vai para `correcoes_log` (PRE-05/06). Roda ao fim da carga e avulso (D-22).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).
 - Rotas não têm regra de negócio. Se aparecer um `if` de regra numa rota, mova para domain/application.
 - Erros de regra: lance um `DomainError` específico; a API converte. `NotImplementedError` vira 501.
