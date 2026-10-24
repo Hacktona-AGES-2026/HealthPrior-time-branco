@@ -23,7 +23,7 @@ from app.domain.inbox import classe_referencia, entra_no_inbox
 from app.domain.models import Solicitacao
 
 # Câncer nunca abaixo de B na classe (mesma regra do SWALIS, docs/swalis.md). Na fila, a trava
-# (bloco prioritário, D-108) já garante a regra de ouro; aqui a edição é recusada antes (I-01).
+# (bloco prioritário, D-112) já garante a regra de ouro; aqui a edição é recusada antes (I-01).
 CLASSES_PROIBIDAS_ONCOLOGICO = frozenset({Classe.C, Classe.D})
 
 

@@ -232,6 +232,88 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/aprendizado/gerar-propostas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gerar Propostas
+         * @description Agrupa decisões por (procedimento, motivo, classe) e grava as propostas pendentes (C-14).
+         *
+         *     Os parâmetros do corpo (opcionais) substituem os padrões de Q-05 nesta execução.
+         */
+        post: operations["gerar_propostas_aprendizado_gerar_propostas_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/propostas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Propostas
+         * @description Propostas com os casos de origem e, nas pendentes, o impacto simulado (shadow run).
+         */
+        get: operations["listar_propostas_propostas_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/propostas/{proposta_id}/decidir": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decidir Proposta
+         * @description Aprovar cria a versão N+1 das regras e manda os afetados ao inbox; rejeitar exige o motivo.
+         */
+        post: operations["decidir_proposta_propostas__proposta_id__decidir_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/regras/{regra_id}/reverter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reverter Regra
+         * @description Desativa a regra aprovada (C-14: versionada e reversível) e tira do inbox quem só estava lá por ela.
+         */
+        post: operations["reverter_regra_regras__regra_id__reverter_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -286,6 +368,27 @@ export interface components {
             inconsistencias?: components["schemas"]["InconsistenciasOut"] | null;
             bloqueantes?: components["schemas"]["BloqueantesOut"] | null;
         };
+        /** CasoOrigemOut */
+        CasoOrigemOut: {
+            /** Decisao Id */
+            decisao_id: string;
+            /** Solicitacao Id */
+            solicitacao_id: string;
+            /** Regulador Id */
+            regulador_id: string;
+            /**
+             * Data
+             * Format: date-time
+             */
+            data: string;
+            /** Acao */
+            acao: string;
+            classe_de?: components["schemas"]["Classe"] | null;
+            classe_para?: components["schemas"]["Classe"] | null;
+            motivo?: components["schemas"]["MotivoCodificado"] | null;
+            /** Justificativa */
+            justificativa?: string | null;
+        };
         /**
          * Classe
          * @enum {string}
@@ -315,6 +418,34 @@ export interface components {
             novo: string | null;
             /** Regra */
             regra: string;
+        };
+        /** DecidirPropostaIn */
+        DecidirPropostaIn: {
+            /**
+             * Decisao
+             * @enum {string}
+             */
+            decisao: "aprovar" | "rejeitar";
+            /** Usuario Id */
+            usuario_id: string;
+            /** Observacao */
+            observacao?: string | null;
+        };
+        /** DecidirPropostaOut */
+        DecidirPropostaOut: {
+            /** Proposta Id */
+            proposta_id: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "aprovada" | "rejeitada";
+            /** Versao */
+            versao?: number | null;
+            /** Versao Regras */
+            versao_regras?: string | null;
+            /** Enviados Ao Inbox */
+            enviados_ao_inbox: number;
         };
         /** DecisaoIn */
         DecisaoIn: {
@@ -485,10 +616,39 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** GerarPropostasOut */
+        GerarPropostasOut: {
+            /** Analisadas */
+            analisadas: number;
+            /** Consideradas */
+            consideradas: number;
+            /** Outros Reclassificados */
+            outros_reclassificados: number;
+            /** Outros Sem Grupo */
+            outros_sem_grupo: number;
+            /** Propostas */
+            propostas: components["schemas"]["PropostaRegraOut"][];
+            /** Descartadas */
+            descartadas: components["schemas"]["PropostaRegraOut"][];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
             detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * ImpactoOut
+         * @description Shadow run: o que a regra mudaria na fila de hoje, sem aplicar.
+         */
+        ImpactoOut: {
+            /** Afetados */
+            afetados: number;
+            /** Oncologicos Afetados */
+            oncologicos_afetados: number;
+            /** Oncologicos Rebaixados */
+            oncologicos_rebaixados: number;
+            /** Exemplos */
+            exemplos: string[];
         };
         /** InboxOut */
         InboxOut: {
@@ -628,6 +788,20 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /**
+         * ParametrosAprendizadoIn
+         * @description Parâmetros do agrupamento (Q-05, provisórios). Omitidos ficam no padrão.
+         */
+        ParametrosAprendizadoIn: {
+            /** Min Casos */
+            min_casos?: number | null;
+            /** Min Reguladores */
+            min_reguladores?: number | null;
+            /** Janela Dias */
+            janela_dias?: number | null;
+            /** Min Consistencia */
+            min_consistencia?: number | null;
+        };
         /** PendenciaOut */
         PendenciaOut: {
             /** Pendencia Id */
@@ -685,6 +859,94 @@ export interface components {
             /** Encerradas */
             encerradas: number;
         };
+        /** PropostaDetalheOut */
+        PropostaDetalheOut: {
+            /** Proposta Id */
+            proposta_id: string;
+            /** Procedimento Id */
+            procedimento_id: string;
+            /** Procedimento */
+            procedimento?: string | null;
+            motivo: components["schemas"]["MotivoCodificado"];
+            classe_de: components["schemas"]["Classe"];
+            classe_para: components["schemas"]["Classe"];
+            /**
+             * Direcao
+             * @enum {string}
+             */
+            direcao: "subir" | "rebaixar";
+            /** N Casos */
+            n_casos: number;
+            /** N Reguladores */
+            n_reguladores: number;
+            /** Consistencia */
+            consistencia: number;
+            /** Casos */
+            casos: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pendente" | "descartada" | "aprovada" | "rejeitada" | "revertida";
+            /** Motivo Descarte */
+            motivo_descarte?: string | null;
+            /** Casos Origem */
+            casos_origem: components["schemas"]["CasoOrigemOut"][];
+            impacto?: components["schemas"]["ImpactoOut"] | null;
+            /** Decidida Por */
+            decidida_por?: string | null;
+            /** Decidida Em */
+            decidida_em?: string | null;
+            /** Observacao */
+            observacao?: string | null;
+            /** Versao */
+            versao?: number | null;
+            /** Revertida Por */
+            revertida_por?: string | null;
+            /** Revertida Em */
+            revertida_em?: string | null;
+            /** Motivo Reversao */
+            motivo_reversao?: string | null;
+        };
+        /** PropostaRegraOut */
+        PropostaRegraOut: {
+            /** Proposta Id */
+            proposta_id: string;
+            /** Procedimento Id */
+            procedimento_id: string;
+            /** Procedimento */
+            procedimento?: string | null;
+            motivo: components["schemas"]["MotivoCodificado"];
+            classe_de: components["schemas"]["Classe"];
+            classe_para: components["schemas"]["Classe"];
+            /**
+             * Direcao
+             * @enum {string}
+             */
+            direcao: "subir" | "rebaixar";
+            /** N Casos */
+            n_casos: number;
+            /** N Reguladores */
+            n_reguladores: number;
+            /** Consistencia */
+            consistencia: number;
+            /** Casos */
+            casos: string[];
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pendente" | "descartada" | "aprovada" | "rejeitada" | "revertida";
+            /** Motivo Descarte */
+            motivo_descarte?: string | null;
+        };
+        /** PropostasOut */
+        PropostasOut: {
+            /** Total */
+            total: number;
+            /** Itens */
+            itens: components["schemas"]["PropostaDetalheOut"][];
+        };
         /** PublicacaoOut */
         PublicacaoOut: {
             /** Publicada */
@@ -741,6 +1003,27 @@ export interface components {
             inseridos: number;
             /** Atualizados */
             atualizados: number;
+        };
+        /** ReverterRegraIn */
+        ReverterRegraIn: {
+            /** Usuario Id */
+            usuario_id: string;
+            /** Motivo */
+            motivo: string;
+        };
+        /** ReverterRegraOut */
+        ReverterRegraOut: {
+            /** Regra Id */
+            regra_id: string;
+            /**
+             * Status
+             * @constant
+             */
+            status: "revertida";
+            /** Versao Regras */
+            versao_regras: string;
+            /** Devolvidos Ao Inbox */
+            devolvidos_ao_inbox: number;
         };
         /** ScoreOut */
         ScoreOut: {
@@ -1257,6 +1540,176 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ComparacaoOut"];
+                };
+            };
+        };
+    };
+    gerar_propostas_aprendizado_gerar_propostas_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["ParametrosAprendizadoIn"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GerarPropostasOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    listar_propostas_propostas_get: {
+        parameters: {
+            query?: {
+                status?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PropostasOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    decidir_proposta_propostas__proposta_id__decidir_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                proposta_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecidirPropostaIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DecidirPropostaOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    reverter_regra_regras__regra_id__reverter_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                regra_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverterRegraIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReverterRegraOut"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Erro"];
                 };
             };
         };

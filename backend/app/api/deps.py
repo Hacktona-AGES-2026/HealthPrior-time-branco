@@ -16,6 +16,7 @@ from app.application.detectar_bloqueantes import DetectarBloqueantes
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.gerar_propostas import GerarPropostas
+from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -37,16 +38,23 @@ from app.infrastructure.repositories import (
     SqlFilaRepository,
     SqlPendenciaRepository,
     SqlPropostaRepository,
+    SqlRegraRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
+from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
 
 def get_scorer(data: date | None = None):
     return criar_swalis(ref_date=data)
+
+
+def _scorer(session: Session, data: date | None = None):
+    """SWALIS com as regras aprendidas aprovadas pelo comitê (US-19)."""
+    return com_regras(get_scorer(data), session, data)
 
 
 # US-16
@@ -81,7 +89,7 @@ def _gerar_fila_em(session: Session, data: date) -> GerarFila:
     return GerarFila(
         solicitacoes=SqlSolicitacaoRepository(session),
         eventos=SqlEventoRepository(session),
-        scorer=get_scorer(data),
+        scorer=_scorer(session, data),
         exportador=ExportadorCsv(),
         ref_date=data,
     )
@@ -138,7 +146,7 @@ def get_resolver_pendencia(session: Session = Depends(get_session),
 # US-15
 def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEvento:
     return RegistrarEvento(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
-                           get_scorer(), SqlPendenciaRepository(session),
+                           _scorer(session), SqlPendenciaRepository(session),
                            SqlUnidadeDeTrabalho(session))
 
 
@@ -149,7 +157,7 @@ def get_decidir(session: Session = Depends(get_session),
     # Mesma data da fila (US-16): `editado_em` e o envelhecimento do score editado partem dela.
     return DecidirClasse(
         solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
-        decisoes=SqlDecisaoRepository(session), scorer=get_scorer(data),
+        decisoes=SqlDecisaoRepository(session), scorer=_scorer(session, data),
         uow=SqlUnidadeDeTrabalho(session), publicar=publicar, fila=SqlFilaRepository(session),
         relogio=lambda: datetime.now(timezone.utc), ref_date=data)
 
@@ -172,7 +180,7 @@ def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas
 # US-12
 def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
     return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
-                       SqlEventoRepository(session), get_scorer(), SqlDecisaoRepository(session))
+                       SqlEventoRepository(session), _scorer(session), SqlDecisaoRepository(session))
 
 
 # US-21
@@ -185,7 +193,7 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session),
         correcoes=SqlCorrecaoRepository(session),
         pendencias=SqlPendenciaRepository(session),
         fila=SqlFilaRepository(session),
-        scorer=get_scorer(data),
+        scorer=_scorer(session, data),
         ref_date=data,
         decisoes=SqlDecisaoRepository(session),
     )
@@ -217,3 +225,27 @@ def get_nomes_procedimentos(session: Session = Depends(get_session)) -> dict[str
         session.rollback()
         return {}
     return {s.procedimento_id: s.procedimento for s in solicitacoes if s.procedimento}
+
+
+# US-19
+def get_listar_propostas(session: Session = Depends(get_session),
+                         data: date = Depends(get_data_referencia)) -> ListarPropostas:
+    return ListarPropostas(SqlPropostaRepository(session), SqlRegraRepository(session),
+                           SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                           _scorer(session, data), SqlDecisaoRepository(session))
+
+
+def get_decidir_proposta(session: Session = Depends(get_session),
+                         data: date = Depends(get_data_referencia)) -> DecidirProposta:
+    return DecidirProposta(SqlPropostaRepository(session), SqlRegraRepository(session),
+                           SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                           _scorer(session, data), SqlUnidadeDeTrabalho(session),
+                           lambda: datetime.now(timezone.utc))
+
+
+def get_reverter_regra(session: Session = Depends(get_session),
+                       data: date = Depends(get_data_referencia)) -> ReverterRegra:
+    return ReverterRegra(SqlPropostaRepository(session), SqlRegraRepository(session),
+                         SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                         get_scorer(data), SqlUnidadeDeTrabalho(session),
+                         lambda: datetime.now(timezone.utc))

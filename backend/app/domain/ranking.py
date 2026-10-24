@@ -2,7 +2,7 @@
 
 Regra de ouro (I-01): nenhum paciente oncológico pode ficar abaixo de um
 paciente sem urgência clínica. Cada paciente recebe uma camada (1 = oncológico,
-2 = urgente não oncológico, 3 = demais), mas a fila tem só dois blocos (D-108,
+2 = urgente não oncológico, 3 = demais), mas a fila tem só dois blocos (D-112,
 revisa D-06): o bloco prioritário junta as camadas 1 e 2, e o bloco das demais
 (camada 3) vem abaixo e nunca invade o de cima. Assim um urgente pode passar um
 oncológico, o que a regra permite: todo sinal da camada 2 também é urgência para

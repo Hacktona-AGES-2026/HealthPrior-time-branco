@@ -7,7 +7,7 @@ import { metricasGlobais } from "@/lib/stats"
 import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 
-const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS", pendencias: "Pendências" }
+const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS", pendencias: "Pendências", propostas: "Propostas de regra" }
 
 function Metrica({ rotulo, valor, cor, ativo, aoClicar }: { rotulo: string; valor: number; cor?: string; ativo?: boolean; aoClicar: () => void }) {
   const animado = usarContagem(valor)

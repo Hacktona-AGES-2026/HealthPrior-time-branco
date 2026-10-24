@@ -58,7 +58,7 @@ def test_camada_3_nao_invade_o_bloco_prioritario():
 
 
 def test_urgente_com_score_maior_passa_oncologico():
-    """D-108: camadas 1 e 2 formam um bloco só, ordenado pelo score."""
+    """D-112: camadas 1 e 2 formam um bloco só, ordenado pelo score."""
     itens = [
         item("onco", oncologico=True, score=25),
         item("urgente", urgente=True, score=8000),
@@ -142,7 +142,7 @@ def test_propriedade_regra_de_ouro_com_300_itens_aleatorios():
 
     assert [f.posicao for f in fila] == list(range(1, 301))
 
-    # Regra de ouro (I-01): nenhum oncológico abaixo de um paciente da camada 3 (D-108).
+    # Regra de ouro (I-01): nenhum oncológico abaixo de um paciente da camada 3 (D-112).
     camadas = [f.camada for f in fila]
     ultimo_prioritario = max(
         (i for i, c in enumerate(camadas) if c != Camada.DEMAIS), default=-1

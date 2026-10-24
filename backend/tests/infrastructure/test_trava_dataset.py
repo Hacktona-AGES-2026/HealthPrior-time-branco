@@ -1,4 +1,4 @@
-"""C-11 · D-108: quem divide o bloco prioritário com os oncológicos é urgente para o verificador.
+"""C-11 · D-112: quem divide o bloco prioritário com os oncológicos é urgente para o verificador.
 
 Com as camadas 1 e 2 num bloco só, um urgente pode passar um oncológico. Isso só respeita a
 regra de ouro (I-01) se nenhum paciente da camada 2 for "sem urgência" pela definição do
