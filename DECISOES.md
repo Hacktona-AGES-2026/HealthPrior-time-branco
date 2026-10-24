@@ -97,16 +97,20 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-91 | 2026-10-24 | Ordem: a resolução é **confirmada primeiro**; só então a fila é recalculada e publicada (US-09/10), em transação própria. Se o verificador reprovar, a resolução continua valendo, a fila anterior segue publicada (I-07) e a resposta traz `fila_publicada = false`. Se a publicação lançar exceção, o erro vai para o log e a resposta é igual (não vira 500) | A publicação desfaz a própria transação quando reprova; na mesma transação ela desfaria a resolução. Um 500 depois de resolvida levaria a pessoa a tentar de novo e tomar 409 | Uma transação só; deixar a exceção virar 500 | US-07 |
 | D-92 | 2026-10-24 | O front espelha a tabela de resoluções por regra só para mostrar os botões certos; quem valida é a API. Sem login (D-12): o autor é `adm-01`, ou o que estiver em `localStorage["hp.usuario"]`, até a US-23 | Evita chamar a API para descobrir os botões; a US-23 traz o seletor de usuário | Expor as resoluções aceitas no `GET /pendencias` | US-07 |
 | D-93 | 2026-10-24 | Contrato (§5.6): `ResolverPendenciaOut.status_fila` pode ser `null` (PRE-24 não tem solicitação); `PendenciaOut` ganha `resolvido_por`, `resolvido_em`, `resolucao` e `observacao`, `null` enquanto a pendência está aberta; novos erros 404 `PENDENCIA_NAO_ENCONTRADA`, 409 `PENDENCIA_JA_RESOLVIDA` e 422 `RESOLUCAO_INVALIDA`/`OBSERVACAO_OBRIGATORIA`. Mudanças compatíveis para quem já consome a lista | A lista de resolvidas precisa dizer quem, quando e como (C-06) | Não expor o desfecho | US-07 |
+| D-94 | 2026-10-24 | "Fora da fila" é toda solicitação que não está `ativa` (`suspensa` ou `removida`); o motivo é a regra PRE-xx de `motivo_status`, uma linha por regra com contagem e IDs, e a Observação separa suspensas de removidas. PRE-24 (evento órfão) não entra: não tem solicitação | É o que o verificador chama de cobertura; suspensa não é exclusão definitiva (volta se alguém reativar) e a tabela precisa dizer isso | Listar só as removidas; uma linha por solicitação | US-11 |
+| D-95 | 2026-10-24 | `python -m app.cli decisoes` imprime a tabela e confere `total - linhas da fila publicada` com o que a tabela lista (igual ao aviso do verificador); se não bater, avisa e sai com código 1. `--gravar` reescreve só a seção "Solicitações fora da fila" do `DECISOES.md` (idempotente; caminho em `HP_DECISOES_PATH`) | A tabela do documento é gerada, não digitada; muda quando alguém resolve uma pendência, então precisa ser refeita antes da entrega | Preencher à mão; gravar sem conferir a cobertura | US-11 |
 
 ## Solicitações fora da fila
 
-> Preencher ao gerar a entrega. O verificador avisa quantas solicitações ficaram de fora; cada uma precisa de motivo.
+> Gerado por `python -m app.cli decisoes --gravar` sobre a fila publicada (41 de 941 solicitações ficaram de fora). Cada uma tem a regra que a tirou; oncológicas precisam de justificativa (I-02).
 
 | Motivo (regra) | Quantidade | Solicitações | Observação |
 |---|---|---|---|
-| Duplicata (PRE-20) | | | Mantida a de entrada mais antiga |
-| Operou em outro serviço / convênio (PRE-21/22) | | | |
-| Desistência (PRE-23) | | | |
+| Duplicata (PRE-20) | 17 | SOL-2024-00044, SOL-2025-00069, SOL-2025-00158, SOL-2025-00235, SOL-2025-00247, SOL-2025-00348, SOL-2026-00063, SOL-2026-00088, SOL-2026-00093, SOL-2026-00215, SOL-2026-00276, SOL-2026-00357, SOL-2026-00375, SOL-2026-00447, SOL-2026-00601, SOL-2026-00771, SOL-2026-00798 | 17 suspensas (até uma pessoa confirmar a saída; voltam à fila se reativadas) |
+| Operou em outro serviço (PRE-21) | 1 | SOL-2023-00076 | 1 suspensa (até uma pessoa confirmar a saída; volta à fila se reativada) |
+| Operou pelo convênio (PRE-22) | 1 | SOL-2026-00066 | 1 suspensa (até uma pessoa confirmar a saída; volta à fila se reativada) |
+| Desistência (PRE-23) | 10 | SOL-2022-00015, SOL-2023-00065, SOL-2024-00061, SOL-2024-00076, SOL-2024-00087, SOL-2025-00131, SOL-2025-00189, SOL-2025-00354, SOL-2025-00378, SOL-2026-00167 | 10 suspensas (até uma pessoa confirmar a saída; voltam à fila se reativadas) |
+| Fontes contraditórias (PRE-25) | 12 | SOL-2023-00034, SOL-2023-00054, SOL-2024-00011, SOL-2024-00179, SOL-2024-00184, SOL-2025-00211, SOL-2025-00435, SOL-2025-00453, SOL-2025-00495, SOL-2026-00305, SOL-2026-00560, SOL-2026-00694 | 12 suspensas (até uma pessoa confirmar a saída; voltam à fila se reativadas) |
 
 ## Premissas e limitações
 

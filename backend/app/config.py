@@ -32,6 +32,7 @@ class Settings:
     llm_model: str
     llm_enabled: bool
     llm_cache_path: Path
+    decisoes_path: Path
 
 
 def _load() -> Settings:
@@ -52,6 +53,7 @@ def _load() -> Settings:
         llm_model=os.getenv("HP_LLM_MODEL", "typesafe/jev-1.14"),
         llm_enabled=os.getenv("HP_LLM_ENABLED", "true").lower() == "true",
         llm_cache_path=Path(os.getenv("HP_LLM_CACHE", REPO_ROOT / "data" / "processed" / "cache_llm.json")),
+        decisoes_path=Path(os.getenv("HP_DECISOES_PATH", REPO_ROOT / "DECISOES.md")),
     )
 
 

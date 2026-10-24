@@ -9,7 +9,7 @@
     python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli extrair-sinais  SW-01..04: pré-aquece o cache do LLM e mostra as classes SWALIS
-    python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
+    python -m app.cli decisoes [--gravar]  US-11: tabela de exclusões (e grava no DECISOES.md)
 """
 import argparse
 import sys
@@ -24,13 +24,16 @@ from app.application.montar_fila import linhas_para_dicts, montar_fila
 from app.application.detectar_bloqueantes import DetectarBloqueantes, ResumoBloqueantes
 from app.application.detectar_inconsistencias import DetectarInconsistencias, ResumoInconsistencias
 from app.application.publicar_fila import PublicarFila
+from app.application.listar_exclusoes import ListarExclusoes
 from app.application.normalizar import Normalizar, ResumoNormalizacao
 from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
 from app.config import settings
 from app.domain.errors import CargaInvalidaError
+from app.domain.exclusoes import tabela_markdown
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.csv_source import carregar_do_csv
 from app.infrastructure.db import criar_tabelas, engine
+from app.infrastructure.decisoes_md import gravar_secao
 from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
@@ -213,8 +216,27 @@ def cmd_extrair_sinais() -> None:
     print(f"Cache: {settings.llm_cache_path}")
 
 
-def cmd_decisoes() -> None:
-    raise NotImplementedError("US-11: gerar tabela de exclusões")
+def cmd_decisoes(gravar: bool = False) -> None:
+    """US-11: imprime a tabela "Solicitações fora da fila"; com `--gravar` atualiza o DECISOES.md."""
+    with Session(engine) as session:
+        r = ListarExclusoes(SqlSolicitacaoRepository(session), SqlFilaRepository(session)).executar()
+    tabela = tabela_markdown(r.grupos)
+    nota = (f"> Gerado por `python -m app.cli decisoes --gravar` sobre a fila publicada ({r.fora} de {r.total} "
+            "solicitações ficaram de fora). Cada uma tem a regra que a tirou; oncológicas precisam de justificativa (I-02).")
+    print(tabela)
+    print(f"\nFora da fila: {r.fora} de {r.total} solicitações")
+    if r.confere is None:
+        print("Cobertura: ainda não há fila publicada; rode `gerar-fila` para conferir com o verificador.")
+    elif r.confere:
+        print(f"Cobertura: confere com o aviso do verificador ({r.total} - {r.publicadas} = {r.fora}).")
+    else:
+        print(f"ATENÇÃO: a cobertura não bate: {r.total} - {r.publicadas} publicadas = {r.total - r.publicadas}, "
+              f"mas a tabela lista {r.fora}. Republique a fila (`gerar-fila`).", file=sys.stderr)
+    if gravar:
+        gravar_secao(settings.decisoes_path, f"{nota}\n\n{tabela}")
+        print(f"Seção atualizada em {settings.decisoes_path}")
+    if r.confere is False:
+        sys.exit(1)
 
 
 COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
@@ -227,7 +249,14 @@ COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normal
 def main() -> None:
     parser = argparse.ArgumentParser(prog="python -m app.cli")
     parser.add_argument("comando", choices=COMANDOS)
-    COMANDOS[parser.parse_args().comando]()
+    parser.add_argument("--gravar", action="store_true", help="decisoes: grava a tabela no DECISOES.md")
+    args = parser.parse_args()
+    if args.gravar and args.comando != "decisoes":
+        parser.error("--gravar só vale para o comando decisoes")
+    if args.comando == "decisoes":
+        cmd_decisoes(gravar=args.gravar)
+    else:
+        COMANDOS[args.comando]()
 
 
 if __name__ == "__main__":
