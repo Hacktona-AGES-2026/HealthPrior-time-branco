@@ -1,12 +1,13 @@
 """Caso de uso: montar a fila priorizada (camadas + score) a partir das solicitações."""
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
+from dataclasses import asdict
 from datetime import date
 from typing import Protocol
 
+from app.domain.cid import is_oncologico
 from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, StatusFila
-from app.domain.models import Evento, ItemRanking, ResultadoScore, Solicitacao
+from app.domain.models import Evento, ItemRanking, LinhaFila, ResultadoScore, Solicitacao
 from app.domain.ranking import ordenar_fila
 from app.domain.urgencia import (
     SinaisUrgencia,
@@ -17,25 +18,13 @@ from app.domain.urgencia import (
     tem_evento_de_piora_na_espera,
 )
 
+__all__ = ["LinhaFila", "Scorer", "linhas_para_dicts", "montar_fila", "montar_justificativa"]
+
 
 class Scorer(Protocol):
     versao_regras: str
 
     def calcular(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ResultadoScore: ...
-
-
-@dataclass
-class LinhaFila:
-    solicitacao_id: str
-    posicao: int
-    justificativa: str
-    camada: int
-    classe: str
-    pct_prazo_consumido: float
-    dias_em_fila: int
-    score_efetivo: float
-    editado_manualmente: bool
-    versao_regras: str
 
 
 def _texto_motivo(codigo: str, sol: Solicitacao) -> str:
@@ -103,7 +92,10 @@ def montar_fila(
             justificativa_clinica=sol.justificativa_clinica,
             tem_biopsia_positiva=tem_biopsia_positiva(eventos),
         )
-        itens.append(ItemRanking(sol.solicitacao_id, sol.oncologico, is_urgente(sinais),
+        # I-09: o CID manda. Se o `oncologico` gravado estiver desatualizado (flags não
+        # recalculadas), um câncer não pode cair fora da camada 1.
+        oncologico = sol.oncologico or is_oncologico(sol.cid_principal)
+        itens.append(ItemRanking(sol.solicitacao_id, oncologico, is_urgente(sinais),
                                  score, sol.data_entrada_fila))
         contexto[sol.solicitacao_id] = (sol, res, motivos_urgencia(sinais),
                                         motivos_sintomas(sinais), score, classe)
