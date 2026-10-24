@@ -12,9 +12,11 @@
     python -m app.cli seed-aprendizado  US-18: grava ~33 decisões de exemplo (DEC-SEED-*); idempotente
     python -m app.cli gerar-propostas  US-18: agrupa as decisões em propostas de regra e as grava
     python -m app.cli recontato   US-17: abre pendências de recontato (sem evento há N dias, HP_RECONTATO_DIAS)
+    python -m app.cli bootstrap   deploy: se o banco está vazio, carga + primeira fila (+ propostas da demo com HP_DEMO_SEED=true)
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
+import os
 import sys
 from collections import Counter
 from datetime import datetime, timezone
@@ -284,6 +286,30 @@ def cmd_gerar_propostas() -> None:
         print(_linha_proposta(p))
 
 
+def cmd_bootstrap() -> None:
+    """Primeira subida (deploy): banco sem solicitações -> carga, fila publicada e, na demo, as propostas de regra.
+
+    Idempotente: com dados no banco não faz nada, então reiniciar o serviço não refaz a carga nem mexe em decisões.
+    """
+    from sqlalchemy import func, select
+
+    from app.infrastructure.tables import SolicitacaoTable
+
+    criar_tabelas()
+    with Session(engine) as session:
+        existentes = session.execute(select(func.count()).select_from(SolicitacaoTable)).scalar() or 0
+    if existentes:
+        print(f"bootstrap: o banco já tem {existentes} solicitações; nada a fazer")
+        return
+    print("bootstrap: banco vazio; carregando o dataset")
+    cmd_carga()
+    cmd_gerar_fila()
+    if os.getenv("HP_DEMO_SEED", "true").lower() == "true":
+        cmd_seed_aprendizado()
+        cmd_gerar_propostas()
+    print("bootstrap: pronto")
+
+
 def cmd_decisoes() -> None:
     raise NotImplementedError("US-11: gerar tabela de exclusões")
 
@@ -293,7 +319,7 @@ COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normal
             "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "extrair-sinais": cmd_extrair_sinais,
             "recontato": cmd_recontato, "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
-            "decisoes": cmd_decisoes}
+            "bootstrap": cmd_bootstrap, "decisoes": cmd_decisoes}
 
 
 def main() -> None:

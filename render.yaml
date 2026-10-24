@@ -1,0 +1,23 @@
+# Blueprint do Render para o back-end (o front vai na Vercel). Veja docs/deploy.md.
+services:
+  - type: web
+    name: healthprior-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: HP_USE_MOCKS
+        value: "false"
+      - key: DATABASE_URL      # string de conexão do Neon (veja docs/deploy.md); não vai para o git
+        sync: false
+      - key: HP_CORS_ORIGINS   # domínio do front na Vercel, ex.: https://healthprior.vercel.app
+        sync: false
+      - key: HP_DEMO_SEED      # carrega as propostas de regra da demo na primeira subida
+        value: "true"
+      - key: HP_NOTIFICA_CANAL # simulado (padrão), ntfy, ... veja docs/notificacoes-demo.md
+        value: simulado
+      - key: NTFY_TOPIC
+        sync: false

@@ -1,15 +1,11 @@
 import type { Classe, Paciente } from "@/data/tipos"
 import { MOTIVOS_CODIFICADOS, type MotivoCodificado } from "@/lib/api"
 
-<<<<<<< Updated upstream
-export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "pendencias" | "propostas" | "notificacoes"
+export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "pendencias" | "propostas" | "notificacoes" | "importar"
 
 export type { MotivoCodificado }
 
 export const ROTULO_MOTIVO = MOTIVOS_CODIFICADOS
-=======
-export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "propostas" | "importar" | "notificacoes"
->>>>>>> Stashed changes
 
 export type Decisao = {
   status: "aprovado" | "editado"
