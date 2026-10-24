@@ -1,88 +1,111 @@
 import { useMemo } from "react"
-import { CartesianGrid, ComposedChart, Line, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import type { Paciente } from "@/data/tipos"
 import { PRAZO_MAX } from "@/lib/cores"
 import { addDias, diffDias, formatarData } from "@/lib/datas"
 import { ROTULO_EVENTO_TIPO } from "./IconesEvento"
 
-type Ponto = { x: number; pct: number; rotulo?: string; piora?: boolean }
-
-const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
 const PIORA = ["pronto_socorro", "internacao"]
-const COR_PIORA = "var(--prazo-vencido)"
-const COR_OUTRO = "var(--primary)"
-const TICK = { fontSize: 12, fill: "var(--muted-foreground)" }
+const COR_DENTRO = "var(--primary)"
+const COR_ATRASO = "var(--prazo-vencido)"
 
-function Dica({ active, payload, entrada }: { active?: boolean; payload?: ReadonlyArray<{ payload: Ponto }>; entrada: string }) {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
-  const data = formatarData(addDias(entrada, d.x))
-  return (
-    <div className="rounded-md border bg-popover p-2 text-xs text-popover-foreground shadow-md">
-      <div className="font-semibold tabular-nums">{d.rotulo ? `${data} — ${d.rotulo}` : data}</div>
-      <div className="tabular-nums text-muted-foreground">{Math.round(d.pct).toLocaleString("pt-BR")}% do prazo</div>
-    </div>
-  )
-}
+const fmtDias = (n: number) => `${n.toLocaleString("pt-BR")} ${n === 1 ? "dia" : "dias"}`
 
+/**
+ * Linha do tempo da espera: entrada → prazo → hoje, com os eventos como pontos.
+ * Não usa escala em %: quando a espera passa muito do prazo (ex.: 1.318 dias para 21), a curva
+ * achata o prazo no chão do gráfico e os rótulos se sobrepõem.
+ */
 export function GraficoEspera({ p }: { p: Paciente }) {
   const prazo = PRAZO_MAX[p.classe]
   const dias = p.dias_em_fila
+  const total = Math.max(dias, prazo, 1)
+  const pos = (d: number) => `${(Math.min(Math.max(d, 0), total) / total) * 100}%`
 
-  const { dados, temEventos, maxY, ticksY } = useMemo(() => {
-    const eventos: Ponto[] = p.eventos
-      .filter((e) => !e.historico)
-      .map((e) => ({ x: diffDias(p.data_entrada, e.data), tipo: e.tipo }))
-      .filter((e) => e.x >= 0 && e.x <= dias)
-      .map((e) => ({ x: e.x, pct: (e.x / prazo) * 100, rotulo: ROTULO_EVENTO_TIPO[e.tipo], piora: PIORA.includes(e.tipo) }))
-    const base: Ponto[] = [0, dias].map((x) => ({ x, pct: (x / prazo) * 100 }))
-    const dados = [...base, ...eventos].sort((a, b) => a.x - b.x)
-    const pctFim = (dias / prazo) * 100
-    const maxY = Math.max(110, Math.ceil(pctFim * 1.1))
-    const ticksY = Array.from(new Set([0, 100, Math.round(pctFim)])).sort((a, b) => a - b)
-    return { dados, temEventos: eventos.length > 0, maxY, ticksY }
-  }, [p, prazo, dias])
+  const eventos = useMemo(
+    () =>
+      p.eventos
+        .filter((e) => !e.historico)
+        .map((e) => ({ dia: diffDias(p.data_entrada, e.data), data: e.data, tipo: e.tipo }))
+        .filter((e) => e.dia >= 0 && e.dia <= dias)
+        .map((e) => ({ ...e, rotulo: ROTULO_EVENTO_TIPO[e.tipo], piora: PIORA.includes(e.tipo) })),
+    [p, dias]
+  )
 
-  const pctAtual = Math.round((dias / prazo) * 100)
+  const dataPrazo = addDias(p.data_entrada, prazo)
+  const dataHoje = addDias(p.data_entrada, dias)
+  const atraso = dias - prazo
+  const frase =
+    atraso > 0
+      ? `Aguarda há ${fmtDias(dias)}. O prazo de ${fmtDias(prazo)} venceu em ${formatarData(dataPrazo)}, há ${fmtDias(atraso)}.`
+      : `Aguarda há ${fmtDias(dias)}. Faltam ${fmtDias(prazo - dias)} para o prazo de ${fmtDias(prazo)}.`
 
-  if (!temEventos) {
-    return <p className="text-sm text-muted-foreground">Sem eventos registrados na espera.</p>
-  }
-
-  const curto = dias <= 180
-  const fmtX = (v: number) => {
-    const iso = addDias(p.data_entrada, v)
-    const [a, m, d] = iso.split("-")
-    return curto ? `${d}/${m}` : `${MESES[Number(m) - 1]}/${a.slice(2)}`
-  }
+  const prazoNaDireita = prazo / total > 0.6
+  const hojeNaDireita = dias / total > 0.6
+  // Hoje perto da entrada: o rótulo da entrada desce para a linha de baixo, onde só há o prazo (à direita).
+  const entradaEmbaixo = dias / total < 0.3 && prazoNaDireita
 
   return (
-    <div>
-      <div className="h-48 w-full sm:h-60" role="img" aria-label={`Espera de ${dias} dias; ${pctAtual}% do prazo consumido`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <ComposedChart data={dados} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-            <XAxis dataKey="x" type="number" domain={[0, dias]} tickCount={4} minTickGap={32} interval="preserveStartEnd" tickFormatter={fmtX} tick={TICK} stroke="var(--border)" />
-            <YAxis domain={[0, maxY]} ticks={ticksY} interval={0} tickFormatter={(v: number) => `${v.toLocaleString("pt-BR")}%`} tick={TICK} stroke="var(--border)" width={44} />
-            <ReferenceLine y={100} stroke="var(--muted-foreground)" strokeDasharray="4 4" label={{ value: "Prazo", position: "insideTopLeft", fontSize: 12, fill: "var(--muted-foreground)" }} />
-            <Tooltip content={<Dica entrada={p.data_entrada} />} cursor={{ stroke: "var(--border)" }} isAnimationActive={false} />
-            <Line
-              dataKey="pct"
-              type="linear"
-              stroke="var(--primary)"
-              strokeWidth={2.5}
-              isAnimationActive={false}
-              activeDot={false}
-              dot={(props: { cx?: number; cy?: number; index?: number; payload?: Ponto }) => {
-                const { cx, cy, payload, index } = props
-                if (!payload?.rotulo || cx == null || cy == null) return <g key={`d-${index}`} />
-                return <circle key={`d-${index}`} cx={cx} cy={cy} r={5} fill={payload.piora ? COR_PIORA : COR_OUTRO} stroke="var(--background)" strokeWidth={1.5} />
-              }}
+    <div className="space-y-2">
+      <p className="text-sm">{frase}</p>
+
+      <div role="img" aria-label={frase} className="pt-1">
+        <div className="relative h-4 text-xs text-muted-foreground tabular-nums">
+          {!entradaEmbaixo && <span className="absolute left-0 top-0 whitespace-nowrap">Entrada {formatarData(p.data_entrada)}</span>}
+          <span
+            className="absolute top-0 whitespace-nowrap"
+            style={hojeNaDireita ? { right: `calc(100% - ${pos(dias)})` } : { left: pos(dias) }}
+          >
+            Hoje {formatarData(dataHoje)}
+          </span>
+        </div>
+
+        <div className="relative my-1.5 h-4">
+          <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-muted" />
+          <div
+            className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full"
+            style={{ left: 0, width: pos(Math.min(dias, prazo)), background: COR_DENTRO }}
+          />
+          {atraso > 0 && (
+            <div
+              className="absolute top-1/2 h-1.5 -translate-y-1/2 rounded-r-full"
+              style={{ left: pos(prazo), width: `calc(${pos(dias)} - ${pos(prazo)})`, background: COR_ATRASO }}
             />
-          </ComposedChart>
-        </ResponsiveContainer>
+          )}
+          <span className="absolute top-0.5 h-3 w-0.5 -translate-x-1/2 rounded-full bg-foreground" style={{ left: pos(prazo) }} aria-hidden />
+          <span className="absolute top-0 h-4 w-0.5 -translate-x-1/2 rounded-full bg-primary" style={{ left: pos(dias) }} aria-hidden />
+          {eventos.map((e, i) => (
+            <span
+              key={`${e.data}-${e.tipo}-${i}`}
+              className="absolute top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-background"
+              style={{ left: pos(e.dia), background: e.piora ? COR_ATRASO : "var(--foreground)" }}
+              title={`${formatarData(e.data)} — ${e.rotulo}`}
+            />
+          ))}
+        </div>
+
+        <div className="relative h-4 text-xs text-muted-foreground tabular-nums">
+          {entradaEmbaixo && <span className="absolute left-0 top-0 whitespace-nowrap">Entrada {formatarData(p.data_entrada)}</span>}
+          <span
+            className="absolute top-0 whitespace-nowrap"
+            style={prazoNaDireita ? { right: `calc(100% - ${pos(prazo)})` } : { left: pos(prazo) }}
+          >
+            Prazo {formatarData(dataPrazo)}
+          </span>
+        </div>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">Pontos: eventos durante a espera</p>
+
+      {eventos.length > 0 && (
+        <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full" style={{ background: COR_ATRASO }} aria-hidden />
+            Pronto-socorro ou internação
+          </span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="size-2.5 rounded-full bg-foreground" aria-hidden />
+            Outros eventos
+          </span>
+        </p>
+      )}
     </div>
   )
 }
