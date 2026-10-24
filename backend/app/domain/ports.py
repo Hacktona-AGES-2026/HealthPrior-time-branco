@@ -4,7 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -32,9 +32,6 @@ class SolicitacaoRepository(Protocol):
         ...
     def atualizar_data_entrada(self, solicitacao: Solicitacao) -> None:
         """Grava só `data_entrada_fila` (fusão de duplicata, US-07); o chamador registra a correção (I-10)."""
-        ...
-    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
-        """Grava só `classe_status`, `classe_confirmada` e o override (`classe_medico`, `score_medico`, `editado_*`)."""
         ...
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `status_fila` e `motivo_status` (US-04); nenhuma coluna original muda."""
@@ -117,9 +114,10 @@ class CorrecaoRepository(Protocol):
 
 class FilaRepository(Protocol):
     def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
-                         publicada_em: datetime) -> None: ...
+                         publicada_em: datetime, data_referencia: date) -> None: ...
     def obter_publicada(self) -> list[LinhaFila]: ...
     def publicada_em(self) -> datetime | None: ...
+    def data_referencia(self) -> date | None: ...
 
 
 class SwalisScorer(Protocol):

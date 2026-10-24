@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import { Check, Undo2, X } from "lucide-react"
+import { daApi } from "@/data/adaptador"
 import type { Paciente } from "@/data/tipos"
 import { CLASSES, DESCRICAO_CLASSE } from "@/lib/cores"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ClasseBadge } from "@/components/shared/Basicos"
+import { MOTIVOS_CODIFICADOS, type MotivoCodificado } from "@/lib/api"
 import { useStore } from "@/store/useStore"
 import type { Classe } from "@/data/tipos"
 
@@ -19,6 +21,8 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
   const aprovar = useStore((s) => s.aprovar)
   const rejeitar = useStore((s) => s.rejeitar)
   const desfazer = useStore((s) => s.desfazer)
+  const enviando = useStore((s) => s.enviando)
+  const [motivoCodificado, setMotivoCodificado] = useState<MotivoCodificado>("outro")
   const [classe, setClasse] = useState<Classe>(paciente.classe_antiga)
   const [motivo, setMotivo] = useState("")
   const campo = useRef<HTMLTextAreaElement>(null)
@@ -44,12 +48,18 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
           </span>
         </div>
         {decisao.motivo && <p className="text-xs text-muted-foreground">Motivo: {decisao.motivo}</p>}
-        <Button size="sm" variant="outline" className="w-full gap-1" onClick={() => desfazer(id)}>
-          <Undo2 aria-hidden /> Desfazer decisão
-        </Button>
+        {/* Na API a decisão fica no log e não se desfaz; para mudar, nova decisão com justificativa. */}
+        {!daApi(paciente) && (
+          <Button size="sm" variant="outline" className="w-full gap-1" onClick={() => desfazer(id)}>
+            <Undo2 aria-hidden /> Desfazer decisão
+          </Button>
+        )}
       </div>
     )
   }
+
+  // API: só se aprova o que está no inbox (D-98)
+  const semProposta = daApi(paciente) && !paciente.divergencia
 
   if (rejeitando) {
     const valido = motivo.trim().length >= 3
@@ -58,7 +68,7 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
         className="fx-expand space-y-2 rounded-xl bg-muted/40 p-3"
         onSubmit={(e) => {
           e.preventDefault()
-          if (valido) rejeitar(id, classe, motivo.trim())
+          if (valido) rejeitar(id, classe, motivo.trim(), motivoCodificado)
         }}
       >
         <div className="text-xs font-semibold">Rejeitar proposta da IA</div>
@@ -78,14 +88,29 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
           </Select>
         </label>
         <label className="block space-y-1 text-xs text-muted-foreground">
-          Motivo (obrigatório)
+          Motivo codificado
+          <Select items={MOTIVOS_CODIFICADOS} value={motivoCodificado} onValueChange={(v) => setMotivoCodificado((v ?? "outro") as MotivoCodificado)}>
+            <SelectTrigger size="sm" className="w-full text-foreground" aria-label="Motivo codificado">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(MOTIVOS_CODIFICADOS).map(([valor, rotulo]) => (
+                <SelectItem key={valor} value={valor}>
+                  {rotulo}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </label>
+        <label className="block space-y-1 text-xs text-muted-foreground">
+          Justificativa (obrigatória)
           <Textarea ref={campo} value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Descreva por que a classe proposta não se aplica" rows={3} className="text-foreground" aria-required />
         </label>
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" className="flex-1" onClick={() => setRejeitando(false)}>
             Cancelar
           </Button>
-          <Button type="submit" size="sm" disabled={!valido} className="flex-1 bg-[var(--desce)]/20 text-foreground hover:bg-[var(--desce)]/30" variant="ghost">
+          <Button type="submit" size="sm" disabled={!valido || enviando} className="flex-1 bg-[var(--desce)]/20 text-foreground hover:bg-[var(--desce)]/30" variant="ghost">
             <X aria-hidden /> Confirmar
           </Button>
         </div>
@@ -95,10 +120,10 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Button variant="ghost" className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
+      <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta no inbox: a classe sugerida já é a classe em vigor" : undefined} className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
         <Check className="text-[var(--sobe)]" aria-hidden /> Aprovar <kbd className="rounded bg-background/60 px-1 text-[10px] text-muted-foreground">A</kbd>
       </Button>
-      <Button variant="ghost" className="gap-1.5 bg-[var(--desce)]/15 text-foreground hover:bg-[var(--desce)]/25" onClick={() => setRejeitando(true)}>
+      <Button variant="ghost" disabled={enviando} className="gap-1.5 bg-[var(--desce)]/15 text-foreground hover:bg-[var(--desce)]/25" onClick={() => setRejeitando(true)}>
         <X className="text-[var(--desce)]" aria-hidden /> Rejeitar <kbd className="rounded bg-background/60 px-1 text-[10px] text-muted-foreground">R</kbd>
       </Button>
     </div>

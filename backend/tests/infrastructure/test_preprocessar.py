@@ -46,8 +46,9 @@ def reprocessar(session):
 
 
 @pytest.fixture
-def carregado(session):
-    return carregar(session).flags
+def carregado(_dataset_carregado):
+    """Carga feita uma vez por módulo (conftest); `session` aponta para esse banco."""
+    return _dataset_carregado[1].flags
 
 
 def correcoes_por_regra(session):

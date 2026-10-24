@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import shutil
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Callable
 
@@ -25,6 +25,7 @@ class ResultadoPublicacao:
     por_camada: dict[int, int]
     versao_regras: str
     saida_verificador: str
+    data_referencia: date
 
 
 class PublicarFila:
@@ -51,7 +52,8 @@ class PublicarFila:
             res = self._gerar.executar(candidata)
             passou, saida = self._verificador.verificar(res.caminho_csv)
             if passou:
-                self._fila.salvar_publicada(res.linhas, res.versao_regras, self._relogio())
+                self._fila.salvar_publicada(res.linhas, res.versao_regras, self._relogio(),
+                                            res.ref_date)
                 # Promove o arquivo ANTES do commit: se a cópia falhar, o banco é desfeito e
                 # arquivo e banco continuam apontando para a mesma fila anterior (D-39).
                 shutil.copyfile(res.caminho_csv, final)
@@ -68,6 +70,7 @@ class PublicarFila:
             por_camada=res.por_camada,
             versao_regras=res.versao_regras,
             saida_verificador=saida,
+            data_referencia=res.ref_date,
         )
 
 

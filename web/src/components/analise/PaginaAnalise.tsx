@@ -10,7 +10,7 @@ import { CartaoGrafico } from "@/components/shared/detalhe/Cartao"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useStore } from "@/store/useStore"
 
-const TODOS = [
+const todos = () => [
   ...FANTASMAS.map((f) => ({ classe: f.classe, antiga: f.classe_antiga, pct: f.prazo_consumido_pct })),
   ...PACIENTES.map((p) => ({ classe: p.classe, antiga: p.classe_antiga, pct: p.prazo_consumido_pct })),
 ]
@@ -33,6 +33,7 @@ function Resumo({ icone: Icone, rotulo, valor, sufixo = "", cor, detalhe, indice
 }
 
 export default function PaginaAnalise() {
+  const TODOS = todos()
   const decisoes = useStore((s) => s.decisoes)
   const abrirNaFila = useStore((s) => s.abrirNaFila)
 

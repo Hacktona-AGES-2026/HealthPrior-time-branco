@@ -25,10 +25,11 @@ const STATUS: [StatusFiltro, string][] = [
   ["rejeitados", "Rejeitados"],
 ]
 
-const ITENS_ESPECIALIDADE: Record<string, string> = Object.fromEntries([["todas", "Todas as especialidades"], ...ESPECIALIDADES.map((e) => [e, e])])
+const itensEspecialidade = (): Record<string, string> => Object.fromEntries([["todas", "Todas as especialidades"], ...ESPECIALIDADES.map((e) => [e, e])])
 const ITENS_CLASSE: Record<string, string> = Object.fromEntries([["todas", "Todas as classes"], ...CLASSES.map((c) => [c, `Classe ${c}`])])
 
 export function FiltrosFila({ total, visiveis }: { total: number; visiveis: number }) {
+  const ITENS_ESPECIALIDADE = itensEspecialidade()
   const filtros = useStore((s) => s.filtros)
   const setFiltros = useStore((s) => s.setFiltros)
   const limpar = useStore((s) => s.limparFiltros)

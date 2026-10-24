@@ -12,13 +12,11 @@ router = APIRouter(prefix="/decisoes", tags=["regulador"])
 @router.post("", response_model=schemas.DecisaoResultadoOut,
              responses={404: {"model": schemas.Erro}, 409: {"model": schemas.Erro},
                         422: {"model": schemas.Erro}})
-def registrar_decisao(body: schemas.DecisaoIn, decidir: DecidirClasse = Depends(get_decidir)):
+def registrar_decisao(body: schemas.DecisaoIn, caso: DecidirClasse = Depends(get_decidir)):
+    """aprovar | editar | manter. Grava a decisão e refaz a fila pelo verificador (I-07)."""
     if settings.use_mocks:
         return schemas.DecisaoResultadoOut(decisao_id="DEC-MOCK", posicao_anterior=536,
                                            posicao_nova=140, fila_publicada=True)
-    r = decidir.executar(ComandoDecisao(
-        solicitacao_id=body.solicitacao_id, regulador_id=body.regulador_id, acao=body.acao,
-        classe=body.classe, score=body.score, motivo_codificado=body.motivo_codificado,
-        justificativa=body.justificativa))  # editar/manter: US-14 (NotImplementedError -> 501)
+    r = caso.executar(ComandoDecisao(**body.model_dump()))
     return schemas.DecisaoResultadoOut(decisao_id=r.decisao_id, posicao_anterior=r.posicao_anterior,
                                        posicao_nova=r.posicao_nova, fila_publicada=r.fila_publicada)

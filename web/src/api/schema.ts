@@ -84,7 +84,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Registrar Decisao */
+        /**
+         * Registrar Decisao
+         * @description aprovar | editar | manter. Grava a decisão e refaz a fila pelo verificador (I-07).
+         */
         post: operations["registrar_decisao_decisoes_post"];
         delete?: never;
         options?: never;
@@ -101,7 +104,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Registrar Evento */
+        /**
+         * Registrar Evento
+         * @description Pré-processa o evento, reavalia o SWALIS e informa o desfecho (registrado/inbox/pendência).
+         */
         post: operations["registrar_evento_eventos_post"];
         delete?: never;
         options?: never;
@@ -192,7 +198,13 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Atualizacao Diaria */
+        /**
+         * Atualizacao Diaria
+         * @description US-16: avança a data de referência (+1 dia, ou `data`) e republica como o publicar-fila.
+         *
+         *     Recalcula tudo a partir da data, então repetir a mesma `data` dá a mesma fila. 422 se o
+         *     verificador falhar (a fila e a data anteriores continuam valendo).
+         */
         post: operations["atualizacao_diaria_admin_atualizacao_diaria_post"];
         delete?: never;
         options?: never;
@@ -544,6 +556,25 @@ export interface components {
             alertas: string[];
             /** Resumo Justificativa */
             resumo_justificativa: string;
+            /**
+             * Iniciais
+             * @default
+             */
+            iniciais: string;
+            /** Idade */
+            idade?: number | null;
+            /** Sexo */
+            sexo?: string | null;
+            /** Municipio */
+            municipio?: string | null;
+            /** Cid Descricao */
+            cid_descricao?: string | null;
+            /** Intensidade Dor Eva */
+            intensidade_dor_eva?: number | null;
+            /** Limitacao Funcional */
+            limitacao_funcional?: string | null;
+            /** Posicao Antes */
+            posicao_antes?: number | null;
         };
         /** ItemInboxOut */
         ItemInboxOut: {
@@ -668,6 +699,11 @@ export interface components {
             versao_regras: string;
             /** Saida Verificador */
             saida_verificador: string;
+            /**
+             * Data Referencia
+             * Format: date
+             */
+            data_referencia: string;
         };
         /**
          * ResolucaoPendencia
@@ -1176,7 +1212,9 @@ export interface operations {
     };
     atualizacao_diaria_admin_atualizacao_diaria_post: {
         parameters: {
-            query?: never;
+            query?: {
+                data?: string | null;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1189,7 +1227,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": unknown;
+                    "application/json": components["schemas"]["PublicacaoOut"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicacaoOut"];
                 };
             };
         };

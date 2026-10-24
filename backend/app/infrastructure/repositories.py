@@ -12,8 +12,14 @@ from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
-from app.domain.enums import Classe, ClasseStatus, StatusFila, StatusPendencia
-from app.domain.enums import AcaoDecisao, MotivoCodificado
+from app.domain.enums import (
+    AcaoDecisao,
+    Classe,
+    ClasseStatus,
+    MotivoCodificado,
+    StatusFila,
+    StatusPendencia,
+)
 from app.domain.models import (
     Correcao,
     Decisao,
@@ -57,8 +63,10 @@ def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
         classe_status=ClasseStatus(t.classe_status), alertas=json.loads(t.alertas_json),
         classe_medico=Classe(t.classe_medico) if t.classe_medico else None,
         classe_confirmada=Classe(t.classe_confirmada) if t.classe_confirmada else None,
+        classe_vigente=Classe(t.classe_sistema) if t.classe_sistema else None,
         score_medico=t.score_medico, editado_manualmente=t.editado_manualmente,
         editado_por=t.editado_por, editado_em=t.editado_em,
+        motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
     )
 
 
@@ -86,7 +94,20 @@ class SqlSolicitacaoRepository:
         return [_para_entidade(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, solicitacao: Solicitacao) -> None:
-        raise NotImplementedError("US-01")
+        """Grava só o estado do sistema (decisão do regulador). Colunas originais não mudam (I-10)."""
+        t = self._s.get(SolicitacaoTable, solicitacao.solicitacao_id)
+        if t is None:
+            raise ValueError(f"solicitação {solicitacao.solicitacao_id} não existe")
+        s = solicitacao
+        t.classe_status = s.classe_status.value
+        t.classe_confirmada = s.classe_confirmada.value if s.classe_confirmada else None
+        t.classe_medico = s.classe_medico.value if s.classe_medico else None
+        t.classe_sistema = s.classe_vigente.value if s.classe_vigente else None  # classe vigente
+        t.score_medico = s.score_medico
+        t.editado_manualmente = s.editado_manualmente
+        t.editado_por, t.editado_em = s.editado_por, s.editado_em
+        t.motivo_codificado = s.motivo_codificado.value if s.motivo_codificado else None
+        self._s.flush()
 
     def salvar_varias(self, solicitacoes: list[Solicitacao]) -> None:
         raise NotImplementedError("US-01")
@@ -111,17 +132,6 @@ class SqlSolicitacaoRepository:
         tabela = SolicitacaoTable.__table__
         self._s.execute(update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id)
                         .values(data_entrada_fila=solicitacao.data_entrada_fila))
-        self._s.expire_all()
-
-    def atualizar_decisao(self, solicitacao: Solicitacao) -> None:
-        tabela = SolicitacaoTable.__table__
-        self._s.execute(
-            update(tabela).where(tabela.c.solicitacao_id == solicitacao.solicitacao_id).values(
-                classe_status=solicitacao.classe_status.value,
-                classe_confirmada=solicitacao.classe_confirmada.value if solicitacao.classe_confirmada else None,
-                classe_medico=solicitacao.classe_medico.value if solicitacao.classe_medico else None,
-                score_medico=solicitacao.score_medico, editado_manualmente=solicitacao.editado_manualmente,
-                editado_por=solicitacao.editado_por, editado_em=solicitacao.editado_em))
         self._s.expire_all()
 
     def atualizar_status(self, solicitacoes: list[Solicitacao]) -> None:
@@ -177,7 +187,13 @@ class SqlEventoRepository:
         return [_para_evento(t) for t in self._s.exec(consulta).scalars()]
 
     def adicionar(self, evento: Evento) -> None:
-        raise NotImplementedError("US-01")
+        e = evento
+        self._s.add(EventoTable(
+            evento_id=e.evento_id, solicitacao_id=e.solicitacao_id, paciente_id=e.paciente_id,
+            data_evento=e.data_evento, tipo_evento=e.tipo_evento, resultado=e.resultado,
+            valor_numerico=e.valor_numerico, descricao=e.descricao, origem=e.origem,
+            duplicado_de=e.duplicado_de, historico=e.historico, orfao=e.orfao))
+        self._s.flush()
 
     def salvar_varios(self, eventos: list[Evento]) -> None:
         raise NotImplementedError("US-01")
@@ -265,18 +281,22 @@ class SqlCargaRepository:
 
     def _upsert(self, tabela: type, registros: list[dict]) -> ResultadoTabela:
         resultado = ResultadoTabela(lido=len(registros))
+        if not registros:
+            return resultado
         pk = tabela.__table__.primary_key.columns.keys()[0]
+        # Um statement só, executado em lote (executemany): o SQLAlchemy compila uma vez e
+        # agrupa as linhas. Com `.values(lote)` ele compilava um bind param por célula (~50 mil).
+        stmt = insert(tabela.__table__)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=[pk],
+            set_={c: stmt.excluded[c] for c in registros[0] if c != pk},
+        )
         for i in range(0, len(registros), TAMANHO_LOTE):
             lote = registros[i : i + TAMANHO_LOTE]
             ids = [r[pk] for r in lote]
             existentes = set(self._s.exec(select(tabela.__table__.c[pk]).where(
                 tabela.__table__.c[pk].in_(ids))).scalars())
-            stmt = insert(tabela).values(lote)
-            stmt = stmt.on_conflict_do_update(
-                index_elements=[pk],
-                set_={c: stmt.excluded[c] for c in lote[0] if c != pk},
-            )
-            self._s.execute(stmt)
+            self._s.execute(stmt, lote)
             resultado.atualizados += len(existentes)
             resultado.inseridos += len(ids) - len(existentes)
         return resultado
@@ -361,11 +381,22 @@ class SqlPendenciaRepository:
         return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
-        """Grava só o desfecho (status, quem, quando, resolução, observação); o achado não muda."""
-        linha = self._s.get(PendenciaTable, pendencia.pendencia_id)
-        linha.status = pendencia.status.value
-        linha.resolvido_por, linha.resolvido_em = pendencia.resolvido_por, pendencia.resolvido_em
-        linha.resolucao, linha.observacao = pendencia.resolucao, pendencia.observacao
+        """Pendência nova (id vazio ganha PEN-xxxx, US-15) é aberta; existente grava só o desfecho
+        (status, quem, quando, resolução, observação, US-07): o achado não muda."""
+        p = pendencia
+        linha = self._s.get(PendenciaTable, p.pendencia_id) if p.pendencia_id else None
+        if linha is not None:
+            linha.status = p.status.value
+            linha.resolvido_por, linha.resolvido_em = p.resolvido_por, p.resolvido_em
+            linha.resolucao, linha.observacao = p.resolucao, p.observacao
+            self._s.flush()
+            return
+        if not p.pendencia_id:
+            p.pendencia_id = f"PEN-{self._proximo_numero():04d}"
+        self._s.add(PendenciaTable(
+            pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
+            titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
+            acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
         self._s.flush()
 
     def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:
@@ -416,7 +447,7 @@ class SqlFilaRepository:
         self._s = session
 
     def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
-                         publicada_em: datetime) -> None:
+                         publicada_em: datetime, data_referencia: date) -> None:
         """Substitui a fila publicada inteira. Não confirma: a unidade de trabalho confirma."""
         self._s.execute(delete(FilaPublicadaTable))
         self._s.add_all(
@@ -426,6 +457,7 @@ class SqlFilaRepository:
                 dias_em_fila=l.dias_em_fila, score_efetivo=l.score_efetivo,
                 justificativa=l.justificativa, editado_manualmente=l.editado_manualmente,
                 versao_regras=versao_regras, publicada_em=publicada_em,
+                data_referencia=data_referencia,
             )
             for l in linhas
         )
@@ -446,6 +478,9 @@ class SqlFilaRepository:
 
     def publicada_em(self) -> datetime | None:
         return self._s.execute(select(func.max(FilaPublicadaTable.publicada_em))).scalar()
+
+    def data_referencia(self) -> date | None:
+        return self._s.execute(select(func.max(FilaPublicadaTable.data_referencia))).scalar()
 
 
 class SqlUnidadeDeTrabalho:

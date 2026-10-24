@@ -143,7 +143,7 @@ def test_a_fila_e_republicada(api, session):
     assert len(SqlFilaRepository(session).obter_publicada()) == 900
 
 
-# --- 409, 404, 501, 422 ---
+# --- 409, 404, 422 ---
 
 def test_aprovar_duas_vezes_da_409_e_nao_duplica_o_log(api, session):
     aprovar(api)
@@ -176,10 +176,21 @@ def test_solicitacao_fora_do_inbox_nao_tem_proposta(api, session):
 
 
 @pytest.mark.parametrize("acao", ["editar", "manter"])
-def test_editar_e_manter_sao_da_us_14(api, acao):
-    r = api.post("/decisoes", json={"solicitacao_id": ALVO, "regulador_id": "reg-01", "acao": acao})
+def test_editar_e_manter_sem_justificativa_dao_422(api, session, acao):
+    r = api.post("/decisoes", json={"solicitacao_id": ALVO, "regulador_id": "reg-01", "acao": acao, "classe": "B"})
 
-    assert r.status_code == 501 and r.json()["erro"] == "NAO_IMPLEMENTADO"
+    assert r.status_code == 422 and r.json()["erro"] == "JUSTIFICATIVA_OBRIGATORIA"
+    assert session.exec(select(func.count()).select_from(DecisaoTable)).one() == 0
+
+
+def test_editar_vale_fora_do_inbox(api, session):
+    fora = next(i for i in (l.solicitacao_id for l in SqlFilaRepository(session).obter_publicada())
+                if i not in set(inbox_ids(session)))
+
+    r = api.post("/decisoes", json={"solicitacao_id": fora, "regulador_id": "reg-01", "acao": "editar",
+                                    "classe": "B", "motivo_codificado": "outro", "justificativa": "teste"})
+
+    assert r.status_code == 200 and r.json()["decisao_id"] == "DEC-0001"  # só aprovar exige proposta (D-98)
 
 
 def test_regulador_e_obrigatorio(api):

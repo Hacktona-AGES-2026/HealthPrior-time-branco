@@ -22,7 +22,7 @@ from app.domain.texto import frases
 log = logging.getLogger(__name__)
 
 URL = "https://openrouter.ai/api/alpha/decisions"
-VERSAO_PROMPT = "pontos-v5-decisoes"
+VERSAO_PROMPT = "pontos-v6-decisoes"
 # Guarda no cache tudo a partir desta probabilidade; o domínio decide o que conta ou vai a revisar.
 PROB_MINIMA = 0.4
 
@@ -49,7 +49,8 @@ CRITERIOS = {
                                         "de repetição, úlcera de pressão, não consegue andar",
     CategoriaSinal.SINTOMA_MODERADO.value: "dor ou limitação moderada: dor aos esforços, sintomas que "
                                            "atrapalham atividades, baixa visão por catarata",
-    "nenhum": "nada disso, só dado administrativo/histórico, antecedente familiar (mãe, pai, irmã…), "
+    "nenhum": "nada disso: dado administrativo ou logístico (transporte, TFD, acompanhante, contato, "
+              "documentos, agendamento), histórico, antecedente familiar (mãe, pai, irmã…), "
               "ou o achado está negado (sem, nega, nunca, ausência de, descarta)",
 }
 
