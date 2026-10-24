@@ -22,3 +22,13 @@ export const usarContagem = (alvo: number, duracao = 700) => {
   }, [alvo, duracao])
   return valor
 }
+
+export const usarCarregamento = (chave: string, atrasoMs: number) => {
+  const [pronto, setPronto] = useState(false)
+  useEffect(() => {
+    setPronto(false)
+    const t = setTimeout(() => setPronto(true), atrasoMs)
+    return () => clearTimeout(t)
+  }, [chave, atrasoMs])
+  return pronto
+}

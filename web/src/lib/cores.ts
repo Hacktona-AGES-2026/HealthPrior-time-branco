@@ -1,18 +1,15 @@
-import { META } from "@/data/fila"
-import type { Camada, Classe } from "@/data/tipos"
+import type { Classe } from "@/data/tipos"
 
 export const CLASSES: Classe[] = ["A1", "A2", "B", "C", "D"]
 
-export const PRAZO_MAX = Object.fromEntries(META.swalis.map((c) => [c.classe, c.prazo])) as Record<Classe, number>
+export const PRAZO_MAX: Record<Classe, number> = { A1: 15, A2: 21, B: 60, C: 180, D: 360 }
 
-export const DESCRICAO_CLASSE = Object.fromEntries(META.swalis.map((c) => [c.classe, c.descricao])) as Record<Classe, string>
-
-export const NOME_CAMADA: Record<Camada, string> = { 1: "Oncológico", 2: "Urgente", 3: "Demais" }
-
-export const DESCRICAO_CAMADA: Record<Camada, string> = {
-  1: "CID iniciado por C: nunca fica abaixo de quem não tem urgência",
-  2: "Sinal clínico de urgência: complicação, piora na espera, biópsia positiva ou alarme no texto",
-  3: "Sem sinais clínicos de urgência",
+export const DESCRICAO_CLASSE: Record<Classe, string> = {
+  A1: "Risco de vida ou perda de órgão/função",
+  A2: "Risco de agravamento ou incapacidade",
+  B: "Dor, disfunção ou incapacidade importantes",
+  C: "Dor ou disfunção moderadas",
+  D: "Sem dor ou disfunção relevantes",
 }
 
 export const indiceClasse = (c: Classe) => CLASSES.indexOf(c)
@@ -44,5 +41,23 @@ export const FAIXAS_PRAZO = [
 export const COR_STATUS = {
   pendente: "var(--muted-foreground)",
   aprovado: "var(--sobe)",
-  editado: "var(--cls-c)",
+  rejeitado: "var(--desce)",
+}
+
+export const COR_ORIGEM: Record<string, string> = {
+  cid: "var(--cls-c)",
+  sintomas: "oklch(0.7 0.16 130)",
+  eventos: "var(--cls-a2)",
+  texto_llm: "oklch(0.62 0.15 300)",
+  fragilidade: "oklch(0.62 0.12 185)",
+  regra_ouro: "var(--ouro)",
+}
+
+export const ROTULO_ORIGEM: Record<string, string> = {
+  cid: "CID",
+  sintomas: "Sintomas",
+  eventos: "Eventos",
+  texto_llm: "Texto (LLM)",
+  fragilidade: "Fragilidade",
+  regra_ouro: "Regra de ouro",
 }

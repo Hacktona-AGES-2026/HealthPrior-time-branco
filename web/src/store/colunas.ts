@@ -4,18 +4,17 @@ import type { CSSProperties } from "react"
 export type DefinicaoColuna = { id: string; rotulo: string; padrao: number; min: number; max: number; flexivel?: boolean }
 
 export const COLUNAS: DefinicaoColuna[] = [
-  { id: "pos", rotulo: "Proposta", padrao: 76, min: 52, max: 140 },
-  { id: "antiga", rotulo: "Atual", padrao: 96, min: 70, max: 180 },
-  { id: "classe", rotulo: "Classe", padrao: 84, min: 56, max: 160 },
-  { id: "camada", rotulo: "Camada", padrao: 82, min: 56, max: 160 },
+  { id: "pos", rotulo: "Nova", padrao: 52, min: 44, max: 120 },
+  { id: "antiga", rotulo: "Antiga", padrao: 84, min: 64, max: 180 },
+  { id: "classe", rotulo: "Classe", padrao: 76, min: 56, max: 160 },
   { id: "prazo", rotulo: "Prazo", padrao: 130, min: 80, max: 320 },
-  { id: "sinais", rotulo: "Motivos", padrao: 180, min: 70, max: 520, flexivel: true },
+  { id: "sinais", rotulo: "Sinais", padrao: 180, min: 70, max: 520, flexivel: true },
   { id: "justificativa", rotulo: "Justificativa", padrao: 240, min: 80, max: 900, flexivel: true },
   { id: "alerta", rotulo: "", padrao: 28, min: 28, max: 28 },
   { id: "status", rotulo: "Status", padrao: 92, min: 70, max: 200 },
 ]
 
-const CHAVE = "healthprior-colunas-v4"
+const CHAVE = "healthprior-colunas"
 const PAINEL_PADRAO = 340
 export const ALTURA_FAIXA_PADRAO = 192
 export const ALTURA_FAIXA_MIN = 140
@@ -50,8 +49,6 @@ type Estado = {
   alturaFaixa: number
   faixaOculta: boolean
   painelOculto: boolean
-  ocultas: Record<string, boolean>
-  alternarColuna: (id: string) => void
   setPainelOculto: (v: boolean) => void
   setFaixaOculta: (v: boolean) => void
   setAlturaFaixa: (valor: number) => void
@@ -66,14 +63,6 @@ const lerOculta = () => {
     return localStorage.getItem("healthprior-faixa-oculta") === "1"
   } catch {
     return false
-  }
-}
-
-const lerOcultas = (): Record<string, boolean> => {
-  try {
-    return JSON.parse(localStorage.getItem("healthprior-colunas-ocultas") ?? "{}")
-  } catch {
-    return {}
   }
 }
 
@@ -97,16 +86,6 @@ export const useColunas = create<Estado>((set, get) => ({
       set({})
     }
     set({ painelOculto: v })
-  },
-  ocultas: lerOcultas(),
-  alternarColuna: (id) => {
-    const ocultas = { ...get().ocultas, [id]: !get().ocultas[id] }
-    try {
-      localStorage.setItem("healthprior-colunas-ocultas", JSON.stringify(ocultas))
-    } catch {
-      set({})
-    }
-    set({ ocultas })
   },
   faixaOculta: lerOculta(),
   setFaixaOculta: (v) => {
@@ -134,12 +113,7 @@ export const useColunas = create<Estado>((set, get) => ({
     if (def) get().setLargura(id, def.padrao)
   },
   resetarTudo: () => {
-    try {
-      localStorage.removeItem("healthprior-colunas-ocultas")
-    } catch {
-      set({})
-    }
-    set({ larguras: padroes(), painel: PAINEL_PADRAO, alturaFaixa: ALTURA_FAIXA_PADRAO, ocultas: {} })
+    set({ larguras: padroes(), painel: PAINEL_PADRAO, alturaFaixa: ALTURA_FAIXA_PADRAO })
     salvar(padroes(), PAINEL_PADRAO, ALTURA_FAIXA_PADRAO)
   },
   setPainel: (valor) => {
@@ -149,10 +123,9 @@ export const useColunas = create<Estado>((set, get) => ({
   },
 }))
 
-export const estiloColuna = (id: string, larguras: Record<string, number>, ocultas: Record<string, boolean> = {}): CSSProperties => {
+export const estiloColuna = (id: string, larguras: Record<string, number>): CSSProperties => {
   const def = COLUNAS.find((c) => c.id === id)
   const w = larguras[id]
-  if (ocultas[id]) return { display: "none" }
   if (def?.flexivel) return { flex: `1 1 ${w}px`, minWidth: 0 }
   return { width: w, flex: "none" }
 }

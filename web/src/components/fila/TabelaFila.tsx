@@ -21,15 +21,14 @@ export const usarTabela = () => {
 
   const colunas = useMemo<ColumnDef<Paciente>[]>(
     () => [
-      { id: "pos", header: "Proposta", accessorFn: (p) => p.posicao },
-      { id: "antiga", header: "Atual", accessorFn: (p) => p.posicao_atual - p.posicao },
+      { id: "pos", header: "Nova", accessorFn: (p) => p.posicao_nova },
+      { id: "antiga", header: "Antiga", accessorFn: (p) => p.posicao_antiga - p.posicao_nova },
       { id: "classe", header: "Classe", accessorFn: (p) => indiceClasse(p.classe) },
-      { id: "camada", header: "Camada", accessorFn: (p) => p.camada },
-      { id: "prazo", header: "Prazo", accessorFn: (p) => p.pct },
-      { id: "sinais", header: "Motivos", enableSorting: false, accessorFn: (p) => p.motivos.length },
+      { id: "prazo", header: "Prazo", accessorFn: (p) => p.prazo_consumido_pct },
+      { id: "sinais", header: "Sinais", enableSorting: false, accessorFn: (p) => p.sinais.length },
       { id: "justificativa", header: "Justificativa", enableSorting: false, accessorFn: (p) => p.justificativa },
-      { id: "alerta", header: "", enableSorting: false, accessorFn: (p) => p.alertas.length },
-      { id: "status", header: "Status", accessorFn: (p) => statusDe(decisoes, p.id) },
+      { id: "alerta", header: "", enableSorting: false, accessorFn: (p) => Number(p.divergencia || p.confianca < 0.6) },
+      { id: "status", header: "Status", accessorFn: (p) => statusDe(decisoes, p.solicitacao_id) },
     ],
     [decisoes]
   )
@@ -48,30 +47,14 @@ export const usarTabela = () => {
 
 export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
   const larguras = useColunas((c) => c.larguras)
-  const ocultas = useColunas((c) => c.ocultas)
-  const marcados = useStore((s) => s.marcados)
-  const marcarVarios = useStore((s) => s.marcarVarios)
-  const ids = table.getRowModel().rows.map((r) => r.original.id)
-  const todos = ids.length > 0 && ids.every((id) => marcados.includes(id))
-  const algum = !todos && ids.some((id) => marcados.includes(id))
   return (
     <div className="@container">
       <div className="flex items-center gap-2 border-b border-border/60 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" role="row">
-        <input
-          type="checkbox"
-          checked={todos}
-          ref={(el) => {
-            if (el) el.indeterminate = algum
-          }}
-          onChange={() => marcarVarios(ids, !todos)}
-          aria-label="Selecionar todas as solicitações listadas"
-          className="size-3.5 shrink-0 cursor-pointer accent-[var(--primary)]"
-        />
         {table.getHeaderGroups()[0].headers.map((h) => {
           const ordenado = h.column.getIsSorted()
           const podeOrdenar = h.column.getCanSort()
           return (
-            <div key={h.id} className="relative" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
+            <div key={h.id} className="relative" style={estiloColuna(h.column.id, larguras)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
               {podeOrdenar ? (
                 <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex items-center gap-1 rounded px-0.5 uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
                   {flexRender(h.column.columnDef.header, h.getContext())}
@@ -103,11 +86,11 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, ex
       <div
         role="button"
         tabIndex={0}
-        onClick={() => aoAlternar(p.id)}
+        onClick={() => aoAlternar(p.solicitacao_id)}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault()
-            aoAlternar(p.id)
+            aoAlternar(p.solicitacao_id)
           }
         }}
         className={cn(
@@ -115,7 +98,7 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, ex
           selecionado && "bg-primary/5 shadow-[inset_2px_0_0_var(--primary)]"
         )}
       >
-        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} comMarcacao />
+        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} />
       </div>
       {expandido && (
         <div className="fx-expand border-b border-border/50 px-1 pt-2 pb-5" onClick={(e) => e.stopPropagation()}>
@@ -148,18 +131,18 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const virtualizador = useVirtualizer({
     count: linhas.length,
     getScrollElement: () => rolagemRef.current,
-    estimateSize: (i) => (linhas[i]?.original.id === expandidoId ? 1400 : 44),
+    estimateSize: (i) => (linhas[i]?.original.solicitacao_id === expandidoId ? 1400 : 44),
     overscan: 8,
     scrollMargin: margem,
     scrollPaddingStart: alturaFixa + 4,
-    getItemKey: (i) => linhas[i]?.original.id ?? i,
+    getItemKey: (i) => linhas[i]?.original.solicitacao_id ?? i,
   })
 
   const aoAlternar = useCallback((id: string) => alternarExpandido(id), [alternarExpandido])
 
   useEffect(() => {
     if (!expandidoId) return
-    const idx = linhas.findIndex((l) => l.original.id === expandidoId)
+    const idx = linhas.findIndex((l) => l.original.solicitacao_id === expandidoId)
     if (idx < 0) return
     const rolar = () => virtualizador.scrollToIndex(idx, { align: "start" })
     const t1 = setTimeout(rolar, 30)
@@ -190,7 +173,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
             ref={virtualizador.measureElement}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start - margem}px)` }}
           >
-            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} expandido={expandidoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
+            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.solicitacao_id} expandido={expandidoId === p.solicitacao_id} decisao={decisoes[p.solicitacao_id]} aoAlternar={aoAlternar} />
           </div>
         )
       })}

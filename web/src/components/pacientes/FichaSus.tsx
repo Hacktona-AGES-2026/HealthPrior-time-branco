@@ -3,7 +3,7 @@ import { ClipboardPlus, IdCard, Stethoscope } from "lucide-react"
 import type { Paciente } from "@/data/tipos"
 import { Badge } from "@/components/ui/badge"
 import { formatarData } from "@/lib/datas"
-import { CamadaBadge, ClasseBadge } from "@/components/shared/Basicos"
+import { ClasseBadge } from "@/components/shared/Basicos"
 
 function Campo({ rotulo, children, larga }: { rotulo: string; children: ReactNode; larga?: boolean }) {
   return (
@@ -29,15 +29,16 @@ export function FichaSus({ p }: { p: Paciente }) {
   return (
     <div className="@container space-y-3" aria-label="Ficha SUS">
       <Bloco titulo="Identificação" icone={IdCard} indice={0}>
-        <Campo rotulo="Solicitação">{p.id}</Campo>
+        <Campo rotulo="Solicitação">{p.solicitacao_id}</Campo>
         <Campo rotulo="Iniciais">{p.iniciais}</Campo>
+        <Campo rotulo="CNS (mascarado)">
+          <span className="tabular-nums">{p.cns_mascarado}</span>
+        </Campo>
         <Campo rotulo="Idade / sexo">
           {p.idade} anos · {p.sexo === "F" ? "Feminino" : "Masculino"}
         </Campo>
-        <Campo rotulo="Município">
-          {p.municipio} · {p.uf}
-        </Campo>
-        <Campo rotulo="Distância do hospital">{p.distancia_km === null ? <span className="text-muted-foreground">Não informada</span> : `${p.distancia_km} km`}</Campo>
+        <Campo rotulo="Município">{p.municipio}</Campo>
+        <Campo rotulo="Distância do hospital">{p.distancia_hospital_km} km</Campo>
       </Bloco>
 
       <Bloco titulo="Pedido cirúrgico" icone={ClipboardPlus} indice={1}>
@@ -45,7 +46,7 @@ export function FichaSus({ p }: { p: Paciente }) {
           {p.procedimento}
         </Campo>
         <Campo rotulo="Especialidade">{p.especialidade}</Campo>
-        <Campo rotulo="Data de entrada na fila">{formatarData(p.data_entrada)}</Campo>
+        <Campo rotulo="Data de entrada na fila">{formatarData(p.data_entrada_fila)}</Campo>
         <Campo rotulo="Dias em fila">{p.dias_em_fila}</Campo>
         <Campo rotulo="CID principal" larga>
           <span className="font-semibold">{p.cid}</span> · {p.cid_descricao}
@@ -53,13 +54,10 @@ export function FichaSus({ p }: { p: Paciente }) {
         <Campo rotulo="CID secundário" larga>
           {p.cid_secundario ?? <span className="text-muted-foreground">Não informado</span>}
         </Campo>
-        <Campo rotulo="Prioridade manual → classe sugerida">
+        <Campo rotulo="Classe (antiga → nova)">
           <span className="inline-flex items-center gap-1.5">
-            <span className="capitalize">{p.prioridade_atual ? (p.prioridade_atual === "media" ? "média" : p.prioridade_atual) : "vazia"}</span> → <ClasseBadge classe={p.classe} />
+            <ClasseBadge classe={p.classe_antiga} /> → <ClasseBadge classe={p.classe} />
           </span>
-        </Campo>
-        <Campo rotulo="Camada">
-          <CamadaBadge camada={p.camada} />
         </Campo>
       </Bloco>
 
@@ -74,14 +72,14 @@ export function FichaSus({ p }: { p: Paciente }) {
             ))}
           </span>
         </Campo>
-        <Campo rotulo="ASA">{p.asa ?? <span className="text-muted-foreground">Não informado</span>}</Campo>
-        <Campo rotulo="Dor (EVA)">{p.dor === null ? <span className="text-muted-foreground">Não informada</span> : `${p.dor}/10`}</Campo>
+        <Campo rotulo="ASA">{p.asa}</Campo>
+        <Campo rotulo="Dor (EVA)">{p.intensidade_dor_eva}/10</Campo>
         <Campo rotulo="Limitação funcional">
-          {p.limitacao ? <span className="capitalize">{p.limitacao}</span> : <span className="text-muted-foreground">Não informada</span>}
+          <span className="capitalize">{p.limitacao_funcional}</span>
         </Campo>
-        <Campo rotulo="HbA1c (cadastro)">{p.hba1c ? `${String(p.hba1c.valor).replace(".", ",")}%${p.hba1c.data ? ` em ${formatarData(p.hba1c.data)}` : ""}` : <span className="text-muted-foreground">Sem registro</span>}</Campo>
-        <Campo rotulo="Avaliação pré-anestésica"><span className="capitalize">{p.pre_anestesica ?? "Sem registro"}</span></Campo>
-        <Campo rotulo="Exames pré-operatórios">{p.exames_pre_op ? "Válidos" : "Não válidos"}</Campo>
+        <Campo rotulo="HbA1c">{p.hba1c ? `${String(p.hba1c.valor).replace(".", ",")}% em ${formatarData(p.hba1c.data)}` : <span className="text-muted-foreground">Não aplicável</span>}</Campo>
+        <Campo rotulo="Avaliação pré-anestésica">{p.avaliacao_pre_anestesica ? "Realizada" : "Pendente"}</Campo>
+        <Campo rotulo="Exames pré-operatórios">{p.exames_pre_op_validos ? "Válidos" : "Pendentes"}</Campo>
         <Campo rotulo="Justificativa clínica" larga>
           {p.justificativa_clinica}
         </Campo>

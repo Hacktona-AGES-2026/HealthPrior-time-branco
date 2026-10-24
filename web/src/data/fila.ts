@@ -1,46 +1,135 @@
-import dados from "./dados.json"
+import { CLASSES, indiceClasse } from "@/lib/cores"
+import { criarRng, gerarPacientesBase } from "./gerador"
+import { ID_DESTAQUE, enriquecerDestaque } from "./destaque"
+import type { Classe, Fantasma, Paciente, SlotFila } from "./tipos"
 import { listarFila, listarInbox } from "@/lib/api"
-import { deApiMinimo, sobrepor } from "./adaptador"
-import type { ClasseSwalis, Paciente } from "./tipos"
+import { deApi } from "./adaptador"
 
-export const META = dados.meta as unknown as { referencia: string; versao_regras: string; total: number; swalis: ClasseSwalis[] }
+export let TOTAL_FILA = 941
 
-const BASE = dados.solicitacoes as unknown as Paciente[]
+export const BANDAS: Record<Classe, [number, number]> = {
+  A1: [1, 28],
+  A2: [29, 124],
+  B: [125, 365],
+  C: [366, 685],
+  D: [686, 941],
+}
 
+const TOPO: Record<Classe, number> = { A1: 99, A2: 96, B: 104, C: 98, D: 90 }
+const FUNDO: Record<Classe, number> = { A1: 20, A2: 18, B: 12, C: 8, D: 4 }
+
+const limitar = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n))
+
+const posicaoNaBanda = (classe: Classe, pct: number) => {
+  const [ini, fim] = BANDAS[classe]
+  const frac = (TOPO[classe] - pct) / (TOPO[classe] - FUNDO[classe])
+  return limitar(ini + Math.round(frac * (fim - ini)), ini, fim)
+}
+
+const pctNaPosicao = (classe: Classe, posicao: number) => {
+  const [ini, fim] = BANDAS[classe]
+  const frac = (posicao - ini) / (fim - ini)
+  return TOPO[classe] - frac * (TOPO[classe] - FUNDO[classe])
+}
+
+const classePorPosicao = (posicao: number): Classe =>
+  CLASSES.find((c) => posicao >= BANDAS[c][0] && posicao <= BANDAS[c][1]) ?? "D"
+
+const construirPacientes = () => {
+  const base = gerarPacientesBase().map((p) => (p.solicitacao_id.length > 0 && p.iniciais === "C.A." ? enriquecerDestaque(p) : p))
+  const rng = criarRng(4242)
+  const ocupadas = new Set<number>()
+
+  CLASSES.forEach((classe) => {
+    const grupo = base.filter((p) => p.classe === classe).sort((a, b) => b.prazo_consumido_pct - a.prazo_consumido_pct)
+    let anterior = BANDAS[classe][0] - 1
+    grupo.forEach((p) => {
+      let pos = posicaoNaBanda(classe, p.prazo_consumido_pct)
+      if (p.solicitacao_id === ID_DESTAQUE) pos = 9
+      pos = Math.max(pos, anterior + 1)
+      pos = Math.min(pos, BANDAS[classe][1])
+      p.posicao_nova = pos
+      anterior = pos
+      ocupadas.add(pos)
+    })
+  })
+
+  base.forEach((p) => {
+    if (p.solicitacao_id === ID_DESTAQUE) {
+      p.posicao_antiga = 412
+      return
+    }
+    const [ini, fim] = BANDAS[p.classe_antiga]
+    if (p.classe_antiga !== p.classe) {
+      p.posicao_antiga = limitar(posicaoNaBanda(p.classe_antiga, p.prazo_consumido_pct) + Math.round((rng() - 0.5) * 8), ini, fim)
+      return
+    }
+    const sorteio = rng()
+    const salto = sorteio < 0.4 ? 0 : Math.round((rng() - 0.5) * 14)
+    p.posicao_antiga = limitar(p.posicao_nova + salto, ini, fim)
+  })
+
+  return { pacientes: base.sort((a, b) => a.posicao_nova - b.posicao_nova), ocupadas }
+}
+
+const construirFantasmas = (ocupadas: Set<number>) => {
+  const rng = criarRng(777)
+  const fantasmas: Fantasma[] = []
+  for (let posicao = 1; posicao <= TOTAL_FILA; posicao++) {
+    if (ocupadas.has(posicao)) continue
+    const classe = classePorPosicao(posicao)
+    const idx = indiceClasse(classe)
+    const sorteio = rng()
+    let antiga = classe
+    if (sorteio > 0.85 && sorteio <= 0.95) antiga = CLASSES[Math.min(4, idx + 1)]
+    else if (sorteio > 0.95) antiga = CLASSES[Math.max(0, idx - 1)]
+    const pct = limitar(pctNaPosicao(classe, posicao) + (rng() - 0.5) * 6, 1, 160)
+    fantasmas.push({ posicao, classe, classe_antiga: antiga, prazo_consumido_pct: Math.round(pct * 10) / 10 })
+  }
+  return fantasmas
+}
+
+const montarSlots = (pacientes: Paciente[], fantasmas: Fantasma[], total: number): SlotFila[] => {
+  const slots: SlotFila[] = Array.from({ length: total }, (_, i) => ({ posicao: i + 1 }))
+  pacientes.forEach((p) => {
+    if (slots[p.posicao_nova - 1]) slots[p.posicao_nova - 1].paciente = p
+  })
+  fantasmas.forEach((f) => {
+    if (slots[f.posicao - 1]) slots[f.posicao - 1].fantasma = f
+  })
+  return slots
+}
+
+// Dados vivos: preenchidos por `carregarFila()` (API) ou pelo mock. Os imports são live bindings
+// do ES module, então quem importa enxerga a versão nova depois de cada recarga.
 export let PACIENTES: Paciente[] = []
-export let TOTAL_FILA = 0
+export let FANTASMAS: Fantasma[] = []
 export let PACIENTE_POR_ID: Record<string, Paciente> = {}
-export let FILA: Paciente[] = []
+export let FILA: SlotFila[] = []
 export let ESPECIALIDADES: string[] = []
-export let ORIGEM_DADOS: "api" | "csv" = "csv"
-export let VERSAO_REGRAS = META.versao_regras
+export let ORIGEM_DADOS: "api" | "mock" = "mock"
+export let VERSAO_REGRAS = ""
 
-const aplicar = (lista: Paciente[]) => {
-  PACIENTES = [...lista].sort((a, b) => a.posicao - b.posicao)
-  FILA = PACIENTES
-  TOTAL_FILA = PACIENTES.length
-  PACIENTE_POR_ID = Object.fromEntries(PACIENTES.map((p) => [p.id, p]))
+const aplicar = (pacientes: Paciente[], fantasmas: Fantasma[], total: number) => {
+  PACIENTES = [...pacientes].sort((a, b) => a.posicao_nova - b.posicao_nova)
+  FANTASMAS = fantasmas
+  TOTAL_FILA = total
+  PACIENTE_POR_ID = Object.fromEntries(PACIENTES.map((p) => [p.solicitacao_id, p]))
+  FILA = montarSlots(PACIENTES, FANTASMAS, total)
   ESPECIALIDADES = [...new Set(PACIENTES.map((p) => p.especialidade))].sort()
 }
 
-export const usarCsv = () => {
-  aplicar(BASE)
-  ORIGEM_DADOS = "csv"
-  VERSAO_REGRAS = META.versao_regras
+export const usarMock = () => {
+  const { pacientes, ocupadas } = construirPacientes()
+  aplicar(pacientes, construirFantasmas(ocupadas), 941)
+  ORIGEM_DADOS = "mock"
 }
 
+/** Busca fila + inbox na API. Lança erro se a API não responder (quem chama decide o fallback). */
 export const carregarFila = async () => {
   const [{ itens, versao_regras }, inbox] = await Promise.all([listarFila(), listarInbox()])
-  const baseDeId = Object.fromEntries(BASE.map((p) => [p.id, p]))
-  const inboxDeId = Object.fromEntries(inbox.itens.map((x) => [x.solicitacao_id, x]))
-  aplicar(
-    itens.map((i) => {
-      const base = baseDeId[i.solicitacao_id]
-      return base ? sobrepor(base, i, inboxDeId[i.solicitacao_id]) : deApiMinimo(i, inboxDeId[i.solicitacao_id])
-    })
-  )
+  const pacientes = itens.map((i) => deApi(i, inbox.itens.find((x) => x.solicitacao_id === i.solicitacao_id)))
+  aplicar(pacientes, [], itens.length)
   ORIGEM_DADOS = "api"
-  VERSAO_REGRAS = versao_regras ?? META.versao_regras
+  VERSAO_REGRAS = versao_regras ?? ""
 }
-
-usarCsv()

@@ -1,13 +1,12 @@
 import { useMemo } from "react"
 import { Progress } from "@/components/ui/progress"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { filtrosAtivos } from "@/lib/filtros"
 import { usarContagem } from "@/lib/motion"
 import { metricasGlobais } from "@/lib/stats"
 import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 
-const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS", pendencias: "Pendências", propostas: "Propostas de regra" }
+const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS" }
 
 function Metrica({ rotulo, valor, cor, ativo, aoClicar }: { rotulo: string; valor: number; cor?: string; ativo?: boolean; aoClicar: () => void }) {
   const animado = usarContagem(valor)
@@ -38,22 +37,23 @@ export function CabecalhoMetricas() {
   const limparFiltros = useStore((s) => s.limparFiltros)
   const ir = useStore((s) => s.ir)
   const m = useMemo(() => metricasGlobais(decisoes), [decisoes])
-  const progresso = (m.revisados / m.totalDetalhados) * 100
   const filtrar = (parcial: Parameters<typeof setFiltros>[0]) => {
     setFiltros(parcial)
     ir("fila")
   }
+  const semFiltros = JSON.stringify(Object.values(filtros)) === JSON.stringify(["", "todas", "todas", false, false, false, false, "todos"])
+  const progresso = (m.revisados / m.totalDetalhados) * 100
 
   return (
     <header className="no-print sticky top-0 z-30 flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 border-b border-border/60 bg-background/90 px-4 py-2.5 backdrop-blur">
       <SidebarTrigger className="-ml-2 text-muted-foreground" aria-label="Recolher ou expandir menu" />
       <h1 className="text-sm font-medium">{TITULOS[pagina]}</h1>
-      <div className="flex flex-1 flex-wrap items-baseline gap-x-4 gap-y-1">
-        <Metrica rotulo="na fila" valor={m.total} ativo={!filtrosAtivos(filtros)} aoClicar={() => { limparFiltros(); ir("fila") }} />
-        <Metrica rotulo="oncológicos" valor={m.oncologicos} ativo={filtros.camada === "1"} aoClicar={() => filtrar({ camada: filtros.camada === "1" ? "todas" : "1" })} />
-        <Metrica rotulo="urgentes" valor={m.urgentes} ativo={filtros.camada === "2"} aoClicar={() => filtrar({ camada: filtros.camada === "2" ? "todas" : "2" })} />
-        <Metrica rotulo="vencidos" valor={m.vencidos} cor="var(--prazo-vencido)" ativo={filtros.vencidos} aoClicar={() => filtrar({ vencidos: !filtros.vencidos })} />
-        <Metrica rotulo="com alertas" valor={m.comAlertas} cor="var(--prazo-limite)" ativo={filtros.alertas} aoClicar={() => filtrar({ alertas: !filtros.alertas })} />
+      <div className="flex flex-1 flex-wrap items-baseline gap-x-5 gap-y-1">
+        <Metrica rotulo="na fila" valor={m.total} ativo={semFiltros} aoClicar={() => { limparFiltros(); ir("fila") }} />
+        <Metrica rotulo="mudaram" valor={m.mudaram} ativo={filtros.mudou} aoClicar={() => filtrar({ mudou: !filtros.mudou })} />
+        <Metrica rotulo="onc. corrigidos" valor={m.oncologicosCorrigidos} ativo={filtros.oncologicos} aoClicar={() => filtrar({ oncologicos: !filtros.oncologicos })} />
+        <Metrica rotulo="vencidos" valor={m.vencidos} cor={m.vencidos > 0 ? "var(--prazo-vencido)" : undefined} ativo={filtros.vencidos} aoClicar={() => filtrar({ vencidos: !filtros.vencidos })} />
+        <Metrica rotulo="para revisar" valor={m.revisar} cor={m.revisar > 0 ? "var(--prazo-limite)" : undefined} ativo={filtros.divergencia} aoClicar={() => filtrar({ divergencia: !filtros.divergencia })} />
       </div>
       <button
         type="button"

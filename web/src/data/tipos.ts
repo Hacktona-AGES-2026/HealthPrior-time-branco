@@ -1,87 +1,102 @@
 export type Classe = "A1" | "A2" | "B" | "C" | "D"
 
-export type Prioridade = "alta" | "media" | "baixa"
-
-export type Camada = 1 | 2 | 3
-
 export type TipoEvento =
-  | "biopsia"
-  | "hba1c"
+  | "entrada"
   | "pronto_socorro"
   | "internacao"
+  | "biopsia"
   | "exame_imagem"
   | "consulta_reavaliacao"
-  | "contato_telefonico"
+  | "hba1c"
   | "falta"
+  | "contato_telefonico"
 
-export type Evento = {
-  id: string
-  data: string
-  tipo: TipoEvento
-  resultado: string | null
-  valor: number | null
-  descricao: string
-  origem: string | null
-  historico: boolean
-}
+export type TipoHistorico =
+  | "cirurgia_previa"
+  | "internacao_previa"
+  | "consulta"
+  | "exame"
+  | "solicitacao_anterior"
+  | "alergia"
+  | "medicacao_continua"
+  | "alteracao_prioridade"
 
-export type SinalTexto = {
-  categoria: "risco_vida" | "suspeita_malignidade" | "sintoma_grave"
-  termo: string
-  trecho: string
-  fonte: "justificativa_clinica" | "observacoes"
-  origem: "regra" | "llm"
-}
-
-export type Eixo = { nivel: number; motivos: string[] }
+export type OrigemContribuicao =
+  | "cid"
+  | "sintomas"
+  | "eventos"
+  | "texto_llm"
+  | "fragilidade"
+  | "regra_ouro"
 
 export type Paciente = {
+  // Só com dados da API: camada da trava, se a classe foi confirmada e se o regulador editou.
+  camada?: 1 | 2 | 3
   classe_status?: "sugerida_nao_confirmada" | "confirmada"
   editado_manualmente?: boolean
-  classe_vigente?: Classe | null
-  inbox?: { motivos: string[]; gatilho?: string | null }
-  id: string
+  solicitacao_id: string
   iniciais: string
+  cns_mascarado: string
   idade: number
   sexo: "F" | "M"
   municipio: string
-  uf: string
-  distancia_km: number | null
+  distancia_hospital_km: number
   procedimento: string
   especialidade: string
   cid: string
-  cid_norm: string
   cid_descricao: string
-  cid_secundario: string | null
-  asa: number | null
+  cid_secundario?: string
+  data_entrada_fila: string
+  dias_em_fila: number
+  posicao_antiga: number
+  posicao_nova: number
+  classe_antiga: Classe
+  classe: Classe
+  prazo_consumido_pct: number
+  divergencia: boolean
   comorbidades: string[]
-  dor: number | null
-  limitacao: "nenhuma" | "leve" | "moderada" | "grave" | null
+  asa: 1 | 2 | 3 | 4
+  intensidade_dor_eva: number
+  limitacao_funcional: "nenhuma" | "leve" | "moderada" | "grave"
+  hba1c?: { valor: number; data: string }
+  avaliacao_pre_anestesica: boolean
+  exames_pre_op_validos: boolean
   justificativa_clinica: string
   observacoes: string
-  sinais_texto: SinalTexto[]
-  eixos: { progressao: Eixo; sintoma: Eixo }
-  data_entrada: string
-  dias_em_fila: number
-  prioridade_atual: Prioridade | null
-  data_revisao_prioridade: string | null
-  oncologico: boolean
-  flag_diabetico: boolean
-  hba1c: { valor: number; data: string | null } | null
-  pre_anestesica: "realizada" | "pendente" | "vencida" | null
-  exames_pre_op: boolean
-  posicao_atual: number
-  posicao: number
-  camada: Camada
-  classe: Classe
-  pct: number
+  confianca: number
+  sinais: string[]
   justificativa: string
-  versao_regras: string
-  motivos: string[]
-  sintomas: string[]
-  alertas: string[]
-  eventos: Evento[]
-  outras: { id: string; procedimento: string; posicao: number }[]
+  evidencias: { fonte: "texto" | "evento" | "cid" | "regra"; trecho: string; data?: string }[]
+  parametros_ia: {
+    modelo: string
+    versao_regras: string
+    classe_base_cid: Classe
+    contribuicoes: {
+      fator: string
+      delta_degraus: number
+      origem: OrigemContribuicao
+      detalhe: string
+    }[]
+    sinais_texto: { sinal: string; trecho: string; confianca: number }[]
+    confianca_detalhe: { componente: string; valor: number }[]
+    regras_acionadas: string[]
+    contrafactual: string
+  }
+  falta_para_subir: string
+  eventos: { data: string; tipo: TipoEvento; descricao: string }[]
+  evolucao: { data: string; classe: Classe; prazo_consumido_pct: number; motivo: string }[]
+  historico: { data: string; tipo: TipoHistorico; descricao: string; origem: string }[]
 }
 
-export type ClasseSwalis = { classe: Classe; descricao: string; prazo: number; exemplos: string }
+export type Fantasma = {
+  posicao: number
+  classe: Classe
+  classe_antiga: Classe
+  prazo_consumido_pct: number
+}
+
+export type SlotFila = {
+  posicao: number
+  paciente?: Paciente
+  fantasma?: Fantasma
+}

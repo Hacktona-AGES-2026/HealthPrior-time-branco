@@ -1,152 +1,125 @@
 import { useMemo } from "react"
 import { Bar, BarChart, CartesianGrid, Cell, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { CheckCheck, Layers, Siren, TimerOff, type LucideIcon } from "lucide-react"
-import { ESPECIALIDADES, PACIENTES, TOTAL_FILA } from "@/data/fila"
-import { CLASSES, NOME_CAMADA, corClasse, corPrazo } from "@/lib/cores"
+import { AlertTriangle, CheckCheck, Ribbon, TimerOff, type LucideIcon } from "lucide-react"
+import { ESPECIALIDADES, FANTASMAS, PACIENTES } from "@/data/fila"
+import { CLASSES, corClasse, corPrazo } from "@/lib/cores"
 import { usarContagem } from "@/lib/motion"
 import { cn } from "@/lib/utils"
-import { CamadaBadge, ClasseBadge } from "@/components/shared/Basicos"
+import { ClasseBadge, ConfiancaSelo } from "@/components/shared/Basicos"
 import { CartaoGrafico } from "@/components/shared/detalhe/Cartao"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useStore } from "@/store/useStore"
 
-function Resumo({ icone: Icone, rotulo, valor, sufixo = "", cor, detalhe, indice, aoClicar }: { icone: LucideIcon; rotulo: string; valor: number; sufixo?: string; cor?: string; detalhe: string; indice: number; aoClicar?: () => void }) {
+const todos = () => [
+  ...FANTASMAS.map((f) => ({ classe: f.classe, antiga: f.classe_antiga, pct: f.prazo_consumido_pct })),
+  ...PACIENTES.map((p) => ({ classe: p.classe, antiga: p.classe_antiga, pct: p.prazo_consumido_pct })),
+]
+
+function Resumo({ icone: Icone, rotulo, valor, sufixo = "", cor, detalhe, indice }: { icone: LucideIcon; rotulo: string; valor: number; sufixo?: string; cor: string; detalhe: string; indice: number }) {
   const animado = usarContagem(valor, 900)
   return (
-    <button type="button" onClick={aoClicar} className="fx-fade-up flex items-start gap-3 rounded-xl bg-muted/40 p-3 text-left transition-colors outline-none hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring" style={{ animationDelay: `${indice * 80}ms` }}>
+    <div className="fx-fade-up flex items-start gap-3 rounded-xl bg-muted/40 p-3" style={{ animationDelay: `${indice * 80}ms` }}>
       <Icone className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
       <div className="min-w-0">
         <div className="text-xl leading-none font-semibold tabular-nums" style={{ color: cor }}>
-          {Math.round(animado).toLocaleString("pt-BR")}
+          {Math.round(animado)}
           {sufixo}
         </div>
         <div className="mt-1 text-xs font-medium">{rotulo}</div>
         <div className="truncate text-[11px] text-muted-foreground">{detalhe}</div>
       </div>
-    </button>
+    </div>
   )
 }
 
-const BINS_PRAZO: [string, number, number][] = [
-  ["0–25%", 0, 25],
-  ["25–50%", 25, 50],
-  ["50–75%", 50, 75],
-  ["75–100%", 75, 100],
-  ["100–200%", 100, 200],
-  ["200–500%", 200, 500],
-  ["500–1000%", 500, 1000],
-  [">1000%", 1000, Infinity],
-]
-
-const BINS_POSICAO: [string, number, number][] = [
-  ["desceu >100", -Infinity, -100],
-  ["desceu até 100", -100, -1],
-  ["igual", 0, 0],
-  ["subiu até 100", 1, 100],
-  ["subiu 100–300", 101, 300],
-  ["subiu >300", 301, Infinity],
-]
-
-const grupoAlerta = (a: string) => (a.startsWith("HbA1c") ? "HbA1c acima de 8,5%" : a)
-
 export default function PaginaAnalise() {
+  const TODOS = todos()
   const decisoes = useStore((s) => s.decisoes)
   const abrirNaFila = useStore((s) => s.abrirNaFila)
-  const setFiltros = useStore((s) => s.setFiltros)
-  const ir = useStore((s) => s.ir)
 
   const dados = useMemo(() => {
-    const prioridades = [
-      ["alta", "Alta"],
-      ["media", "Média"],
-      ["baixa", "Baixa"],
-      ["vazia", "Sem prioridade"],
-    ] as const
-    const porClasse = CLASSES.map((c) => {
-      const g = PACIENTES.filter((p) => p.classe === c)
-      return {
-        classe: c,
-        alta: g.filter((p) => p.prioridade_atual === "alta").length,
-        media: g.filter((p) => p.prioridade_atual === "media").length,
-        baixa: g.filter((p) => p.prioridade_atual === "baixa").length,
-        vazia: g.filter((p) => p.prioridade_atual === null).length,
-      }
-    }).filter((d) => d.alta + d.media + d.baixa + d.vazia > 0)
-    const bins = BINS_PRAZO.map(([faixa, de, ate]) => ({
-      faixa,
-      n: PACIENTES.filter((p) => p.pct >= de && (ate === Infinity ? true : p.pct < ate)).length,
-      cor: corPrazo(de >= 100 ? 110 : de + 1),
+    const porClasse = CLASSES.map((c) => ({
+      classe: c,
+      antes: TODOS.filter((t) => t.antiga === c).length,
+      depois: TODOS.filter((t) => t.classe === c).length,
     }))
-    const posicoes = BINS_POSICAO.map(([faixa, de, ate]) => {
-      const n = PACIENTES.filter((p) => {
-        const d = p.posicao_atual - p.posicao
-        return d >= de && d <= ate
-      }).length
-      return { faixa, n, sobe: de > 0 }
-    })
+    const bins = Array.from({ length: 11 }, (_, i) => ({
+      faixa: i === 10 ? ">100" : `${i * 10}–${i * 10 + 9}`,
+      n: TODOS.filter((t) => (i === 10 ? t.pct > 100 : t.pct >= i * 10 && t.pct < i * 10 + 10 && t.pct <= 100)).length,
+      cor: corPrazo(i === 10 ? 110 : i * 10 + 5),
+    }))
+    const subiram = TODOS.filter((t) => CLASSES.indexOf(t.classe) < CLASSES.indexOf(t.antiga)).length
+    const desceram = TODOS.filter((t) => CLASSES.indexOf(t.classe) > CLASSES.indexOf(t.antiga)).length
+    const mantiveram = TODOS.length - subiram - desceram
     const porEsp = ESPECIALIDADES.map((e) => {
       const g = PACIENTES.filter((p) => p.especialidade === e)
-      return { especialidade: e, c1: g.filter((p) => p.camada === 1).length, c2: g.filter((p) => p.camada === 2).length, c3: g.filter((p) => p.camada === 3).length }
-    }).sort((a, b) => b.c1 + b.c2 + b.c3 - (a.c1 + a.c2 + a.c3))
-    const matriz = ESPECIALIDADES.map((e) => ({ especialidade: e, celulas: CLASSES.map((c) => PACIENTES.filter((p) => p.especialidade === e && p.classe === c).length) }))
+      return {
+        especialidade: e,
+        subiu: g.filter((p) => p.posicao_nova < p.posicao_antiga).length,
+        desceu: -g.filter((p) => p.posicao_nova > p.posicao_antiga).length,
+      }
+    })
+    const matriz = ESPECIALIDADES.map((e) => ({
+      especialidade: e,
+      celulas: CLASSES.map((c) => PACIENTES.filter((p) => p.especialidade === e && p.classe === c).length),
+    }))
     const maxCelula = Math.max(...matriz.flatMap((m) => m.celulas))
-    const contagemAlertas = new Map<string, number>()
-    PACIENTES.forEach((p) => new Set(p.alertas.map(grupoAlerta)).forEach((a) => contagemAlertas.set(a, (contagemAlertas.get(a) ?? 0) + 1)))
-    const alertas = [...contagemAlertas.entries()].sort((a, b) => b[1] - a[1])
-    const esperas = [...PACIENTES].sort((a, b) => b.dias_em_fila - a.dias_em_fila).slice(0, 10)
-    return { prioridades, porClasse, bins, posicoes, porEsp, matriz, maxCelula, alertas, esperas }
+    const histConf = Array.from({ length: 6 }, (_, i) => ({
+      faixa: i === 5 ? "90–100%" : `${40 + i * 10}–${49 + i * 10}%`,
+      n: PACIENTES.filter((p) => (i === 5 ? p.confianca >= 0.9 : p.confianca >= 0.4 + i * 0.1 && p.confianca < 0.5 + i * 0.1)).length,
+      baixa: 0.4 + i * 0.1 < 0.6,
+    }))
+    const menores = [...PACIENTES].sort((a, b) => a.confianca - b.confianca).slice(0, 10)
+    return { porClasse, bins, subiram, desceram, mantiveram, porEsp, matriz, maxCelula, histConf, menores }
   }, [])
 
   const aprovados = Object.values(decisoes).filter((d) => d.status === "aprovado").length
-  const editados = Object.values(decisoes).filter((d) => d.status === "editado").length
-  const revisados = aprovados + editados
-  const oncologicos = PACIENTES.filter((p) => p.camada === 1).length
-  const urgentes = PACIENTES.filter((p) => p.camada === 2).length
-  const vencidos = PACIENTES.filter((p) => p.pct > 100).length
-  const filtrarEIr = (parcial: Parameters<typeof setFiltros>[0]) => {
-    setFiltros(parcial)
-    ir("fila")
-  }
-  const corPrioridade = { alta: "var(--cls-a1)", media: "var(--cls-b)", baixa: "var(--cls-c)", vazia: "var(--muted-foreground)" }
-  const corCamada = { c1: "var(--cls-a2)", c2: "var(--cls-b)", c3: "var(--cls-d)" }
+  const rejeitados = Object.values(decisoes).filter((d) => d.status === "rejeitado").length
+  const revisados = aprovados + rejeitados
+  const oncCorrigidos = PACIENTES.filter((p) => p.cid.startsWith("C") && p.classe_antiga !== p.classe).length
+  const vencidos = TODOS.filter((t) => t.pct > 100).length
+  const divergencias = PACIENTES.filter((p) => p.divergencia).length
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
       <div className="@container mx-auto max-w-7xl space-y-4 p-4">
         <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
-          <Resumo indice={0} icone={Layers} rotulo="Camada 1 · oncológicos" valor={oncologicos} cor="var(--cls-a2-fg)" detalhe="CID iniciado por C, sempre acima da camada 3" aoClicar={() => filtrarEIr({ camada: "1" })} />
-          <Resumo indice={1} icone={Siren} rotulo="Camada 2 · urgentes" valor={urgentes} cor="var(--cls-b-fg)" detalhe="Sinal clínico de urgência" aoClicar={() => filtrarEIr({ camada: "2" })} />
-          <Resumo indice={2} icone={TimerOff} rotulo="Vencidos (>100% do prazo)" valor={vencidos} cor="var(--prazo-vencido)" detalhe={`de ${TOTAL_FILA} na fila`} aoClicar={() => filtrarEIr({ vencidos: true })} />
-          <Resumo indice={3} icone={CheckCheck} rotulo="Revisados" valor={revisados} cor="var(--sobe)" detalhe={`${aprovados} aprovados · ${editados} editados · ${TOTAL_FILA - revisados} pendentes`} aoClicar={() => filtrarEIr({ status: "revisados" })} />
+          <Resumo indice={0} icone={Ribbon} rotulo="Oncológicos corrigidos" valor={oncCorrigidos} cor="var(--cls-a2-fg)" detalhe="Classe elevada pela regra de ouro e pelo texto" />
+          <Resumo indice={1} icone={TimerOff} rotulo="Vencidos (>100% do prazo)" valor={vencidos} cor="var(--prazo-vencido)" detalhe="Na fila inteira de 941 pacientes" />
+          <Resumo indice={2} icone={AlertTriangle} rotulo="Divergências com a regulação" valor={divergencias} cor="var(--prazo-limite)" detalhe="IA discorda da prioridade humana" />
+          <Resumo indice={3} icone={CheckCheck} rotulo="Aprovado / rejeitado" valor={revisados === 0 ? 0 : Math.round((aprovados / revisados) * 100)} sufixo="%" cor="var(--sobe)" detalhe={`${aprovados} aprovados · ${rejeitados} rejeitados · ${PACIENTES.length - revisados} pendentes`} />
         </div>
 
         <div className="grid gap-3 @3xl:grid-cols-2">
-          <CartaoGrafico titulo="Prioridade manual × classe sugerida" descricao="Quem hoje é 'alta' ou 'baixa' no cadastro e onde cai na classe do SWALIS">
+          <CartaoGrafico titulo="Contagem por classe: antes × depois" descricao="Fila inteira (941 pacientes)">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.porClasse} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
+                <BarChart data={dados.porClasse} margin={{ top: 16, right: 8, bottom: 0, left: -12 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="classe" tick={{ fontSize: 12, fontWeight: 600, fill: "var(--foreground)" }} stroke="var(--border)" />
+                  <XAxis dataKey="classe" tick={{ fontSize: 12, fill: "var(--foreground)", fontWeight: 600 }} stroke="var(--border)" />
                   <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
                   <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                  {dados.prioridades.map(([chave, rotulo], i) => (
-                    <Bar key={chave} name={rotulo} dataKey={chave} stackId="p" fill={corPrioridade[chave]} fillOpacity={0.85} animationDuration={900} animationBegin={i * 120} />
-                  ))}
+                  <Bar name="Antes (regulação)" dataKey="antes" fill="var(--muted-foreground)" fillOpacity={0.5} radius={[4, 4, 0, 0]} animationDuration={900} />
+                  <Bar name="Depois (IA)" dataKey="depois" fill="var(--primary)" radius={[4, 4, 0, 0]} animationDuration={900} animationBegin={200}>
+                    {dados.porClasse.map((d) => (
+                      <Cell key={d.classe} fill={corClasse(d.classe)} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CartaoGrafico>
 
-          <CartaoGrafico titulo="Histograma do % do prazo consumido" descricao="Faixas do SWALIS e, depois de 100%, os vencidos em escala crescente">
+          <CartaoGrafico titulo="Histograma do % do prazo consumido" descricao="Verde ideal · amarelo ótimo · laranja no limite · vermelho vencido">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.bins} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
+                <BarChart data={dados.bins} margin={{ top: 16, right: 8, bottom: 0, left: -12 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} />
                   <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-                  <ReferenceLine x="100–200%" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
+                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Pacientes"]} />
+                  <ReferenceLine x=">100" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
                   <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={1000}>
                     {dados.bins.map((b) => (
                       <Cell key={b.faixa} fill={b.cor} />
@@ -157,42 +130,38 @@ export default function PaginaAnalise() {
             </div>
           </CartaoGrafico>
 
-          <CartaoGrafico titulo="Mudança de posição: atual → proposta" descricao="Atual = prioridade manual + data de entrada · proposta = camadas + score">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.posicoes} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-                  <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={900}>
-                    {dados.posicoes.map((b) => (
-                      <Cell key={b.faixa} fill={b.faixa === "igual" ? "var(--muted-foreground)" : b.sobe ? "var(--sobe)" : "var(--desce)"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+          <CartaoGrafico titulo="Quantos subiram e desceram" descricao="Fila inteira, por mudança de classe">
+            <div className="grid grid-cols-3 gap-2 py-2">
+              {[
+                { rotulo: "Subiram", valor: dados.subiram, cor: "var(--sobe)", sinal: "▲" },
+                { rotulo: "Mantiveram", valor: dados.mantiveram, cor: "var(--muted-foreground)", sinal: "=" },
+                { rotulo: "Desceram", valor: dados.desceram, cor: "var(--desce)", sinal: "▼" },
+              ].map((b) => (
+                <div key={b.rotulo} className="rounded-lg border p-2 text-center">
+                  <div className="text-xl font-bold tabular-nums" style={{ color: b.cor }}>
+                    {b.sinal} {b.valor}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">{b.rotulo}</div>
+                </div>
+              ))}
             </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Camadas por especialidade" descricao="Quantas solicitações de cada especialidade caem em cada camada">
+            <div className="mb-1 text-[11px] font-medium text-muted-foreground uppercase tracking-wide">Por especialidade (casos detalhados, posição)</div>
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.porEsp} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
+                <BarChart data={dados.porEsp} layout="vertical" stackOffset="sign" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <YAxis type="category" dataKey="especialidade" width={150} interval={0} tick={{ fontSize: 10.5, fill: "var(--foreground)" }} stroke="none" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                  <Bar name={`1 · ${NOME_CAMADA[1]}`} dataKey="c1" stackId="c" fill={corCamada.c1} animationDuration={900} />
-                  <Bar name={`2 · ${NOME_CAMADA[2]}`} dataKey="c2" stackId="c" fill={corCamada.c2} animationDuration={900} animationBegin={150} />
-                  <Bar name={`3 · ${NOME_CAMADA[3]}`} dataKey="c3" stackId="c" fill={corCamada.c3} animationDuration={900} animationBegin={300} />
+                  <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" tickFormatter={(v: number) => String(Math.abs(v))} />
+                  <YAxis type="category" dataKey="especialidade" width={118} interval={0} tick={{ fontSize: 10.5, fill: "var(--foreground)" }} stroke="none" />
+                  <Tooltip formatter={(v, nome) => [Math.abs(Number(v)), nome]} cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
+                  <ReferenceLine x={0} stroke="var(--foreground)" />
+                  <Bar name="Subiram" dataKey="subiu" stackId="s" fill="var(--sobe)" animationDuration={900} />
+                  <Bar name="Desceram" dataKey="desceu" stackId="s" fill="var(--desce)" animationDuration={900} animationBegin={150} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </CartaoGrafico>
 
-          <CartaoGrafico titulo="Mapa de calor: especialidade × classe" descricao="Número de solicitações em cada célula">
+          <CartaoGrafico titulo="Mapa de calor: especialidade × classe" descricao="Casos detalhados · número em cada célula">
             <div className="overflow-x-auto">
               <table className="w-full border-separate border-spacing-1 text-xs">
                 <thead>
@@ -212,10 +181,10 @@ export default function PaginaAnalise() {
                       {linha.celulas.map((n, ci) => (
                         <td
                           key={ci}
-                          className={cn("fx-pop h-7 rounded text-center font-semibold tabular-nums", n === 0 && "text-muted-foreground/60")}
+                          className={cn("fx-pop h-8 rounded text-center font-semibold tabular-nums", n === 0 && "text-muted-foreground/60")}
                           style={{
-                            animationDelay: `${(li * 5 + ci) * 20}ms`,
-                            background: n === 0 ? "var(--muted)" : `color-mix(in oklab, ${corClasse(CLASSES[ci])} ${Math.round(18 + (n / dados.maxCelula) * 60)}%, transparent)`,
+                            animationDelay: `${(li * 5 + ci) * 25}ms`,
+                            background: n === 0 ? "var(--muted)" : `color-mix(in oklab, ${corClasse(CLASSES[ci])} ${Math.round(20 + (n / dados.maxCelula) * 65)}%, transparent)`,
                           }}
                           title={`${linha.especialidade} · ${CLASSES[ci]}: ${n}`}
                         >
@@ -229,48 +198,50 @@ export default function PaginaAnalise() {
             </div>
           </CartaoGrafico>
 
-          <CartaoGrafico titulo="Alertas de dados" descricao="Inconsistências do cadastro e dados faltando · clique para filtrar a fila">
-            <ul className="space-y-1.5">
-              {dados.alertas.map(([alerta, n], i) => (
-                <li key={alerta}>
-                  <button type="button" onClick={() => filtrarEIr({ alertas: true })} className="group w-full rounded-md p-1 text-left outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
-                    <div className="mb-0.5 flex items-baseline justify-between gap-2 text-xs">
-                      <span>{alerta}</span>
-                      <span className="font-semibold tabular-nums">{n}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div className="fx-grow-x h-full rounded-full bg-[var(--prazo-limite)]" style={{ width: `${(n / dados.alertas[0][1]) * 100}%`, animationDelay: `${i * 90}ms` }} />
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
+          <CartaoGrafico titulo="Histograma de confiança" descricao="Abaixo de 60% pede revisão humana">
+            <div className="h-56">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dados.histConf} margin={{ top: 16, right: 8, bottom: 0, left: -12 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="faixa" tick={{ fontSize: 10.5, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Pacientes"]} />
+                  <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={900}>
+                    {dados.histConf.map((b) => (
+                      <Cell key={b.faixa} fill={b.baixa ? "var(--desce)" : "var(--primary)"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </CartaoGrafico>
 
-          <CartaoGrafico titulo="10 maiores esperas" descricao="Clique para abrir o paciente na fila">
+          <CartaoGrafico titulo="10 casos de menor confiança" descricao="Clique para abrir o paciente na fila">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Pos.</TableHead>
                   <TableHead>Caso</TableHead>
-                  <TableHead>Camada</TableHead>
-                  <TableHead className="text-right">Dias</TableHead>
+                  <TableHead>Classe</TableHead>
+                  <TableHead className="text-right">Confiança</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {dados.esperas.map((p, i) => (
-                  <TableRow key={p.id} className="fx-fade-up cursor-pointer" style={{ animationDelay: `${i * 45}ms` }} onClick={() => abrirNaFila(p.id)}>
-                    <TableCell className="tabular-nums">#{p.posicao}</TableCell>
+                {dados.menores.map((p, i) => (
+                  <TableRow key={p.solicitacao_id} className="fx-fade-up cursor-pointer" style={{ animationDelay: `${i * 45}ms` }} onClick={() => abrirNaFila(p.solicitacao_id)}>
+                    <TableCell className="tabular-nums">#{p.posicao_nova}</TableCell>
                     <TableCell>
-                      <button type="button" className="text-left outline-none focus-visible:underline" onClick={() => abrirNaFila(p.id)}>
-                        <div className="font-semibold tabular-nums">{p.id}</div>
+                      <button type="button" className="text-left outline-none focus-visible:underline" onClick={() => abrirNaFila(p.solicitacao_id)}>
+                        <div className="font-semibold tabular-nums">{p.solicitacao_id}</div>
                         <div className="max-w-52 truncate text-xs text-muted-foreground">{p.procedimento}</div>
                       </button>
                     </TableCell>
                     <TableCell>
-                      <CamadaBadge camada={p.camada} />
+                      <ClasseBadge classe={p.classe} />
                     </TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">{p.dias_em_fila.toLocaleString("pt-BR")}</TableCell>
+                    <TableCell className="text-right">
+                      <ConfiancaSelo valor={p.confianca} />
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>

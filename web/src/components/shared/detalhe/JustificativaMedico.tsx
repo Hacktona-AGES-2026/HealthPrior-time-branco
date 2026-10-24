@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react"
-import { FileText, Link2, Route } from "lucide-react"
+import { FileText, Link2, Sparkles } from "lucide-react"
 import type { Paciente } from "@/data/tipos"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
@@ -8,9 +8,8 @@ type Trecho = { inicio: number; fim: number; indice: number }
 
 const localizar = (texto: string, trechos: string[]) => {
   const achados: Trecho[] = []
-  const minusculo = texto.toLowerCase()
   trechos.forEach((t, indice) => {
-    const inicio = minusculo.indexOf(t.toLowerCase())
+    const inicio = texto.indexOf(t)
     if (inicio >= 0) achados.push({ inicio, fim: inicio + t.length, indice })
   })
   achados.sort((a, b) => a.inicio - b.inicio)
@@ -58,59 +57,56 @@ function TextoDestacado({ texto, trechos, ativo, aoAtivar }: { texto: string; tr
 
 export function JustificativaMedico({ p }: { p: Paciente }) {
   const [ativo, setAtivo] = useState<number | null>(null)
-  const trechos = p.sinais_texto.map((s) => s.trecho)
+  const sinaisTexto = p.parametros_ia.sinais_texto
+  const trechos = useMemo(() => sinaisTexto.map((s) => s.trecho), [sinaisTexto])
 
   return (
-    <div className="grid gap-3 @container">
+    <div className="grid gap-3 @container lg:grid-cols-1">
       <section className="fx-fade-up rounded-xl bg-muted/40 p-3" aria-label="Justificativa clínica do médico">
         <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <FileText className="size-3.5" aria-hidden /> Justificativa clínica do médico
         </h3>
         <p className="text-sm leading-relaxed">
-          {p.justificativa_clinica ? <TextoDestacado texto={p.justificativa_clinica} trechos={trechos} ativo={ativo} aoAtivar={setAtivo} /> : <span className="text-muted-foreground">Sem justificativa registrada</span>}
+          <TextoDestacado texto={p.justificativa_clinica} trechos={trechos} ativo={ativo} aoAtivar={setAtivo} />
         </p>
         {p.observacoes && (
-          <p className="mt-2 border-t border-border/60 pt-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-2 border-t pt-2 text-xs leading-relaxed text-muted-foreground">
             <span className="font-semibold">Observações: </span>
             <TextoDestacado texto={p.observacoes} trechos={trechos} ativo={ativo} aoAtivar={setAtivo} />
           </p>
         )}
-        {trechos.length > 0 && (
-          <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-2">
-            <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              <Link2 className="size-3" aria-hidden /> Sinais extraídos do texto
-            </span>
-            {trechos.map((t, i) => (
-              <button
-                key={t}
-                type="button"
-                onMouseEnter={() => setAtivo(i)}
-                onMouseLeave={() => setAtivo(null)}
-                onFocus={() => setAtivo(i)}
-                onBlur={() => setAtivo(null)}
-                className={cn("rounded-md px-1.5 py-0.5 text-[11px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", ativo === i ? "bg-[var(--destaque)]" : "bg-background/70")}
-              >
-                <span className="font-bold">{i + 1}</span> {t}<span className="ml-1 text-muted-foreground">{p.sinais_texto[i].origem === "llm" ? "· LLM, só alerta" : "· regra"}</span>
-              </button>
-            ))}
-          </div>
-        )}
+        <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t pt-2">
+          <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <Link2 className="size-3" aria-hidden /> Trechos usados pela IA
+          </span>
+          {sinaisTexto.map((s, i) => (
+            <button
+              key={s.trecho}
+              type="button"
+              onMouseEnter={() => setAtivo(i)}
+              onMouseLeave={() => setAtivo(null)}
+              onFocus={() => setAtivo(i)}
+              onBlur={() => setAtivo(null)}
+              className={cn("rounded-md border px-1.5 py-0.5 text-[11px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", ativo === i ? "border-[var(--ouro)] bg-[var(--destaque)]" : "bg-muted/50")}
+            >
+              <span className="font-bold">{i + 1}</span> {s.sinal} · {Math.round(s.confianca * 100)}%
+            </button>
+          ))}
+        </div>
       </section>
 
-      <section className="fx-fade-up rounded-xl bg-primary/5 p-3" style={{ animationDelay: "120ms" }} aria-label="Por que este paciente está aqui">
+      <section className="fx-fade-up rounded-lg border border-primary/30 bg-primary/5 p-3" style={{ animationDelay: "120ms" }} aria-label="Justificativa gerada pela IA">
         <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
-          <Route className="size-3.5" aria-hidden /> Por que está nesta posição
+          <Sparkles className="size-3.5" aria-hidden /> Justificativa gerada pela IA
         </h3>
         <p className="text-sm leading-relaxed">{p.justificativa}</p>
-        {p.alertas.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {p.alertas.map((a, i) => (
-              <Badge key={a} variant="secondary" className="fx-pop bg-[var(--prazo-limite)]/15 font-normal" style={{ animationDelay: `${200 + i * 60}ms` }}>
-                {a}
-              </Badge>
-            ))}
-          </div>
-        )}
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {p.sinais.map((s, i) => (
+            <Badge key={s} variant="secondary" className="fx-pop" style={{ animationDelay: `${200 + i * 60}ms` }}>
+              {s}
+            </Badge>
+          ))}
+        </div>
       </section>
     </div>
   )

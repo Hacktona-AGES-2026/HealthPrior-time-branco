@@ -1,4 +1,4 @@
-export const HOJE = "2026-10-23"
+export const HOJE = "2026-10-24"
 
 const DIA_MS = 86_400_000
 

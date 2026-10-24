@@ -1,7 +1,6 @@
 import { Suspense, lazy, useCallback } from "react"
 import { AppSidebar } from "@/components/layout/AppSidebar"
 import { CabecalhoMetricas } from "@/components/layout/CabecalhoMetricas"
-import { PaletaBusca } from "@/components/layout/PaletaBusca"
 import { ShortcutsDialog } from "@/components/layout/ShortcutsDialog"
 import { CarregandoPagina } from "@/components/shared/Carregando"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -15,8 +14,6 @@ const PaginaInbox = lazy(() => import("@/components/inbox/PaginaInbox"))
 const PaginaPacientes = lazy(() => import("@/components/pacientes/PaginaPacientes"))
 const PaginaAnalise = lazy(() => import("@/components/analise/PaginaAnalise"))
 const PaginaSwalis = lazy(() => import("@/components/swalis/PaginaSwalis"))
-const PaginaPropostas = lazy(() => import("@/components/propostas/PaginaPropostas"))
-const PaginaPendencias = lazy(() => import("@/components/pendencias/PaginaPendencias"))
 
 function Conteudo() {
   const pagina = useStore((s) => s.pagina)
@@ -30,8 +27,6 @@ function Conteudo() {
         {pagina === "pacientes" && <PaginaPacientes />}
         {pagina === "analise" && <PaginaAnalise />}
         {pagina === "swalis" && <PaginaSwalis />}
-        {pagina === "pendencias" && <PaginaPendencias />}
-        {pagina === "propostas" && <PaginaPropostas />}
       </div>
     </Suspense>
   )
@@ -54,7 +49,6 @@ export default function App() {
           </SidebarInset>
         </SidebarProvider>
         <ShortcutsDialog />
-        <PaletaBusca />
         <Toaster position="bottom-center" richColors closeButton />
       </TooltipProvider>
     </>
