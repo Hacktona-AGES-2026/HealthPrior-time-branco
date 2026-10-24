@@ -4,7 +4,7 @@
     python -m app.cli carga       US-01/02/03: carga inicial + normalização + flags (mesma transação)
     python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
     python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
-    python -m app.cli gerar-fila  US-08/09/10: gera, verifica e publica fila_priorizada.csv (via banco)
+    python -m app.cli gerar-fila  US-09: gera fila_priorizada.csv a partir do banco (verificar/publicar: US-10)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
@@ -15,6 +15,7 @@ from collections import Counter
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
+from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
 from app.application.normalizar import Normalizar, ResumoNormalizacao
 from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
@@ -88,7 +89,15 @@ def cmd_flags() -> None:
 
 
 def cmd_gerar_fila() -> None:
-    raise NotImplementedError("US-08/09/10: montar GerarFila (ver app/api/deps.py) e executar")
+    """US-09: gera output/fila_priorizada.csv a partir do banco. Verificar/publicar é a US-10."""
+    with Session(engine) as session:
+        resultado = GerarFila(
+            SqlSolicitacaoRepository(session), SqlEventoRepository(session), SwalisStub(),
+            ExportadorCsv(), settings.ref_date,
+        ).executar(settings.output_dir / "fila_priorizada.csv")
+    print(f"Arquivo: {resultado.caminho_csv}")
+    print(f"Total: {resultado.total} | " + " | ".join(
+        f"camada {c}: {resultado.por_camada.get(c, 0)}" for c in (1, 2, 3)))
 
 
 def cmd_gerar_fila_csv() -> None:

@@ -106,7 +106,9 @@ class SqlEventoRepository:
         self._s = session
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = (select(EventoTable).where(EventoTable.solicitacao_id == solicitacao_id)
+                    .order_by(EventoTable.data_evento, EventoTable.evento_id))
+        return [_para_evento(t) for t in self._s.exec(consulta).scalars()]
 
     def listar_todos(self) -> list[Evento]:
         consulta = select(EventoTable).order_by(EventoTable.evento_id)
