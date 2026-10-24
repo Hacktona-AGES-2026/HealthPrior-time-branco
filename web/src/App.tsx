@@ -13,6 +13,7 @@ const PaginaFila = lazy(() => import("@/components/fila/PaginaFila"))
 const PaginaPacientes = lazy(() => import("@/components/pacientes/PaginaPacientes"))
 const PaginaAnalise = lazy(() => import("@/components/analise/PaginaAnalise"))
 const PaginaSwalis = lazy(() => import("@/components/swalis/PaginaSwalis"))
+const PaginaPendencias = lazy(() => import("@/components/pendencias/PaginaPendencias"))
 
 function Conteudo() {
   const pagina = useStore((s) => s.pagina)
@@ -23,6 +24,7 @@ function Conteudo() {
         {pagina === "pacientes" && <PaginaPacientes />}
         {pagina === "analise" && <PaginaAnalise />}
         {pagina === "swalis" && <PaginaSwalis />}
+        {pagina === "pendencias" && <PaginaPendencias />}
       </div>
     </Suspense>
   )
