@@ -10,6 +10,7 @@ from sqlmodel import Session
 from app.application.carga_inicial import CargaInicial
 from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
+from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -98,3 +99,16 @@ DESTAQUES_PADRAO = ["SOL-2023-00010", "SOL-2025-00048", "SOL-2026-00637", "SOL-2
 def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas:
     return CompararFilas(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                          SqlFilaRepository(session), settings.ref_date, DESTAQUES_PADRAO)
+
+
+# US-21
+def get_detalhar_solicitacao(session: Session = Depends(get_session)) -> DetalharSolicitacao:
+    return DetalharSolicitacao(
+        solicitacoes=SqlSolicitacaoRepository(session),
+        eventos=SqlEventoRepository(session),
+        correcoes=SqlCorrecaoRepository(session),
+        pendencias=SqlPendenciaRepository(session),
+        fila=SqlFilaRepository(session),
+        scorer=get_scorer(),
+        ref_date=settings.ref_date,
+    )

@@ -6,17 +6,18 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlmodel import Session, SQLModel
 
-from app.domain.enums import Classe, ClasseStatus, StatusFila
+from app.domain.enums import Classe, ClasseStatus, StatusFila, StatusPendencia
 from app.domain.models import (
     Correcao,
     Evento,
     LinhaFila,
+    Motivo,
     Pendencia,
     ResultadoSincronizacao,
     ResultadoTabela,
@@ -71,7 +72,8 @@ class SqlSolicitacaoRepository:
         self._s = session
 
     def obter(self, solicitacao_id: str) -> Solicitacao | None:
-        raise NotImplementedError("US-01")
+        t = self._s.get(SolicitacaoTable, solicitacao_id)
+        return _para_entidade(t) if t is not None else None
 
     def listar(self, apenas_ativas: bool = True) -> list[Solicitacao]:
         consulta = select(SolicitacaoTable).order_by(SolicitacaoTable.solicitacao_id)
@@ -204,7 +206,11 @@ class SqlCorrecaoRepository:
         raise NotImplementedError("US-03")
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Correcao]:
-        raise NotImplementedError("US-03")
+        consulta = (select(CorrecaoTable).where(CorrecaoTable.solicitacao_id == solicitacao_id)
+                    .order_by(CorrecaoTable.id))
+        return [Correcao(solicitacao_id=t.solicitacao_id, campo=t.campo, original=t.original,
+                         novo=t.novo, regra=t.regra)
+                for t in self._s.exec(consulta).scalars()]
 
     def substituir(self, regras: tuple[str, ...], correcoes: list[Correcao]) -> None:
         self._s.execute(delete(CorrecaoTable).where(CorrecaoTable.regra.in_(regras)))
@@ -214,6 +220,21 @@ class SqlCorrecaoRepository:
             for c in correcoes
         )
         self._s.flush()
+
+
+def _para_pendencia(t: PendenciaTable) -> Pendencia:
+    evidencias = [
+        Motivo(sinal=e.get("sinal") or "", evidencia=e["texto"], fonte=e["fonte"], ref=e.get("ref"),
+               data=date.fromisoformat(e["data"]) if e.get("data") else None)
+        for e in json.loads(t.evidencias_json or "[]")
+    ]
+    return Pendencia(
+        pendencia_id=t.pendencia_id, solicitacao_id=t.solicitacao_id, regra=t.regra,
+        titulo=t.titulo, bloqueante=t.bloqueante, evidencias=evidencias,
+        acao_sugerida=t.acao_sugerida or "", status=StatusPendencia(t.status),
+        aberta_em=t.aberta_em, resolvido_por=t.resolvido_por, resolvido_em=t.resolvido_em,
+        resolucao=t.resolucao,
+    )
 
 
 def _evidencias_json(pendencia: Pendencia) -> str:
@@ -234,6 +255,11 @@ class SqlPendenciaRepository:
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
         raise NotImplementedError("US-06")
+
+    def listar_por_solicitacao(self, solicitacao_id: str) -> list[Pendencia]:
+        consulta = (select(PendenciaTable).where(PendenciaTable.solicitacao_id == solicitacao_id)
+                    .order_by(PendenciaTable.aberta_em, PendenciaTable.pendencia_id))
+        return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
         raise NotImplementedError("US-07")
