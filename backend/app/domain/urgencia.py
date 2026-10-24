@@ -2,7 +2,7 @@
 
 - Sinais clínicos (`motivos_urgencia`) definem a camada 2: algo indica que o risco de
   esperar aumentou (complicação, piora durante a espera, biópsia positiva, alarme no texto).
-- Sintomas (`motivos_sintomas`: dor > 3, limitação moderada/grave) NÃO definem camada (D-20):
+- Sintomas (`motivos_sintomas`: dor > 3, limitação moderada/grave) NÃO definem camada (D-27):
   aparecem na justificativa e são critério do SWALIS para a classe (B/C/D).
 
 A regra de ouro não depende desta separação: todo oncológico já está na camada 1.
@@ -78,7 +78,7 @@ def motivos_urgencia(sinais: SinaisUrgencia) -> list[str]:
     """Códigos dos sinais clínicos de urgência (camada 2), sem repetição e em ordem fixa.
 
     Ordem: cid_complicacao, evento_piora, biopsia_positiva, sinal_alarme.
-    Dor e limitação ficam em `motivos_sintomas` (D-20, revisa D-15).
+    Dor e limitação ficam em `motivos_sintomas` (D-27, revisa D-22).
     """
     motivos: list[str] = []
     if is_cid_urgente(sinais.cid_norm):
@@ -93,7 +93,7 @@ def motivos_urgencia(sinais: SinaisUrgencia) -> list[str]:
 
 
 def motivos_sintomas(sinais: SinaisUrgencia) -> list[str]:
-    """Sintomas relevantes (dor > 3, limitação moderada/grave). Não definem camada (D-20).
+    """Sintomas relevantes (dor > 3, limitação moderada/grave). Não definem camada (D-27).
 
     Usados na justificativa; a intensidade do sintoma é critério do SWALIS (classe B/C/D).
     """

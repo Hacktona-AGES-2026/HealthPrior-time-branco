@@ -18,7 +18,7 @@
 
 ## 1. Stack e fronteira back/front
 
-- **Back:** Python + FastAPI + SQLite (via SQLAlchemy ou SQLModel) + pandas no pipeline.
+- **Back:** Python + FastAPI + PostgreSQL 16 (Docker, via SQLAlchemy 2) + pandas no pipeline (D-15).
 - **Front:** React (Vite + TypeScript).
 - **Regra:** o **back é dono de toda regra de negócio** (pré-processamento, score, trava, verificador, pendências, log, aprendizado). O **front só exibe e coleta decisões**.
   - Única exceção: validação de UX na edição do regulador (bloquear rebaixamento de oncológico na hora). **O back valida de novo** e tem a palavra final.
@@ -46,7 +46,7 @@
 #### US-01 · Carga inicial — **P0** · Back
 Como **equipe**, quero carregar as 941 solicitações e ~1.500 eventos do dataset, para ter a fila inicial no sistema.
 - **CA**
-  - Lê `data/fila_cirurgica.csv`, `data/eventos_clinicos.csv`, `data/procedimentos.csv` e grava no SQLite.
+  - Lê `data/fila_cirurgica.csv`, `data/eventos_clinicos.csv`, `data/procedimentos.csv` e grava no PostgreSQL.
   - Valores originais preservados (colunas originais intactas; normalizados em colunas novas).
   - Idempotente: rodar duas vezes não duplica registros.
   - Carga inicial **não** passa pelo regulador; classe fica `classe_status = sugerida_nao_confirmada` (D-01).
@@ -121,19 +121,19 @@ Como **equipe administrativa**, quero resolver uma pendência (confirmar saída,
 ### E3 · Trava, verificação e entrega (C-11, C-12)
 
 #### US-08 · Trava da regra de ouro — **P0** · Back
-> **Status: ✅ implementada** (branch `feat/US-08-trava-regra-de-ouro`). Detalhes e decisões D-15..D-20: `docs/implementacao/US-08-trava-regra-de-ouro.md`.
+> **Status: ✅ implementada** (branch `feat/US-08-trava-regra-de-ouro`). Detalhes e decisões D-22..D-27: `docs/implementacao/US-08-trava-regra-de-ouro.md`.
 
 Como **sistema**, quero ordenar a fila por camadas, para que nenhum oncológico fique abaixo de paciente sem urgência (I-01).
 - **CA**
   - Camada 1: oncológicos (`cid_norm` C*). Camada 2: urgentes não oncológicos (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme). Camada 3: demais.
   - Dentro da camada: `score_efetivo` (= `score_medico` se houver, senão `score_sistema`), desc.
   - Funciona com o SWALIS stub.
-  - Camada 2 = só sinais clínicos; dor > 3 e limitação moderada/grave são sintomas (justificativa + SWALIS), não camada (D-20). A regra de ouro é garantida pela camada 1.
+  - Camada 2 = só sinais clínicos; dor > 3 e limitação moderada/grave são sintomas (justificativa + SWALIS), não camada (D-27). A regra de ouro é garantida pela camada 1.
 - **Back:** módulo `ranking` (função pura `ordenar(solicitacoes) -> lista`).
 - **Depende de:** US-03 (+ SWALIS ou stub)
 
 #### US-09 · Gerar `fila_priorizada.csv` — **P0** · Back
-> **Status: 🟡 provisório** — `python -m app.cli gerar-fila-csv` gera o CSV direto do dataset (D-19). Falta a versão via banco/`GerarFila` e o endpoint.
+> **Status: 🟡 provisório** — `python -m app.cli gerar-fila-csv` gera o CSV direto do dataset (D-26). Falta a versão via banco/`GerarFila` e o endpoint.
 
 Como **equipe**, quero gerar o CSV de entrega com justificativa legível por paciente.
 - **CA**
@@ -298,7 +298,7 @@ Como **usuário**, quero alternar entre as visões de Regulador, Administrativo 
 
 | US | Back | Front | Endpoint |
 |---|---|---|---|
-| US-01 | Carga dos CSVs no SQLite | — | `POST /admin/carga` / CLI |
+| US-01 | Carga dos CSVs no PostgreSQL | — | `POST /admin/carga` / CLI |
 | US-02 | PRE-01..04 + log | — | interno |
 | US-03 | PRE-05..08 | — | interno |
 | US-04 | PRE-20..25, suspensão | — | interno |

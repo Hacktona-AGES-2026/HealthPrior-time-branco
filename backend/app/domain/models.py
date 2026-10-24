@@ -43,6 +43,7 @@ class Solicitacao:
     flag_oncologico: str | None = None
     # normalizados (PRE-01..PRE-06)
     cid_norm: str = ""
+    nome_norm: str = ""
     oncologico: bool = False
     municipio_norm: str | None = None
     prioridade_norm: str | None = None
@@ -171,3 +172,12 @@ class ItemFila:
     solicitacao_id: str
     camada: Camada
     score_efetivo: float
+
+
+@dataclass
+class ResultadoTabela:
+    """Contagem da carga de uma tabela (US-01)."""
+
+    lido: int = 0
+    inseridos: int = 0
+    atualizados: int = 0

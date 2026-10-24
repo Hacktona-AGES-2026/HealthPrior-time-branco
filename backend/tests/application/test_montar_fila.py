@@ -45,7 +45,7 @@ def test_oncologico_com_score_menor_fica_acima_de_nao_urgente():
 
 
 def test_dor_sozinha_fica_na_camada_3_com_sintoma_na_justificativa():
-    # D-20: dor é sintoma (SWALIS), não sinal clínico de urgência.
+    # D-27: dor é sintoma (SWALIS), não sinal clínico de urgência.
     s = [sol("A"), sol("B", intensidade_dor_eva=8)]
     l = por_id(montar_fila(s, {}, ScorerFalso({"A": 90, "B": 5}), REF))
     assert l["B"].camada == 3
@@ -78,6 +78,14 @@ def test_score_medico_substitui_score_sistema():
     assert l["A"].posicao == 1
     assert "Editado manualmente pelo regulador." in l["A"].justificativa
     assert linhas_para_dicts(linhas)[0]["solicitacao_id"] == "A"
+
+
+def test_classe_editada_recalcula_o_pct_com_o_prazo_da_classe_decidida():
+    # 10 dias em fila, classe A1 (prazo 15): 66,7%, não o % do prazo da classe do sistema (180 dias)
+    s = [sol("A", classe_medico=Classe.A1, editado_manualmente=True, data_entrada_fila=date(2026, 10, 13))]
+    l = montar_fila(s, {}, ScorerFalso({"A": 5.6}), REF)[0]
+    assert l.pct_prazo_consumido == 66.7
+    assert "prazo 15 dias" in l.justificativa and "66.7% do prazo" in l.justificativa
 
 
 def test_suspensa_nao_aparece():

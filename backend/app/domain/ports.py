@@ -14,6 +14,7 @@ from app.domain.models import (
     ItemFila,
     Pendencia,
     ResultadoScore,
+    ResultadoTabela,
     Solicitacao,
 )
 
@@ -23,6 +24,9 @@ class SolicitacaoRepository(Protocol):
     def listar(self, apenas_ativas: bool = True) -> list[Solicitacao]: ...
     def salvar(self, solicitacao: Solicitacao) -> None: ...
     def salvar_varias(self, solicitacoes: list[Solicitacao]) -> None: ...
+    def salvar_normalizadas(self, solicitacoes: list[Solicitacao]) -> None:
+        """Grava só as colunas *_norm (US-02). Colunas originais e estado não são tocados."""
+        ...
 
 
 class EventoRepository(Protocol):
@@ -30,6 +34,24 @@ class EventoRepository(Protocol):
     def listar_todos(self) -> list[Evento]: ...
     def adicionar(self, evento: Evento) -> None: ...
     def salvar_varios(self, eventos: list[Evento]) -> None: ...
+
+
+class UnidadeDeTrabalho(Protocol):
+    """Transação compartilhada pelos repositórios: os casos de uso decidem quando confirmar."""
+
+    def confirmar(self) -> None: ...
+    def desfazer(self) -> None: ...
+
+
+class CargaRepository(Protocol):
+    def gravar(self, procedimentos: list[dict], solicitacoes: list[dict],
+               eventos: list[dict]) -> dict[str, ResultadoTabela]:
+        """Upsert por chave primária numa única transação: ou entra tudo, ou nada.
+
+        Não confirma: quem chama usa a UnidadeDeTrabalho. Só as colunas originais do dataset
+        são gravadas; o estado do sistema (classe_status, status_fila, *_norm…) não é sobrescrito.
+        """
+        ...
 
 
 class PendenciaRepository(Protocol):
@@ -47,6 +69,9 @@ class DecisaoRepository(Protocol):
 class CorrecaoRepository(Protocol):
     def adicionar_varias(self, correcoes: list[Correcao]) -> None: ...
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Correcao]: ...
+    def substituir(self, regras: tuple[str, ...], correcoes: list[Correcao]) -> None:
+        """Apaga o log das `regras` e grava `correcoes`; o log de outras regras fica intacto."""
+        ...
 
 
 class FilaRepository(Protocol):

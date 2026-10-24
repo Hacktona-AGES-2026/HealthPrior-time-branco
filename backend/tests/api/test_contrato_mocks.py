@@ -44,4 +44,4 @@ def test_pendencias():
 
 
 def test_nao_implementado_vira_501():
-    assert client.post("/admin/carga").status_code == 501
+    assert client.post("/admin/atualizacao-diaria").status_code == 501

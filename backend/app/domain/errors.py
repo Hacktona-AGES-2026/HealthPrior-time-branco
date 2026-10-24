@@ -33,3 +33,10 @@ class JustificativaObrigatoriaError(DomainError):
 class EventoInvalidoError(DomainError):
     codigo = "EVENTO_INVALIDO"
     status_http = 422
+
+
+class CargaInvalidaError(DomainError):
+    """Arquivo do dataset ausente, com colunas inesperadas ou valor que não converte (US-01)."""
+
+    codigo = "CARGA_INVALIDA"
+    status_http = 422

@@ -22,7 +22,9 @@ def _load() -> Settings:
     return Settings(
         data_dir=Path(os.getenv("HP_DATA_DIR", REPO_ROOT / "data")),
         output_dir=Path(os.getenv("HP_OUTPUT_DIR", backend_dir / "output")),
-        db_url=os.getenv("HP_DB_URL", f"sqlite:///{backend_dir / 'healthprior.db'}"),
+        # Defaults batem com o docker-compose.yml da raiz.
+        db_url=os.getenv("HP_DB_URL",
+                         "postgresql+psycopg://healthprior:healthprior@localhost:5432/healthprior"),
         verificador_path=REPO_ROOT / "src" / "verificar_fila_priorizada.py",
         # Data de referência do dataset. Nunca use date.today() nas regras.
         ref_date=date.fromisoformat(os.getenv("HP_REF_DATE", "2026-10-23")),

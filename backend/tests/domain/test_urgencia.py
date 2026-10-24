@@ -52,7 +52,7 @@ def test_sem_nenhum_sinal_nao_e_urgente():
 
 
 def test_dor_acima_de_3_e_sintoma_nao_urgencia():
-    # D-20: dor sozinha não coloca na camada 2.
+    # D-27: dor sozinha não coloca na camada 2.
     s = sinais(intensidade_dor_eva=4)
     assert motivos_urgencia(s) == []
     assert is_urgente(s) is False

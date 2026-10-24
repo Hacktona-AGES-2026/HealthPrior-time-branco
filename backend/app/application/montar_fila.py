@@ -114,17 +114,19 @@ def montar_fila(
         classe_txt = classe.value if isinstance(classe, Classe) else str(classe)
         prazo = PRAZO_MAXIMO_DIAS[classe] if isinstance(classe, Classe) else res.prazo_dias
         dias = (ref_date - sol.data_entrada_fila).days
+        # Classe editada pelo regulador: o % do prazo acompanha o prazo da classe decidida.
+        pct = round(100 * dias / prazo, 1) if sol.classe_medico is not None else res.pct_prazo_consumido
         camada = int(item.camada)
         linhas.append(LinhaFila(
             solicitacao_id=sol.solicitacao_id,
             posicao=item.posicao,
             justificativa=montar_justificativa(camada, sol, motivos, classe_txt, prazo,
                                                res.versao_regras, dias,
-                                               res.pct_prazo_consumido, sol.editado_manualmente,
+                                               pct, sol.editado_manualmente,
                                                sintomas=sintomas),
             camada=camada,
             classe=classe_txt,
-            pct_prazo_consumido=res.pct_prazo_consumido,
+            pct_prazo_consumido=pct,
             dias_em_fila=dias,
             score_efetivo=score,
             editado_manualmente=sol.editado_manualmente,

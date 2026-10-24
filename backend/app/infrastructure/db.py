@@ -1,11 +1,11 @@
-"""Conexão com o banco (SQLite via SQLModel)."""
+"""Conexão com o banco (PostgreSQL via SQLModel; ver D-15)."""
 from collections.abc import Iterator
 
 from sqlmodel import Session, SQLModel, create_engine
 
 from app.config import settings
 
-engine = create_engine(settings.db_url, connect_args={"check_same_thread": False})
+engine = create_engine(settings.db_url, pool_pre_ping=True)
 
 
 def criar_tabelas() -> None:

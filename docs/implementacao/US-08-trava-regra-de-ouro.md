@@ -1,9 +1,9 @@
 # US-08 · Trava da regra de ouro — registro de implementação
 
 > **Branch:** `feat/US-08-trava-regra-de-ouro` · **Data:** 24/10/2026
-> **Componentes:** C-11 (trava), parte de C-12 (verificador) · **Histórias:** US-08 completa; US-09 e US-10 em versão provisória (D-19)
+> **Componentes:** C-11 (trava), parte de C-12 (verificador) · **Histórias:** US-08 completa; US-09 e US-10 em versão provisória (D-26)
 > **Status:** implementado e validado (62 testes passando; verificador oficial **OK** sobre as 941 solicitações)
-> **Revisão 1 (D-20):** a camada 2 passou a conter só sinais clínicos; dor e limitação viraram sintomas (ver §3 e §4).
+> **Revisão 1 (D-27):** a camada 2 passou a conter só sinais clínicos; dor e limitação viraram sintomas (ver §3 e §4).
 
 ---
 
@@ -48,7 +48,7 @@ flowchart LR
 - Garantia testada por propriedade (300 itens aleatórios): nenhum oncológico depois de não oncológico; nenhuma camada 2 depois de camada 3.
 
 ### 2.2 Urgência (`domain/urgencia.py`)
-Duas funções separadas (D-20):
+Duas funções separadas (D-27):
 - `motivos_urgencia(sinais)` → **sinais clínicos, definem a camada 2**.
 - `motivos_sintomas(sinais)` → **sintomas, não definem camada**: só entram na justificativa (a intensidade é critério do SWALIS para a classe).
 
@@ -57,8 +57,8 @@ Duas funções separadas (D-20):
 | Código | Condição | Origem |
 |---|---|---|
 | `cid_complicacao` | CID em `CID_URGENTE` (K40.0/K40.3, K42.0, K43.0, K80.0, I20.0, N13.2, I83.2) | verificador |
-| `evento_piora` | PS, internação, biópsia positiva, imagem com progressão ou reavaliação com piora **durante a espera**, não duplicado | verificador + D-16 |
-| `biopsia_positiva` | biópsia positiva **em qualquer data** | D-17 |
+| `evento_piora` | PS, internação, biópsia positiva, imagem com progressão ou reavaliação com piora **durante a espera**, não duplicado | verificador + D-23 |
+| `biopsia_positiva` | biópsia positiva **em qualquer data** | D-24 |
 | `sinal_alarme` | palavra de alarme na `justificativa_clinica` (mesma regex do verificador) | verificador |
 
 
@@ -66,7 +66,7 @@ Duas funções separadas (D-20):
 
 `is_urgente = bool(motivos_urgencia(...))`. Os códigos viram texto na justificativa.
 
-> Antes da revisão (D-15), `dor` e `limitacao` também definiam a camada 2, espelhando o complemento de "sem urgência" do verificador. Ver §3.
+> Antes da revisão (D-22), `dor` e `limitacao` também definiam a camada 2, espelhando o complemento de "sem urgência" do verificador. Ver §3.
 
 ### 2.3 Fila e justificativa (`application/montar_fila.py`)
 - Considera só `status_fila = ativa`.
@@ -86,16 +86,16 @@ Duas funções separadas (D-20):
 
 | ID | Decisão | Motivo | Quem |
 |---|---|---|---|
-| D-15 | ~~Camada 2 = complemento exato de "sem urgência" do verificador~~ — **revista por D-20** | Mais seguro em relação à regra oficial | Time (João) |
-| D-16 | Eventos de piora só contam se forem durante a espera e não duplicados | Coerente com PRE-07/PRE-08; histórico motivou a indicação | Time (João) |
-| D-17 | Câncer escondido (biópsia positiva com CID não C) vai para a camada 2 com alerta "revisar CID". A biópsia positiva conta **em qualquer data** | Sem a exceção, D-16 apagaria esses casos (a biópsia costuma ser anterior à entrada). Mantém "usar o CID" para a camada 1 (Q-08 segue aberta) | Time (João) + lead |
-| D-18 | Desempate: score ↓, entrada mais antiga ↑, `solicitacao_id` ↑ | Ordem determinística e reprodutível; 80+ aguarda Q-10 | Lead |
-| D-19 | Geração provisória do CSV direto do dataset (sem banco) com SWALIS stub | Garantir a entrega das 14h sem depender da US-01 | Time (João) |
-| D-20 | Camada 2 = só sinais clínicos; dor e limitação viram sintomas (justificativa + SWALIS) | Ver §3.1 | Time (João), recomendação do lead |
+| D-22 | ~~Camada 2 = complemento exato de "sem urgência" do verificador~~ — **revista por D-27** | Mais seguro em relação à regra oficial | Time (João) |
+| D-23 | Eventos de piora só contam se forem durante a espera e não duplicados | Coerente com PRE-07/PRE-08; histórico motivou a indicação | Time (João) |
+| D-24 | Câncer escondido (biópsia positiva com CID não C) vai para a camada 2 com alerta "revisar CID". A biópsia positiva conta **em qualquer data** | Sem a exceção, D-23 apagaria esses casos (a biópsia costuma ser anterior à entrada). Mantém "usar o CID" para a camada 1 (Q-08 segue aberta) | Time (João) + lead |
+| D-25 | Desempate: score ↓, entrada mais antiga ↑, `solicitacao_id` ↑ | Ordem determinística e reprodutível; 80+ aguarda Q-10 | Lead |
+| D-26 | Geração provisória do CSV direto do dataset (sem banco) com SWALIS stub | Garantir a entrega das 14h sem depender da US-01 | Time (João) |
+| D-27 | Camada 2 = só sinais clínicos; dor e limitação viram sintomas (justificativa + SWALIS) | Ver §3.1 | Time (João), recomendação do lead |
 
-### 3.1 Por que a D-20 revisou a D-15
+### 3.1 Por que a D-27 revisou a D-22
 
-Com a D-15, a camada 2 tinha 526 pacientes (56% da fila). Abrindo por motivo:
+Com a D-22, a camada 2 tinha 526 pacientes (56% da fila). Abrindo por motivo:
 
 | Por que entrava na camada 2 | Pacientes |
 |---|---|
@@ -125,7 +125,7 @@ Decisões menores (subagentes, revisadas pelo lead):
 | Indicador | Valor |
 |---|---|
 | Verificador oficial | **OK — regra de ouro respeitada e formato válido** |
-| Indicador | D-15 (antes) | **D-20 (atual)** |
+| Indicador | D-22 (antes) | **D-27 (atual)** |
 |---|---|---|
 | Camadas 1 · 2 · 3 | 177 · 526 · 238 | **177 · 206 · 558** |
 | Posição mediana dos oncológicos (fila original: 287) | 89 | **89** |
@@ -147,7 +147,7 @@ Exemplos:
 ## 5. Limitações e achados (entrada para o SWALIS e próximas histórias)
 
 1. **A ordem dentro das camadas ainda é do SWALIS stub** (prioridade manual + % do prazo). Sintomáticos na camada 3 só sobem quando o SWALIS real usar dor/limitação na classe (só trocar em `api/deps.py` e `cli.py`).
-2. ~~Camada 2 grande (526, 56%)~~ — **resolvido pela D-20** (206).
+2. ~~Camada 2 grande (526, 56%)~~ — **resolvido pela D-27** (206).
 3. **Sinais só no texto livre** (ex.: "2 idas ao PS" da SOL-2023-00060) não são capturados: a regex do verificador não inclui "PS". É o caso de uso para extração por LLM com citação (I-05), no SWALIS.
 4. **Pendências não implementadas** (US-04/05): duplicatas, desistências e órfãos ainda entram/saem sem pendência registrada. Todas as 941 solicitações estão no CSV.
 5. A fila não é persistida (sem banco): o "não publicar" (I-07) é o `exit 1` do comando.
