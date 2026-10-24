@@ -60,6 +60,16 @@ class InconsistenciasOut(BaseModel):
     pendencias: PendenciasSincronizadasOut
 
 
+class BloqueantesOut(BaseModel):
+    solicitacoes: int
+    achados: dict[str, int]  # por regra (PRE-xx)
+    suspensas: int
+    reativadas: int
+    oncologicas_a_confirmar: int
+    eventos_orfaos: int
+    pendencias: PendenciasSincronizadasOut
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
@@ -67,6 +77,7 @@ class CargaOut(BaseModel):
     normalizacao: NormalizacaoOut
     flags: Optional[FlagsOut] = None
     inconsistencias: Optional[InconsistenciasOut] = None
+    bloqueantes: Optional[BloqueantesOut] = None
 
 
 class PublicacaoOut(BaseModel):

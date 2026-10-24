@@ -3,6 +3,7 @@
     python -m app.cli init-db     cria as tabelas
     python -m app.cli carga       US-01/02/03/05: carga + normalização + flags + alertas (mesma transação)
     python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
+    python -m app.cli bloqueantes  US-04: recalcula achados bloqueantes e suspensões (sem recarregar)
     python -m app.cli inconsistencias  US-05: recalcula alertas e pendências não bloqueantes (sem recarregar)
     python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
     python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
@@ -20,6 +21,7 @@ from sqlmodel import Session
 from app.application.carga_inicial import CargaInicial
 from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
+from app.application.detectar_bloqueantes import DetectarBloqueantes, ResumoBloqueantes
 from app.application.detectar_inconsistencias import DetectarInconsistencias, ResumoInconsistencias
 from app.application.publicar_fila import PublicarFila
 from app.application.normalizar import Normalizar, ResumoNormalizacao
@@ -71,6 +73,20 @@ def _imprimir_inconsistencias(r: ResumoInconsistencias) -> None:
     print(f"pendências: {p.abertas} abertas, {p.atualizadas} atualizadas, {p.encerradas} encerradas")
 
 
+def _imprimir_bloqueantes(r: ResumoBloqueantes) -> None:
+    achados = ", ".join(f"{regra}: {n}" for regra, n in sorted(r.achados.items())) or "nenhum"
+    p = r.pendencias
+    print(f"bloqueantes: {r.solicitacoes} solicitações, achados ({achados})")
+    print(f"suspensas: {r.suspensas} ({r.reativadas} reativadas); oncológicas a confirmar: "
+          f"{r.oncologicas_a_confirmar}; eventos órfãos: {r.eventos_orfaos}")
+    print(f"pendências bloqueantes: {p.abertas} abertas, {p.atualizadas} atualizadas, {p.encerradas} encerradas")
+
+
+def _detectar_bloqueantes(session: Session) -> DetectarBloqueantes:
+    return DetectarBloqueantes(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                               SqlPendenciaRepository(session), settings.ref_date)
+
+
 def _detectar_inconsistencias(session: Session) -> DetectarInconsistencias:
     return DetectarInconsistencias(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                                    SqlPendenciaRepository(session), settings.ref_date)
@@ -84,7 +100,8 @@ def cmd_carga() -> None:
             resumo = CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
                                   SqlUnidadeDeTrabalho(session),
                                   _recalcular_flags(session),
-                                  _detectar_inconsistencias(session)).executar()
+                                  _detectar_inconsistencias(session),
+                                  _detectar_bloqueantes(session)).executar()
         except CargaInvalidaError as e:
             sys.exit(f"Erro na carga: {e.mensagem}")
     for tabela in ("procedimentos", "solicitacoes", "eventos"):
@@ -93,6 +110,7 @@ def cmd_carga() -> None:
     _imprimir_normalizacao(resumo.normalizacao)
     _imprimir_flags(resumo.flags)
     _imprimir_inconsistencias(resumo.inconsistencias)
+    _imprimir_bloqueantes(resumo.bloqueantes)
 
 
 def cmd_normalizar() -> None:
@@ -107,6 +125,13 @@ def cmd_flags() -> None:
         resumo = _recalcular_flags(session).executar()
         SqlUnidadeDeTrabalho(session).confirmar()
     _imprimir_flags(resumo)
+
+
+def cmd_bloqueantes() -> None:
+    with Session(engine) as session:
+        resumo = _detectar_bloqueantes(session).executar()
+        SqlUnidadeDeTrabalho(session).confirmar()
+    _imprimir_bloqueantes(resumo)
 
 
 def cmd_inconsistencias() -> None:
@@ -193,8 +218,9 @@ def cmd_decisoes() -> None:
 
 
 COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
-            "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "gerar-fila": cmd_gerar_fila,
-            "gerar-fila-csv": cmd_gerar_fila_csv, "extrair-sinais": cmd_extrair_sinais,
+            "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "bloqueantes": cmd_bloqueantes,
+            "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
+            "extrair-sinais": cmd_extrair_sinais,
             "decisoes": cmd_decisoes}
 
 
