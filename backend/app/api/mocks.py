@@ -93,3 +93,23 @@ PENDENCIAS = s.PendenciasOut(
         )
     ],
 )
+
+
+GERAR_PROPOSTAS = s.GerarPropostasOut(
+    analisadas=33, consideradas=33, outros_reclassificados=2, outros_sem_grupo=0,
+    propostas=[
+        s.PropostaRegraOut(
+            proposta_id="PROP-PROC004-ps_recorrente-C-B", procedimento_id="PROC004",
+            procedimento="Colecistectomia videolaparoscopica", motivo="ps_recorrente",
+            classe_de="C", classe_para="B", direcao="subir", n_casos=8, n_reguladores=4,
+            consistencia=0.89, casos=[f"DEC-SEED-{i:03d}" for i in range(1, 9)], status="pendente"),
+    ],
+    descartadas=[
+        s.PropostaRegraOut(
+            proposta_id="PROP-PROC018-sugestao_exagerada-B-C", procedimento_id="PROC018",
+            procedimento="Histerectomia", motivo="sugestao_exagerada", classe_de="B", classe_para="C",
+            direcao="rebaixar", n_casos=6, n_reguladores=3, consistencia=1.0,
+            casos=[f"DEC-SEED-{i:03d}" for i in range(19, 25)], status="descartada",
+            motivo_descarte="Rebaixa classe de procedimento com paciente oncológico ativo (I-01)."),
+    ],
+)
