@@ -1,13 +1,14 @@
 import { useState } from "react"
 import { AlertTriangle, ClipboardList, FilterX, RefreshCw, ShieldAlert } from "lucide-react"
 import { URL_API, type Evidencia, type Pendencia, type StatusPendencia } from "@/api/cliente"
-import { REGRAS_PENDENCIA, STATUS_PENDENCIA, rotuloFonte } from "@/lib/pendencias"
+import { ACOES, REGRAS_PENDENCIA, STATUS_PENDENCIA, rotuloFonte } from "@/lib/pendencias"
 import { formatarData } from "@/lib/datas"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { AcoesPendencia } from "./AcoesPendencia"
 import { usePendencias } from "./usePendencias"
 
 type TipoFiltro = "todas" | "bloqueantes" | "nao-bloqueantes"
@@ -126,7 +127,7 @@ export default function PaginaPendencias() {
         {estado.tipo === "ok" && itens.length > 0 && (
           <ul className={cn("space-y-3 transition-opacity", estado.atualizando && "opacity-60")} aria-label="Lista de pendências">
             {itens.map((p) => (
-              <CartaoPendencia key={p.pendencia_id} pendencia={p} />
+              <CartaoPendencia key={p.pendencia_id} pendencia={p} aoResolver={recarregar} />
             ))}
           </ul>
         )}
@@ -135,7 +136,7 @@ export default function PaginaPendencias() {
   )
 }
 
-function CartaoPendencia({ pendencia: p }: { pendencia: Pendencia }) {
+function CartaoPendencia({ pendencia: p, aoResolver }: { pendencia: Pendencia; aoResolver: () => void }) {
   const lado = p.evidencias.length > 1 // fontes diferentes aparecem lado a lado
   return (
     <li className={cn("rounded-xl border bg-card p-4", p.bloqueante && "border-destructive/40")}>
@@ -175,7 +176,25 @@ function CartaoPendencia({ pendencia: p }: { pendencia: Pendencia }) {
           </ul>
         </div>
       )}
+
+      {p.status === "aberta" ? <AcoesPendencia pendencia={p} aoResolver={aoResolver} /> : <Desfecho pendencia={p} />}
     </li>
+  )
+}
+
+/** Quem resolveu, quando e como (aparece nas listas de resolvidas e descartadas). */
+function Desfecho({ pendencia: p }: { pendencia: Pendencia }) {
+  const quando = p.resolvido_em ? formatarData(p.resolvido_em.slice(0, 10)) : null
+  return (
+    <div className="mt-3 border-t pt-3 text-sm">
+      <p>
+        <b>{p.status === "descartada" ? "Descartada" : "Resolvida"}</b>
+        {p.resolucao && <> · {ACOES[p.resolucao as keyof typeof ACOES]?.rotulo ?? p.resolucao}</>}
+        {p.resolvido_por && <> por <span className="font-mono">{p.resolvido_por}</span></>}
+        {quando && <> em {quando}</>}
+      </p>
+      {p.observacao && <p className="mt-1 text-muted-foreground">{p.observacao}</p>}
+    </div>
   )
 }
 
