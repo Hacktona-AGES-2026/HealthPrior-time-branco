@@ -143,6 +143,7 @@ class Pendencia:
     resolvido_por: str | None = None
     resolvido_em: datetime | None = None
     resolucao: str | None = None
+    observacao: str | None = None
 
 
 @dataclass

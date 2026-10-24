@@ -35,6 +35,32 @@ class EventoInvalidoError(DomainError):
     status_http = 422
 
 
+class PendenciaNaoEncontradaError(DomainError):
+    codigo = "PENDENCIA_NAO_ENCONTRADA"
+    status_http = 404
+
+
+class PendenciaJaResolvidaError(DomainError):
+    """Resolver duas vezes seria sobrescrever quem resolveu primeiro (I-03)."""
+
+    codigo = "PENDENCIA_JA_RESOLVIDA"
+    status_http = 409
+
+
+class ResolucaoInvalidaError(DomainError):
+    """Resolução que não se aplica àquela regra, ou `fundir_com` que não é uma das duplicatas."""
+
+    codigo = "RESOLUCAO_INVALIDA"
+    status_http = 422
+
+
+class ObservacaoObrigatoriaError(DomainError):
+    """Tirar o paciente da fila exige motivo em texto (I-03: motivo, autor e data)."""
+
+    codigo = "OBSERVACAO_OBRIGATORIA"
+    status_http = 422
+
+
 class CargaInvalidaError(DomainError):
     """Arquivo do dataset ausente, com colunas inesperadas ou valor que não converte (US-01)."""
 
