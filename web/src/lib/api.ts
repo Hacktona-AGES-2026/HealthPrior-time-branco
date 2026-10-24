@@ -150,7 +150,8 @@ export type DetalheApi = {
     versao_regras: string | null
     motivos: MotivoApi[]
   }
-  eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean }[]
+  eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean; origem?: string | null; valor_numerico?: number | null }[]
+  procedimento_info?: { porte: string | null; risco_cirurgico: number | null; duracao_media_min: number | null; necessita_uti: "sim" | "nao" | "eventual" | null } | null
   decisoes: { decisao_id: string; data: string; regulador_id: string; acao: string; classe_decidida: Classe | null; motivo_codificado: string | null; justificativa: string | null }[]
   pendencias: { pendencia_id: string; regra: string; bloqueante: boolean; status: string }[]
   alertas: string[]

@@ -38,7 +38,8 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
         eventos=[schemas.EventoOut(evento_id=e.evento_id, data_evento=e.data_evento,
                                    tipo_evento=e.tipo_evento, resultado=e.resultado,
                                    descricao=e.descricao, historico=e.historico,
-                                   duplicado=e.duplicado) for e in d.eventos],
+                                   duplicado=e.duplicado, origem=e.origem,
+                                   valor_numerico=e.valor_numerico) for e in d.eventos],
         decisoes=[schemas.DecisaoOut(decisao_id=x.decisao_id, data=x.data, regulador_id=x.regulador_id,
                                      acao=x.acao, classe_decidida=x.classe_decidida,
                                      motivo_codificado=x.motivo_codificado,
@@ -49,4 +50,8 @@ def _para_schema(d: DetalheSolicitacao) -> schemas.SolicitacaoDetalheOut:
         alertas=list(s.alertas),
         correcoes=[schemas.CorrecaoOut(campo=c.campo, original=c.original, novo=c.novo,
                                        regra=c.regra) for c in d.correcoes],
+        procedimento_info=(schemas.ProcedimentoInfoOut(
+            porte=d.procedimento.porte, risco_cirurgico=d.procedimento.risco_cirurgico,
+            duracao_media_min=d.procedimento.duracao_media_min,
+            necessita_uti=d.procedimento.necessita_uti) if d.procedimento else None),
     )

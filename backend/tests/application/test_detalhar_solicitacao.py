@@ -8,7 +8,9 @@ import pytest
 from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, ClasseStatus, StatusFila, StatusPendencia
 from app.domain.errors import NaoEncontradoError
-from app.domain.models import Correcao, Evento, LinhaFila, Motivo, Pendencia, ResultadoScore, Solicitacao
+from app.domain.models import (
+    Correcao, Evento, LinhaFila, Motivo, Pendencia, Procedimento, ResultadoScore, Solicitacao,
+)
 
 REF = date(2026, 10, 23)
 
@@ -78,11 +80,21 @@ def linha(sid="SOL-1", posicao=1, camada=1, justificativa="Camada 1: oncológico
                      score_efetivo=6276.2, editado_manualmente=False, versao_regras="regras-teste")
 
 
-def caso(solicitacoes, eventos=(), correcoes=(), pendencias=(), linhas=(), scorer=None):
+class ProcedimentosFalsos:
+    def __init__(self, *itens):
+        self._itens = {p.procedimento_id: p for p in itens}
+
+    def obter(self, procedimento_id):
+        return self._itens.get(procedimento_id)
+
+
+def caso(solicitacoes, eventos=(), correcoes=(), pendencias=(), linhas=(), scorer=None,
+         procedimentos=None):
     return DetalharSolicitacao(
         solicitacoes=SolicitacoesFalsas(*solicitacoes), eventos=EventosFalsos(eventos),
         correcoes=CorrecoesFalsas(correcoes), pendencias=PendenciasFalsas(pendencias),
-        fila=FilaFalsa(linhas), scorer=scorer or ScorerFalso(), ref_date=REF)
+        fila=FilaFalsa(linhas), scorer=scorer or ScorerFalso(), ref_date=REF,
+        procedimentos=procedimentos)
 
 
 def test_inexistente_levanta_nao_encontrado():
@@ -173,3 +185,22 @@ def test_detalhe_traz_decisoes_do_regulador():
     c._decisoes = DecisoesFalsas()
     [d] = c.executar("SOL-1").decisoes
     assert (d.decisao_id, d.acao) == ("DEC-1", AcaoDecisao.APROVAR)
+
+
+def test_procedimento_do_catalogo_vem_no_detalhe():
+    proc = Procedimento("P-1", porte="grande", risco_cirurgico=4, duracao_media_min=180,
+                        necessita_uti="sim")
+    d = caso([sol()], procedimentos=ProcedimentosFalsos(proc)).executar("SOL-1")
+    assert d.procedimento == proc
+
+
+def test_procedimento_fora_do_catalogo_ou_sem_repositorio_e_none():
+    assert caso([sol()], procedimentos=ProcedimentosFalsos()).executar("SOL-1").procedimento is None
+    assert caso([sol()]).executar("SOL-1").procedimento is None
+
+
+def test_evento_visao_traz_origem_e_valor_numerico():
+    ev = Evento("EVT-9", "SOL-1", "PAC-1", date(2023, 2, 1), "internacao", valor_numerico=5.0,
+                origem="UPA Centro")
+    v = caso([sol()], eventos=[ev]).executar("SOL-1").eventos[0]
+    assert (v.origem, v.valor_numerico) == ("UPA Centro", 5.0)

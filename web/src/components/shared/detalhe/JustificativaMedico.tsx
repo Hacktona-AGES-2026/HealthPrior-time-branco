@@ -1,6 +1,11 @@
 import type { ReactNode } from "react"
 import type { Paciente } from "@/data/tipos"
 import { formatarData } from "@/lib/datas"
+import { ORIGEM_DADOS } from "@/data/fila"
+import { useDetalheApi } from "./DetalheApi"
+
+const PORTE: Record<string, string> = { pequeno: "Porte pequeno", medio: "Porte médio", grande: "Porte grande" }
+const semAcento = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
 
 function Linha({ rotulo, children }: { rotulo: string; children: ReactNode }) {
   return (
@@ -16,7 +21,22 @@ const LIMITACAO = { nenhuma: "nenhuma", leve: "leve", moderada: "moderada", grav
 /** Quadro clínico: pares rótulo/valor, justificativa do médico solicitante e observações. */
 export function QuadroClinico({ p }: { p: Paciente }) {
   const preop = [p.pre_anestesica ? `avaliação pré-anestésica ${p.pre_anestesica}` : null, p.exames_pre_op ? "exames em dia" : "exames pendentes"].filter(Boolean).join(" · ")
-  const hba = p.hba1c ? `${String(p.hba1c.valor).replace(".", ",")}%${p.hba1c.data ? ` em ${formatarData(p.hba1c.data)}` : ""}` : null
+  const { d } = useDetalheApi(p.id)
+  const pi = ORIGEM_DADOS === "api" ? d?.procedimento_info : null
+  const proc = pi
+    ? [
+        pi.porte ? (PORTE[semAcento(pi.porte)] ?? `Porte ${pi.porte.toLowerCase()}`) : null,
+        pi.risco_cirurgico !== null && pi.risco_cirurgico !== undefined ? `Risco cirúrgico ${pi.risco_cirurgico} de 5` : null,
+        pi.duracao_media_min ? `cerca de ${pi.duracao_media_min} min` : null,
+        pi.necessita_uti === "sim" ? "Precisa de UTI" : pi.necessita_uti === "eventual" ? "UTI eventual" : pi.necessita_uti === "nao" ? "Não precisa de UTI" : null,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : ""
+  const hbaValor = p.hba1c ? `${String(p.hba1c.valor).replace(".", ",")}%` : null
+  const hbaData = p.hba1c?.data ? formatarData(p.hba1c.data) : null
+  const diabetes = p.flag_diabetico ? `Sim${hbaValor ? ` · HbA1c ${hbaValor}${hbaData ? ` (${hbaData})` : ""}` : ""}` : null
+  const hba = !p.flag_diabetico && hbaValor ? `${hbaValor}${hbaData ? ` em ${hbaData}` : ""}` : null
   const obs = p.observacoes?.trim()
   const just = p.justificativa_clinica?.trim()
 
@@ -32,10 +52,12 @@ export function QuadroClinico({ p }: { p: Paciente }) {
           {p.cid_secundario && <span className="text-muted-foreground"> · também CID {p.cid_secundario}</span>}
         </Linha>
         <Linha rotulo="Especialidade">{p.especialidade}</Linha>
+        {proc && <Linha rotulo="Procedimento">{proc}</Linha>}
         {p.dor !== null && <Linha rotulo="Dor">{p.dor}/10</Linha>}
         {p.limitacao && <Linha rotulo="Limitação funcional">{LIMITACAO[p.limitacao]}</Linha>}
         <Linha rotulo="Comorbidades">{p.comorbidades.length ? p.comorbidades.join(", ") : "Nenhuma registrada"}</Linha>
         {p.asa !== null && <Linha rotulo="Risco anestésico">ASA {p.asa}</Linha>}
+        {diabetes && <Linha rotulo="Diabetes">{diabetes}</Linha>}
         {hba && <Linha rotulo="HbA1c">{hba}</Linha>}
         <Linha rotulo="Pré-operatório">{preop}</Linha>
       </dl>

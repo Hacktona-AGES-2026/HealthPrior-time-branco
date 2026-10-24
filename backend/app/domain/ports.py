@@ -15,6 +15,7 @@ from app.domain.models import (
     Evento,
     LinhaFila,
     Pendencia,
+    Procedimento,
     ResultadoScore,
     ResultadoSincronizacao,
     ResultadoTabela,
@@ -97,6 +98,10 @@ class PendenciaRepository(Protocol):
         uma pessoa já resolveu ou descartou, e nunca apaga.
         """
         ...
+
+
+class ProcedimentoRepository(Protocol):
+    def obter(self, procedimento_id: str) -> Procedimento | None: ...
 
 
 class DecisaoRepository(Protocol):

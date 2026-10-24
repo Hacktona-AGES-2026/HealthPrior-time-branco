@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { ORIGEM_DADOS } from "@/data/fila"
 import type { Evento, Paciente, TipoEvento } from "@/data/tipos"
 import { type DetalheApi, MOTIVOS_CODIFICADOS, type MotivoCodificado, obterDetalhe } from "@/lib/api"
 import { HistoricoPaciente, type DecisaoHistorico } from "./HistoricoPaciente"
@@ -68,20 +69,33 @@ const frasesDecisao = (d: DetalheApi["decisoes"][number]): string => {
   return extra ? `${base} — ${extra}` : base
 }
 
-/** Histórico e pendências com os registros reais da API somados aos do paciente. */
-export function DetalheApiPaciente({ p }: { p: Paciente }) {
-  const [d, setD] = useState<DetalheApi | null>(null)
-  const [erro, setErro] = useState(false)
+const cacheDetalhe = new Map<string, Promise<DetalheApi>>()
+
+/** Detalhe da API com cache em memória por id (uma só chamada por solicitação). Nulo no modo offline. */
+export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean } {
+  const [estado, setEstado] = useState<{ id: string; d: DetalheApi | null; erro: boolean } | null>(null)
 
   useEffect(() => {
-    let vivo = true // remontado por paciente (key no pai)
-    obterDetalhe(p.id)
-      .then((r) => vivo && setD(r))
-      .catch(() => vivo && setErro(true))
+    if (ORIGEM_DADOS !== "api") return
+    let vivo = true
+    let pr = cacheDetalhe.get(id)
+    if (!pr) {
+      pr = obterDetalhe(id)
+      cacheDetalhe.set(id, pr)
+      pr.catch(() => cacheDetalhe.delete(id))
+    }
+    pr.then((r) => vivo && setEstado({ id, d: r, erro: false })).catch(() => vivo && setEstado({ id, d: null, erro: true }))
     return () => {
       vivo = false
     }
-  }, [p.id])
+  }, [id])
+
+  return estado && estado.id === id ? { d: estado.d, erro: estado.erro } : { d: null, erro: false }
+}
+
+/** Histórico e pendências com os registros reais da API somados aos do paciente. */
+export function DetalheApiPaciente({ p }: { p: Paciente }) {
+  const { d, erro } = useDetalheApi(p.id)
 
   const comApi = useMemo(() => {
     if (!d) return { p, decisoes: [] as DecisaoHistorico[] }
@@ -93,9 +107,9 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
         data: e.data_evento,
         tipo: (TIPOS.includes(e.tipo_evento as TipoEvento) ? e.tipo_evento : "consulta_reavaliacao") as TipoEvento,
         resultado: e.resultado,
-        valor: null,
+        valor: e.valor_numerico ?? null,
         descricao: e.descricao ?? "",
-        origem: null,
+        origem: e.origem ?? null,
         historico: e.historico,
       }))
     return {
@@ -106,7 +120,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
 
   return (
     <>
-      <HistoricoPaciente p={comApi.p} decisoes={comApi.decisoes} carregando={!d && !erro} />
+      <HistoricoPaciente p={comApi.p} decisoes={comApi.decisoes} carregando={ORIGEM_DADOS === "api" && !d && !erro} />
       <PendenciasAlertas alertas={d ? d.alertas : p.alertas} pendencias={d?.pendencias} />
     </>
   )

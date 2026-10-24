@@ -153,6 +153,8 @@ class EventoOut(BaseModel):
     descricao: Optional[str] = None
     historico: bool = False
     duplicado: bool = False
+    origem: Optional[str] = None
+    valor_numerico: Optional[float] = None
 
 
 class DecisaoOut(BaseModel):
@@ -179,6 +181,13 @@ class CorrecaoOut(BaseModel):
     regra: str
 
 
+class ProcedimentoInfoOut(BaseModel):
+    porte: Optional[str] = None
+    risco_cirurgico: Optional[int] = None
+    duracao_media_min: Optional[int] = None
+    necessita_uti: Optional[str] = None  # "sim" | "nao" | "eventual"
+
+
 class SolicitacaoDetalheOut(BaseModel):
     solicitacao_id: str
     paciente_id: str
@@ -200,6 +209,7 @@ class SolicitacaoDetalheOut(BaseModel):
     pendencias: list[PendenciaResumoOut] = []
     alertas: list[str] = []
     correcoes: list[CorrecaoOut] = []
+    procedimento_info: Optional[ProcedimentoInfoOut] = None
 
 
 # ---------- inbox ----------

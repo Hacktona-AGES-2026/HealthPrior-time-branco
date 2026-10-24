@@ -1,4 +1,5 @@
 import type { Paciente, Prioridade } from "@/data/tipos"
+import { addDias, diffDias, formatarData } from "@/lib/datas"
 import { formatarPct } from "@/components/shared/Basicos"
 
 const MANUAL: Record<Prioridade, string> = { alta: "alta", media: "média", baixa: "baixa" }
@@ -8,8 +9,15 @@ const CLASSE_DA_MANUAL: Record<Prioridade, string[]> = { alta: ["A1", "A2"], med
 export function Resumo({ p }: { p: Paciente }) {
   const largura = Math.max(0, Math.min(100, p.pct))
   const difere = p.prioridade_atual && !CLASSE_DA_MANUAL[p.prioridade_atual].includes(p.classe)
+  const hoje = addDias(p.data_entrada, p.dias_em_fila)
+  const rev = p.data_revisao_prioridade
+  const antiga = rev ? diffDias(rev, hoje) > 365 : false
+  const textoPrioridade = p.prioridade_atual
+    ? `Prioridade da regulação: ${MANUAL[p.prioridade_atual]}, ${rev ? `revisada em ${formatarData(rev)}` : "sem data de revisão"}${antiga ? " (há mais de um ano)" : ""}`
+    : "Prioridade da regulação: não definida"
   return (
-    <section aria-label="Resumo" className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm sm:grid-cols-4">
+    <section aria-label="Resumo" className="space-y-3 text-sm">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
       <div>
         <div className="font-semibold tabular-nums">{p.dias_em_fila} dias</div>
         <div className="text-xs text-muted-foreground">em fila</div>
@@ -29,6 +37,8 @@ export function Resumo({ p }: { p: Paciente }) {
         <div className="font-semibold">Classe {p.classe}</div>
         <div className="text-xs text-muted-foreground">{difere && p.prioridade_atual ? `prioridade manual: ${MANUAL[p.prioridade_atual]}` : "classe de prioridade"}</div>
       </div>
+      </div>
+      <p className="text-xs text-muted-foreground">{textoPrioridade}</p>
     </section>
   )
 }

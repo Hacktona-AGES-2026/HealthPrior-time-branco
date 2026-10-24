@@ -33,6 +33,7 @@ from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
     SqlDecisaoRepository,
+    SqlProcedimentoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
     SqlPendenciaRepository,
@@ -188,6 +189,7 @@ def get_detalhar_solicitacao(session: Session = Depends(get_session),
         scorer=get_scorer(data),
         ref_date=data,
         decisoes=SqlDecisaoRepository(session),
+        procedimentos=SqlProcedimentoRepository(session),
     )
 
 

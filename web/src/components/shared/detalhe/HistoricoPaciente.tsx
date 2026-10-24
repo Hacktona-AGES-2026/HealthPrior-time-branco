@@ -1,9 +1,12 @@
 import { useMemo, useState } from "react"
 import type { Evento, Paciente } from "@/data/tipos"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { formatarData } from "@/lib/datas"
 
 const LIMITE = 8
+
+const LIMITE_DESCRICAO = 120
 
 export type DecisaoHistorico = { id: string; data: string; texto: string }
 
@@ -37,16 +40,39 @@ export function fraseEvento(e: Evento): string {
   }
 }
 
+/** Linha de um evento: frase, origem e descrição clínica expansível. Usada em todo o histórico. */
+function ItemEvento({ frase, origem, descricao }: { frase: string; origem: string | null; descricao: string }) {
+  const [aberto, setAberto] = useState(false)
+  const longa = descricao.length > LIMITE_DESCRICAO
+  return (
+    <span className="min-w-0 break-words">
+      {frase}
+      {origem && <span className="text-muted-foreground"> — {origem}</span>}
+      {descricao && (
+        <span className="block">
+          <span className={cn("block whitespace-pre-line text-xs text-muted-foreground", longa && !aberto && "line-clamp-2")}>{descricao}</span>
+          {longa && (
+            <Button variant="link" size="sm" className="h-auto p-0 text-xs" aria-expanded={aberto} onClick={() => setAberto((v) => !v)}>
+              {aberto ? "Ler menos" : "Ler mais"}
+            </Button>
+          )}
+        </span>
+      )}
+    </span>
+  )
+}
+
 /** Linha do tempo única: eventos do paciente e decisões do regulador, mais recente primeiro. */
 export function HistoricoPaciente({ p, decisoes = [], carregando = false }: { p: Paciente; decisoes?: DecisaoHistorico[]; carregando?: boolean }) {
   const [tudo, setTudo] = useState(false)
 
-  const itens = useMemo(() => {
-    const evs = p.eventos.map((e) => ({
-      id: e.id,
-      data: e.data,
-      texto: fraseEvento(e) + (e.historico || e.data < p.data_entrada ? " (antes da fila)" : ""),
-    }))
+  const itens: { id: string; data: string; texto: string; origem?: string | null; descricao?: string; evento?: boolean }[] = useMemo(() => {
+    const evs = p.eventos.map((e) => {
+      const frase = fraseEvento(e) + (e.historico || e.data < p.data_entrada ? " (antes da fila)" : "")
+      const desc = (e.descricao ?? "").trim()
+      const igual = (x: string) => x.toLowerCase().replace(/[\s.:]+/g, "") === desc.toLowerCase().replace(/[\s.:]+/g, "")
+      return { id: e.id, data: e.data, texto: frase, origem: e.origem?.trim() || null, descricao: igual(frase) || igual(fraseEvento(e)) ? "" : desc, evento: true }
+    })
     return [...evs, ...decisoes].sort((a, b) => b.data.localeCompare(a.data))
   }, [p.eventos, p.data_entrada, decisoes])
 
@@ -64,7 +90,7 @@ export function HistoricoPaciente({ p, decisoes = [], carregando = false }: { p:
           {visiveis.map((i) => (
             <li key={i.id} className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-x-3 py-1.5 text-sm">
               <span className="text-xs leading-5 text-muted-foreground tabular-nums">{formatarData(i.data)}</span>
-              <span className="min-w-0 break-words">{i.texto}</span>
+              {i.evento ? <ItemEvento frase={i.texto} origem={i.origem ?? null} descricao={i.descricao ?? ""} /> : <span className="min-w-0 break-words">{i.texto}</span>}
             </li>
           ))}
         </ul>

@@ -28,6 +28,7 @@ from app.domain.models import (
     LinhaFila,
     Motivo,
     Pendencia,
+    Procedimento,
     ResultadoSincronizacao,
     ResultadoTabela,
     Solicitacao,
@@ -236,6 +237,23 @@ def _para_decisao(t: DecisaoTable) -> Decisao:
         motivo_codificado=MotivoCodificado(t.motivo_codificado) if t.motivo_codificado else None,
         justificativa=t.justificativa, versao_regras=t.versao_regras, procedimento_id=t.procedimento_id,
     )
+
+
+class SqlProcedimentoRepository:
+    """Catálogo de procedimentos (só leitura)."""
+
+    def __init__(self, session: Session):
+        self._s = session
+
+    def obter(self, procedimento_id: str) -> Procedimento | None:
+        t = self._s.get(ProcedimentoTable, procedimento_id)
+        if t is None:
+            return None
+        uti = (t.necessita_uti or "").strip().lower()
+        return Procedimento(
+            procedimento_id=t.procedimento_id, porte=t.porte or None,
+            risco_cirurgico=t.risco_cirurgico, duracao_media_min=t.duracao_media_min,
+            necessita_uti={"sim": "sim", "nao": "nao", "não": "nao", "eventual": "eventual"}.get(uti))
 
 
 class SqlDecisaoRepository:
