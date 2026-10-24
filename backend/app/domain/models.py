@@ -160,6 +160,7 @@ class Decisao:
     motivo_codificado: MotivoCodificado | None = None
     justificativa: str | None = None
     versao_regras: str | None = None
+    procedimento_id: str | None = None  # alimenta o ciclo de aprendizado (C-14)
 
 
 @dataclass

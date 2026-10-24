@@ -30,6 +30,13 @@ class JustificativaObrigatoriaError(DomainError):
     status_http = 422
 
 
+class SemPropostaError(DomainError):
+    """Não há classe sugerida esperando decisão (já confirmada, sem divergência ou fora da fila)."""
+
+    codigo = "SEM_PROPOSTA"
+    status_http = 409
+
+
 class EventoInvalidoError(DomainError):
     codigo = "EVENTO_INVALIDO"
     status_http = 422
