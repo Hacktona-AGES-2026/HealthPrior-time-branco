@@ -248,7 +248,7 @@ Como **sistema**, quero agrupar edições parecidas dos reguladores em propostas
 - **Back:** `POST /aprendizado/gerar-propostas`
 - **Depende de:** US-14
 
-> **Status: back implementado** (branch `feat/US-18-aprendizado`, D-98..D-103): `POST /aprendizado/gerar-propostas`, CLI `seed-aprendizado` e `gerar-propostas`, tabela `propostas_regra`. Registro: `docs/implementacao/US-18-aprendizado.md`.
+> **Status: back implementado** (branch `feat/US-18-aprendizado`, D-98..D-102 e D-106): `POST /aprendizado/gerar-propostas`, CLI `seed-aprendizado` e `gerar-propostas`, tabela `propostas_regra`. Registro: `docs/implementacao/US-18-aprendizado.md`.
 
 #### US-19 · Comitê aprova a regra — **P2** · Back + Front
 Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto simulado, para aprovar ou rejeitar.
@@ -298,6 +298,8 @@ Como **apresentador**, quero comparar a fila atual (prioridade manual + data) co
 - **Depende de:** US-09
 
 #### US-23 · Navegação e seletor de persona — **P1** · Front
+> **Status: cortada** (D-107). Sem personas e sem seletor de usuário; menu único. Autor fixo por papel em `web/src/lib/usuario.ts` (`reg-01` decisões, `adm-01` pendências).
+
 Como **usuário**, quero alternar entre as visões de Regulador, Administrativo e Comitê, sem login.
 - **CA**
   - Layout com menu: Fila, Inbox, Pendências, Propostas, Antes × depois, Novo evento.
@@ -334,7 +336,7 @@ Como **usuário**, quero alternar entre as visões de Regulador, Administrativo 
 | US-20 | Lista paginada | Tabela da fila | `GET /fila` |
 | US-21 | Explicação montada | Detalhe do paciente | `GET /solicitacoes/{id}` |
 | US-22 | Métricas antes × depois | Tela comparação | `GET /metricas/comparacao` |
-| US-23 | — | Layout + persona | — |
+| US-23 | — | ~~Layout + persona~~ cortada (D-107) | — |
 
 **Observação:** todo o P0 é back. O front começa em paralelo, contra mocks (seção 6).
 
@@ -552,7 +554,7 @@ Erros: `404 SOLICITACAO_NAO_ENCONTRADA` (vira pendência de evento órfão quand
 | Até | Histórias | Resultado |
 |---|---|---|
 | **14h** | US-01, US-02, US-03, US-04, US-08, US-09, US-10, US-11 | `fila_priorizada.csv` válido + `DECISOES.md` |
-| **19h** | US-12..US-15, US-20..US-23 (US-05..US-07 se der) | Demo: fila, detalhe, inbox, evento ao vivo, antes × depois |
+| **19h** | US-12..US-15, US-20..US-22 (US-05..US-07 se der; US-23 cortada, D-107) | Demo: fila, detalhe, inbox, evento ao vivo, antes × depois |
 | Bônus | US-16..US-19 | Atualização diária, recontato, ciclo de aprendizado |
 
-Em paralelo desde o início: back sobe mocks da seção 5; front faz US-23 e as telas contra os mocks.
+Em paralelo desde o início: back sobe mocks da seção 5; front faz as telas contra os mocks (US-23 cortada, D-107).

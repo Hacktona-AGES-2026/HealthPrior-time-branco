@@ -154,7 +154,6 @@ export default function PaginaSwalis() {
                     className={cn("fx-fade-up relative overflow-hidden rounded-xl p-3", r.ouro ? "fx-glow" : "bg-background/60", aplica && "ring-2 ring-primary/40")}
                     style={{ animationDelay: `${200 + i * 120}ms`, background: r.ouro ? "color-mix(in oklab, var(--ouro) 14%, transparent)" : undefined }}
                   >
-                    {aplica && <span key={paciente?.id} className="fx-row-sweep pointer-events-none absolute inset-0" aria-hidden />}
                     <div className="relative flex items-start gap-3">
                       <span className="flex size-8 shrink-0 items-center justify-center rounded-lg" style={{ background: r.ouro ? "var(--ouro)" : "var(--muted)", color: r.ouro ? "oklch(0.25 0.05 80)" : undefined }}>
                         <r.icone className="size-4" aria-hidden />
