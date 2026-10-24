@@ -1,7 +1,7 @@
 import type { Classe, Paciente } from "@/data/tipos"
 import { MOTIVOS_CODIFICADOS, type MotivoCodificado } from "@/lib/api"
 
-export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "pendencias" | "propostas"
+export type Pagina = "fila" | "inbox" | "pacientes" | "analise" | "swalis" | "pendencias" | "propostas" | "notificacoes"
 
 export type { MotivoCodificado }
 

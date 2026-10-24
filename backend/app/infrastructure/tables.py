@@ -199,6 +199,23 @@ class RegraAprendidaTable(SQLModel, table=True):
     motivo_reversao: Optional[str] = None
 
 
+class NotificacaoTable(SQLModel, table=True):
+    """Notificações ao paciente (demo): fila de saída. Gravada na mesma transação da mudança que a gerou."""
+
+    __tablename__ = "notificacoes"
+
+    notificacao_id: str = Field(primary_key=True)
+    solicitacao_id: str = Field(index=True)
+    motivo: str
+    texto: str
+    canal: str
+    status: str = Field(index=True)  # pendente | enviada | falhou
+    criada_em: datetime
+    enviada_em: Optional[datetime] = None
+    tentativas: int = 0
+    detalhe: Optional[str] = None
+
+
 class FilaPublicadaTable(SQLModel, table=True):
     __tablename__ = "fila_publicada"
 

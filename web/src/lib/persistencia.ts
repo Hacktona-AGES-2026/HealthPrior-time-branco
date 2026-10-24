@@ -3,7 +3,7 @@ import { FILTROS_VAZIOS, type Pagina } from "@/lib/filtros"
 import { useStore } from "@/store/useStore"
 
 const CHAVE = "healthprior-estado-v1"
-const PAGINAS: Pagina[] = ["fila", "inbox", "pacientes", "analise", "swalis", "pendencias"]
+const PAGINAS: Pagina[] = ["fila", "inbox", "pacientes", "analise", "swalis", "pendencias", "propostas", "notificacoes"]
 
 const aplicarHash = () => {
   const [, pagina, id] = window.location.hash.split("/")

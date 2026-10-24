@@ -55,7 +55,8 @@ class ResolverPendencia:
     def __init__(self, pendencias: PendenciaRepository, solicitacoes: SolicitacaoRepository,
                  eventos: EventoRepository, correcoes: CorrecaoRepository, uow: UnidadeDeTrabalho,
                  publicar: PublicarFila, relogio: Callable[[], datetime],
-                 recalcular_flags: RecalcularFlags | None = None):
+                 recalcular_flags: RecalcularFlags | None = None, notificar=None):
+        self._notificar = notificar  # NotificarMudancas (demo)
         self._pendencias = pendencias
         self._solicitacoes = solicitacoes
         self._eventos = eventos
@@ -73,7 +74,16 @@ class ResolverPendencia:
         except Exception:
             self._uow.desfazer()
             raise
+        self._avisar_paciente(pendencia_id)
         return ResultadoResolucao(status_fila=status_fila, fila_publicada=self._republicar())
+
+    def _avisar_paciente(self, pendencia_id: str) -> None:
+        """Só pendência bloqueante muda a situação do paciente (sai, volta ou segue suspenso)."""
+        if self._notificar is None:
+            return
+        p = self._pendencias.obter(pendencia_id)
+        if p is not None and p.bloqueante and p.solicitacao_id:
+            self._notificar.evento(p.solicitacao_id, "situacao")
 
     def _resolver(self, pendencia_id: str, resolucao: R, usuario_id: str,
                   observacao: str | None, fundir_com: str | None) -> StatusFila | None:

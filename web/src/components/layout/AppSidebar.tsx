@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+import { Activity, BarChart3, BellRing, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -23,6 +23,7 @@ const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: str
   { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
   { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
   { id: "propostas", rotulo: "Propostas", icone: Gavel, tecla: "7" },
+  { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "8" },
 ]
 
 export function AppSidebar() {

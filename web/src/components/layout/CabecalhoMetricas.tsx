@@ -3,7 +3,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar"
 import { metricasGlobais } from "@/lib/stats"
 import { useStore } from "@/store/useStore"
 
-const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS", pendencias: "Pendências", propostas: "Propostas do comitê" }
+const TITULOS = { fila: "Fila cirúrgica", inbox: "Inbox do regulador", pacientes: "Pacientes", analise: "Análise geral", swalis: "SWALIS", pendencias: "Pendências", propostas: "Propostas do comitê", notificacoes: "Notificações" }
 
 export function CabecalhoMetricas() {
   const pagina = useStore((s) => s.pagina)

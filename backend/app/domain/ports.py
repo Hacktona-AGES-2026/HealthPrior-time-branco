@@ -4,6 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 from typing import Protocol
@@ -23,6 +24,7 @@ from app.domain.models import (
 )
 from app.domain.aprendizado import PropostaRegra
 from app.domain.enums import MotivoCodificado
+from app.domain.notificacoes import Notificacao
 from app.domain.regras_aprendidas import RegraAprendida, RegraRegistrada
 from app.domain.swalis import SinalTexto
 
@@ -181,3 +183,26 @@ class RegraRepository(Protocol):
     def listar_todas(self) -> list[RegraRegistrada]: ...
     def obter(self, regra_id: str) -> RegraRegistrada | None: ...
     def desativar(self, regra_id: str, por: str, em: datetime, motivo: str) -> None: ...
+
+
+@dataclass
+class ResultadoEnvio:
+    ok: bool
+    detalhe: str | None = None  # id da mensagem no provedor, ou o motivo da falha
+
+
+class Notificador(Protocol):
+    """Canal de envio ao paciente (demo). Implementações: simulado e Twilio (conta de teste)."""
+
+    canal: str
+
+    def enviar(self, destino: str, texto: str) -> ResultadoEnvio: ...
+
+
+class NotificacaoRepository(Protocol):
+    def adicionar(self, n: Notificacao) -> None: ...
+    def existe_pendente(self, solicitacao_id: str, motivo: str) -> bool: ...
+    def pendentes(self, limite: int) -> list[Notificacao]: ...
+    def registrar_envio(self, notificacao_id: str, status: str, em: datetime, detalhe: str | None) -> None: ...
+    def listar(self, limite: int = 100) -> list[Notificacao]: ...
+    def proximo_id(self) -> str: ...
