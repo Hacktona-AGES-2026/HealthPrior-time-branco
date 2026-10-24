@@ -1,7 +1,7 @@
 import { create } from "zustand"
 import { toast } from "sonner"
 import { ORIGEM_DADOS, PACIENTES, PACIENTE_POR_ID, carregarFila } from "@/data/fila"
-import type { Classe } from "@/data/tipos"
+import type { Classe, Paciente } from "@/data/tipos"
 import { ErroApi, decidir, limparCacheDetalhe } from "@/lib/api"
 import { reguladorAtual } from "@/lib/usuario"
 import { FILTROS_VAZIOS, aplicarFiltros, type Decisao, type Filtros, type MotivoCodificado, type Pagina } from "@/lib/filtros"
@@ -21,6 +21,9 @@ const mensagemErro = (e: unknown) => (e instanceof ErroApi ? `${e.codigo}: ${e.m
 
 type Estado = {
   pagina: Pagina
+  destaqueSwalis: { classe: Classe; pacienteId: string; iniciais: string } | null
+  abrirSwalis: (p: Paciente) => void
+  limparDestaqueSwalis: () => void
   selecionadoId: string | null
   fichaId: string | null
   expandidoId: string | null
@@ -112,6 +115,9 @@ export const useStore = create<Estado>((set, get) => {
 
   return {
     pagina: "fila",
+    destaqueSwalis: null,
+    abrirSwalis: (p) => set({ pagina: "swalis", destaqueSwalis: { classe: p.classe, pacienteId: p.id, iniciais: p.iniciais } }),
+    limparDestaqueSwalis: () => set({ destaqueSwalis: null }),
     selecionadoId: null,
     fichaId: null,
     expandidoId: null,
@@ -130,7 +136,7 @@ export const useStore = create<Estado>((set, get) => {
       set((s) => ({ versaoDados: s.versaoDados + 1, decisoes: decisoesDaApi() }))
     },
     marcados: [],
-    ir: (pagina) => set(pagina === "pacientes" ? { pagina, fichaId: null } : { pagina }),
+    ir: (pagina) => set(pagina === "pacientes" ? { pagina, fichaId: null } : pagina === "swalis" ? { pagina, destaqueSwalis: null } : { pagina }),
     selecionar: (id, expandir = true) =>
       set({ selecionadoId: id, expandidoId: id && expandir ? id : null, rejeitando: false }),
     alternarExpandido: (id) =>

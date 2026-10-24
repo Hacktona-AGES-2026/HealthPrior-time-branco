@@ -13,7 +13,7 @@ const ATALHOS = [
   ["Esc", "Recolher a linha expandida / cancelar rejeição"],
   ["[", "Recolher ou expandir o menu lateral"],
   ["]", "Ocultar ou mostrar o painel de aprovação"],
-  ["1 – 9", "Ir para a página do menu na mesma ordem (1 Fila … 9 Indicadores)"],
+  ["1 – 9", "Ir para a página do menu na mesma ordem (1 Fila … 9 Classes e prazos)"],
   ["?", "Mostrar esta ajuda"],
   ["Arrastar", "Na faixa: zoom em um intervalo de posições"],
 ]

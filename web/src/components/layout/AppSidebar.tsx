@@ -27,7 +27,6 @@ const GRUPOS: { titulo: string; itens: Item[] }[] = [
       { id: "fila", rotulo: "Fila", icone: ListOrdered },
       { id: "inbox", rotulo: "Para revisar", icone: Inbox },
       { id: "pacientes", rotulo: "Pacientes", icone: UserSearch },
-      { id: "swalis", rotulo: "Classes e prazos", icone: BookOpen },
     ],
   },
   {
@@ -118,6 +117,12 @@ export function AppSidebar() {
             <SidebarMenuButton tooltip={escuro ? "Tema claro" : "Tema escuro"} onClick={() => setTema(escuro ? "light" : "dark")}>
               {escuro ? <Sun aria-hidden /> : <Moon aria-hidden />}
               <span>{escuro ? "Tema claro" : "Tema escuro"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton isActive={pagina === "swalis"} tooltip={`Classes e prazos (${PAGINAS_POR_TECLA.indexOf("swalis") + 1})`} onClick={() => { ir("swalis"); fechar() }}>
+              <BookOpen aria-hidden />
+              <span>Classes e prazos</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

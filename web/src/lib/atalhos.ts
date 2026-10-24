@@ -5,7 +5,7 @@ import { useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 
 /** Ordem visual da sidebar: a tecla 1–9 leva à página na mesma posição. */
-export const PAGINAS_POR_TECLA: Pagina[] = ["fila", "inbox", "pacientes", "swalis", "pendencias", "importar", "notificacoes", "propostas", "analise"]
+export const PAGINAS_POR_TECLA: Pagina[] = ["fila", "inbox", "pacientes", "pendencias", "importar", "notificacoes", "propostas", "analise", "swalis"]
 
 const ehCampoDeTexto = (alvo: EventTarget | null) => {
   if (!(alvo instanceof HTMLElement)) return false
