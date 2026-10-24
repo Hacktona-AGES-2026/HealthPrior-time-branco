@@ -7,6 +7,7 @@ O score dentro da classe é o % do prazo consumido × fatores de comorbidade e i
 """
 from __future__ import annotations
 
+import logging
 from datetime import date
 
 from app.config import settings
@@ -97,6 +98,10 @@ def criar_swalis(apenas_cache: bool = True, ref_date: date | None = None) -> Swa
     """
     tabela = (TabelaIrrCsv(settings.irr_path)
               if settings.fatores_enabled and settings.irr_path.is_file() else None)
+    if settings.fatores_enabled and tabela is None:
+        logging.getLogger(__name__).warning(
+            "Tabela de IRR não encontrada em %s: o score fica só com o %% do prazo (sem fatores, D-103)",
+            settings.irr_path)
     if settings.llm_enabled and (settings.openrouter_api_key or settings.llm_cache_path.is_file()):
         from app.infrastructure.llm_openrouter import ExtratorSinaisLLM
 

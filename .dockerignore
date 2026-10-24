@@ -9,6 +9,7 @@ backend/tests
 backend/.pytest_cache
 web
 docs
-score
+score/*
+!score/references
 .env
 .env.*
