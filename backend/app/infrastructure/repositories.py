@@ -6,7 +6,7 @@ TODO(US-01): implementar conforme a carga for sendo feita.
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import bindparam, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -16,6 +16,7 @@ from app.domain.enums import Classe, ClasseStatus, StatusFila
 from app.domain.models import (
     Correcao,
     Evento,
+    LinhaFila,
     Pendencia,
     ResultadoSincronizacao,
     ResultadoTabela,
@@ -24,6 +25,7 @@ from app.domain.models import (
 from app.infrastructure.tables import (
     CorrecaoTable,
     EventoTable,
+    FilaPublicadaTable,
     PendenciaTable,
     ProcedimentoTable,
     SolicitacaoTable,
@@ -131,7 +133,9 @@ class SqlEventoRepository:
         self._s = session
 
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Evento]:
-        raise NotImplementedError("US-01")
+        consulta = (select(EventoTable).where(EventoTable.solicitacao_id == solicitacao_id)
+                    .order_by(EventoTable.data_evento, EventoTable.evento_id))
+        return [_para_evento(t) for t in self._s.exec(consulta).scalars()]
 
     def listar_todos(self) -> list[Evento]:
         consulta = select(EventoTable).order_by(EventoTable.evento_id)
@@ -260,7 +264,7 @@ class SqlPendenciaRepository:
         for chave, atual in existentes.items():
             if chave not in desejadas and atual.status == "aberta":
                 atual.status, atual.resolvido_por = "resolvida", "sistema"
-                atual.resolvido_em, atual.resolucao = datetime.utcnow(), "deixou_de_valer"
+                atual.resolvido_em, atual.resolucao = datetime.now(timezone.utc), "deixou_de_valer"
                 resultado.encerradas += 1
 
         self._s.flush()
@@ -269,6 +273,43 @@ class SqlPendenciaRepository:
     def _proximo_numero(self) -> int:
         ultimo = self._s.execute(select(func.max(PendenciaTable.pendencia_id))).scalar()
         return int(ultimo.split("-")[1]) + 1 if ultimo else 1
+
+
+class SqlFilaRepository:
+    def __init__(self, session: Session):
+        self._s = session
+
+    def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
+                         publicada_em: datetime) -> None:
+        """Substitui a fila publicada inteira. Não confirma: a unidade de trabalho confirma."""
+        self._s.execute(delete(FilaPublicadaTable))
+        self._s.add_all(
+            FilaPublicadaTable(
+                solicitacao_id=l.solicitacao_id, posicao=l.posicao, camada=l.camada,
+                classe=l.classe, pct_prazo_consumido=l.pct_prazo_consumido,
+                dias_em_fila=l.dias_em_fila, score_efetivo=l.score_efetivo,
+                justificativa=l.justificativa, editado_manualmente=l.editado_manualmente,
+                versao_regras=versao_regras, publicada_em=publicada_em,
+            )
+            for l in linhas
+        )
+        self._s.flush()
+
+    def obter_publicada(self) -> list[LinhaFila]:
+        rows = self._s.execute(
+            select(FilaPublicadaTable).order_by(FilaPublicadaTable.posicao)).scalars().all()
+        return [
+            LinhaFila(
+                solicitacao_id=t.solicitacao_id, posicao=t.posicao, justificativa=t.justificativa,
+                camada=t.camada, classe=t.classe, pct_prazo_consumido=t.pct_prazo_consumido,
+                dias_em_fila=t.dias_em_fila, score_efetivo=t.score_efetivo,
+                editado_manualmente=t.editado_manualmente, versao_regras=t.versao_regras,
+            )
+            for t in rows
+        ]
+
+    def publicada_em(self) -> datetime | None:
+        return self._s.execute(select(func.max(FilaPublicadaTable.publicada_em))).scalar()
 
 
 class SqlUnidadeDeTrabalho:
@@ -282,4 +323,4 @@ class SqlUnidadeDeTrabalho:
         self._s.rollback()
 
 
-# Demais repositórios (Pendencia, Decisao, Correcao, Fila) seguem o mesmo padrão.
+# Demais repositórios (Pendencia, Decisao, Correcao) seguem o mesmo padrão.

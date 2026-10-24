@@ -17,7 +17,7 @@ python -m app.cli carga                # US-01 + US-02 (carga e normalização, 
 python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
 python -m app.cli flags                # US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
 python -m app.cli inconsistencias      # US-05: recalcula alertas e pendências não bloqueantes (sem recarregar)
-python -m app.cli gerar-fila           # US-08/09/10 (via banco, após US-01)
+python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e publica (exit 1 se reprovar)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
@@ -59,7 +59,7 @@ app/
     deps.py            composição: único lugar que instancia implementações concretas
     errors.py          DomainError -> {"erro","mensagem"}
     routers/           um arquivo por recurso
-  cli.py             comandos de linha (carga, normalizar, flags, inconsistencias, gerar-fila, decisoes)
+  cli.py             comandos de linha (carga, normalizar, flags, inconsistencias, gerar-fila, gerar-fila-csv, decisoes)
   config.py          configuração (REF_DATE fixa = 2026-10-23)
 tests/               espelha app/ ; test_arquitetura.py protege a regra de dependência
 ```

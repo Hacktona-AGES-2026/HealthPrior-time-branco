@@ -4,6 +4,7 @@ Regra de dependência: domain não importa nada de application, infrastructure o
 """
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 from typing import Protocol
 
@@ -11,7 +12,7 @@ from app.domain.models import (
     Correcao,
     Decisao,
     Evento,
-    ItemFila,
+    LinhaFila,
     Pendencia,
     ResultadoScore,
     ResultadoSincronizacao,
@@ -93,8 +94,10 @@ class CorrecaoRepository(Protocol):
 
 
 class FilaRepository(Protocol):
-    def salvar_publicada(self, itens: list[ItemFila], versao_regras: str) -> None: ...
-    def obter_publicada(self) -> list[ItemFila]: ...
+    def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
+                         publicada_em: datetime) -> None: ...
+    def obter_publicada(self) -> list[LinhaFila]: ...
+    def publicada_em(self) -> datetime | None: ...
 
 
 class SwalisScorer(Protocol):

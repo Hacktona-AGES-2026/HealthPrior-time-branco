@@ -40,3 +40,13 @@ class CargaInvalidaError(DomainError):
 
     codigo = "CARGA_INVALIDA"
     status_http = 422
+
+
+class FilaNaoPublicadaError(DomainError):
+    """Ainda não existe fila publicada (I-07: só se publica o que passou no verificador)."""
+
+    codigo = "FILA_NAO_PUBLICADA"
+    status_http = 409
+
+    def __init__(self, mensagem: str = "Nenhuma fila publicada ainda. Rode a publicação."):
+        super().__init__(mensagem)

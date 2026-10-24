@@ -69,6 +69,14 @@ class CargaOut(BaseModel):
     inconsistencias: Optional[InconsistenciasOut] = None
 
 
+class PublicacaoOut(BaseModel):
+    publicada: bool
+    total: int
+    por_camada: dict[int, int]
+    versao_regras: str
+    saida_verificador: str
+
+
 # ---------- fila ----------
 class ItemFilaOut(BaseModel):
     posicao: int

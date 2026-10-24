@@ -1,9 +1,12 @@
 """US-20, US-09 · Fila priorizada."""
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi.responses import FileResponse
 
 from app.api import mocks, schemas
+from app.api.deps import get_exportar_fila_publicada
+from app.application.publicar_fila import ExportarFilaPublicada
 from app.config import settings
 
 router = APIRouter(prefix="/fila", tags=["fila"])
@@ -24,5 +27,7 @@ def listar_fila(
 
 
 @router.get("/export")
-def exportar_fila():
-    raise NotImplementedError("US-09: GET /fila/export")
+def exportar_fila(exportar: ExportarFilaPublicada = Depends(get_exportar_fila_publicada)):
+    """US-10: devolve só a fila publicada (409 FILA_NAO_PUBLICADA se ainda não houver)."""
+    caminho = exportar.executar()
+    return FileResponse(caminho, media_type="text/csv", filename="fila_priorizada.csv")

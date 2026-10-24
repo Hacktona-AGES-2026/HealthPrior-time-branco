@@ -197,3 +197,19 @@ class ResultadoTabela:
     lido: int = 0
     inseridos: int = 0
     atualizados: int = 0
+
+
+@dataclass
+class LinhaFila:
+    """Uma linha da fila priorizada já calculada (saída de montar_fila, US-08/09)."""
+
+    solicitacao_id: str
+    posicao: int
+    justificativa: str
+    camada: int
+    classe: str
+    pct_prazo_consumido: float
+    dias_em_fila: int
+    score_efetivo: float
+    editado_manualmente: bool
+    versao_regras: str

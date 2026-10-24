@@ -5,19 +5,22 @@
     python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
     python -m app.cli inconsistencias  US-05: recalcula alertas e pendências não bloqueantes (sem recarregar)
     python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
-    python -m app.cli gerar-fila  US-08/09/10: gera, verifica e publica fila_priorizada.csv (via banco)
+    python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
 import sys
 from collections import Counter
+from datetime import datetime, timezone
 
 from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
+from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
 from app.application.detectar_inconsistencias import DetectarInconsistencias, ResumoInconsistencias
+from app.application.publicar_fila import PublicarFila
 from app.application.normalizar import Normalizar, ResumoNormalizacao
 from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
 from app.config import settings
@@ -30,6 +33,7 @@ from app.infrastructure.repositories import (
     SqlCargaRepository,
     SqlCorrecaoRepository,
     SqlEventoRepository,
+    SqlFilaRepository,
     SqlPendenciaRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
@@ -112,7 +116,24 @@ def cmd_inconsistencias() -> None:
 
 
 def cmd_gerar_fila() -> None:
-    raise NotImplementedError("US-08/09/10: montar GerarFila (ver app/api/deps.py) e executar")
+    """US-09/10: gera a fila do banco, roda o verificador e só publica se passar (I-07)."""
+    with Session(engine) as session:
+        gerar = GerarFila(
+            SqlSolicitacaoRepository(session), SqlEventoRepository(session), SwalisStub(),
+            ExportadorCsv(), settings.ref_date,
+        )
+        resultado = PublicarFila(
+            gerar, VerificadorOficial(), SqlFilaRepository(session), SqlUnidadeDeTrabalho(session),
+            lambda: datetime.now(timezone.utc), settings.output_dir,
+        ).executar()
+    print(resultado.saida_verificador, end="")
+    print(f"Arquivo: {resultado.caminho_csv}")
+    print(f"Total: {resultado.total} | " + " | ".join(
+        f"camada {c}: {resultado.por_camada.get(c, 0)}" for c in (1, 2, 3)))
+    if not resultado.publicada:
+        print("FILA NÃO PUBLICADA: o verificador falhou (I-07). A fila anterior continua valendo.",
+              file=sys.stderr)
+        sys.exit(1)
 
 
 def cmd_gerar_fila_csv() -> None:

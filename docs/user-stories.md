@@ -133,7 +133,7 @@ Como **sistema**, quero ordenar a fila por camadas, para que nenhum oncológico 
 - **Depende de:** US-03 (+ SWALIS ou stub)
 
 #### US-09 · Gerar `fila_priorizada.csv` — **P0** · Back
-> **Status: 🟡 provisório** — `python -m app.cli gerar-fila-csv` gera o CSV direto do dataset (D-26). Falta a versão via banco/`GerarFila` e o endpoint.
+> **Status: ✅ implementada** (branch `feat/US-09-gerar-fila-banco`): `python -m app.cli gerar-fila` e `GET /fila/export` a partir do banco. Registro: `docs/implementacao/US-09-gerar-fila-banco.md` (D-34..D-36). O `gerar-fila-csv` (sem banco, D-26) continua como alternativa.
 
 Como **equipe**, quero gerar o CSV de entrega com justificativa legível por paciente.
 - **CA**
@@ -146,7 +146,7 @@ Como **equipe**, quero gerar o CSV de entrega com justificativa legível por pac
 - **Depende de:** US-08
 
 #### US-10 · Verificador como portão — **P0** · Back
-> **Status: 🟡 parcial** — o comando provisório roda o verificador e sai com erro se falhar. Falta persistir a fila publicada e o CI.
+> **Status: ✅ implementada** (branch `feat/US-10-verificador-portao`): `PublicarFila` (candidato → verificador → publica no banco e no arquivo), `POST /admin/publicar-fila`, `GET /fila/export` só da fila publicada e CI no GitHub Actions. Registro: `docs/implementacao/US-10-verificador-portao.md` (D-37..D-43). Banner no front (P2) pendente.
 
 Como **equipe**, quero que a fila só seja publicada se passar no verificador oficial, para nunca entregar uma fila desclassificada (I-07).
 - **CA**
