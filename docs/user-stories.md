@@ -121,16 +121,20 @@ Como **equipe administrativa**, quero resolver uma pendência (confirmar saída,
 ### E3 · Trava, verificação e entrega (C-11, C-12)
 
 #### US-08 · Trava da regra de ouro — **P0** · Back
+> **Status: ✅ implementada** (branch `feat/US-08-trava-regra-de-ouro`). Detalhes e decisões D-15..D-20: `docs/implementacao/US-08-trava-regra-de-ouro.md`.
+
 Como **sistema**, quero ordenar a fila por camadas, para que nenhum oncológico fique abaixo de paciente sem urgência (I-01).
 - **CA**
   - Camada 1: oncológicos (`cid_norm` C*). Camada 2: urgentes não oncológicos (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme). Camada 3: demais.
   - Dentro da camada: `score_efetivo` (= `score_medico` se houver, senão `score_sistema`), desc.
   - Funciona com o SWALIS stub.
-  - Camada 2 é **pelo menos** tão abrangente quanto o complemento de "sem urgência" do verificador oficial.
+  - Camada 2 = só sinais clínicos; dor > 3 e limitação moderada/grave são sintomas (justificativa + SWALIS), não camada (D-20). A regra de ouro é garantida pela camada 1.
 - **Back:** módulo `ranking` (função pura `ordenar(solicitacoes) -> lista`).
 - **Depende de:** US-03 (+ SWALIS ou stub)
 
 #### US-09 · Gerar `fila_priorizada.csv` — **P0** · Back
+> **Status: 🟡 provisório** — `python -m app.cli gerar-fila-csv` gera o CSV direto do dataset (D-19). Falta a versão via banco/`GerarFila` e o endpoint.
+
 Como **equipe**, quero gerar o CSV de entrega com justificativa legível por paciente.
 - **CA**
   - Colunas obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `camada`, `classe`, `pct_prazo_consumido`, `dias_em_fila`, `editado_manualmente`, `versao_regras`.
@@ -142,6 +146,8 @@ Como **equipe**, quero gerar o CSV de entrega com justificativa legível por pac
 - **Depende de:** US-08
 
 #### US-10 · Verificador como portão — **P0** · Back
+> **Status: 🟡 parcial** — o comando provisório roda o verificador e sai com erro se falhar. Falta persistir a fila publicada e o CI.
+
 Como **equipe**, quero que a fila só seja publicada se passar no verificador oficial, para nunca entregar uma fila desclassificada (I-07).
 - **CA**
   - Após gerar a fila, roda `src/verificar_fila_priorizada.py`. Passou → marca como publicada. Falhou → mantém a fila anterior publicada e registra alerta.

@@ -272,15 +272,17 @@ Documentado à parte. Este fluxo só depende do **contrato**:
 - **Ordem efetiva:** usa `score_medico` se existir, senão `score_sistema`.
 
 ### C-11 · Trava da regra de ouro
+> **Implementado (US-08).** Decisões D-15 a D-18; registro em `docs/implementacao/US-08-trava-regra-de-ouro.md`.
+
 - **Responsabilidade:** impor a ordem por **camadas**. Não rejeita: **corrige**.
   1. **Camada 1 — oncológicos** (`cid_norm` começa com `C`), ordenados entre si pelo score efetivo.
-  2. **Camada 2 — urgentes não oncológicos** (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme no texto).
+  2. **Camada 2 — urgentes não oncológicos** (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme no texto). Dor e limitação **não** definem camada: são sintomas, critério do SWALIS (D-20).
   3. **Camada 3 — demais**, pelo score efetivo.
 - O score decide a ordem **dentro** da camada; nenhuma camada invade a de cima.
 - Recebe de: regulador (sim), edição manual, carga inicial, atualização diária.
 - **Exemplo de por que existe:** um câncer de pele classe B com 15 dias (25% do prazo) ficaria abaixo de uma hérnia classe D com 400 dias (111%) se só o score ordenasse, violando a regra de ouro.
 - **Fila atual viola a regra:** pelo verificador, o primeiro paciente "sem urgência" está na posição 12, acima dos 177 oncológicos.
-- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A camada 2 deve ser **pelo menos** tão abrangente quanto o complemento disso.
+- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida pela camada 1 (todo oncológico no topo), qualquer que seja a camada 2. Por isso a camada 2 usa só sinais clínicos (D-20), e não o complemento completo da definição do verificador.
 
 ### C-12 · Verificador e publicação
 - Antes de publicar, roda `verificar_fila_priorizada.py`.
@@ -408,9 +410,9 @@ Obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `cama
 | Q-05 | Limiares do aprendizado (≥5 casos, ≥3 reguladores, 90 dias, ≥80%). | Time |
 | Q-06 | Override expira? (proposta: até a próxima mudança de classe ou data de revisão) | Time |
 | Q-07 | Como tratar oncológicos de baixo risco (CBC de pele C44, próstata ISUP 1) **dentro** da camada 1? ("decisão difícil" do pitch) | Mentores |
-| Q-08 | Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID? | Mentores |
+| Q-08 | Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID? (provisório: camada 2 + alerta, D-17) | Mentores |
 | Q-09 | Distância/TFD deve pesar na prioridade ou só ser monitorada? (proposta: só monitorada) | Mentores |
-| Q-10 | Idade 80+ como desempate dentro da camada? | Mentores |
+| Q-10 | Idade 80+ como desempate dentro da camada? (provisório: score, entrada, id — D-18) | Mentores |
 
 ---
 

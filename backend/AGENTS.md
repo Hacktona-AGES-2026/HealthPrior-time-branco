@@ -13,7 +13,8 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /docs
 python -m app.cli init-db              # cria as tabelas
 python -m app.cli carga                # US-01
-python -m app.cli gerar-fila           # US-08/09/10
+python -m app.cli gerar-fila           # US-08/09/10 (via banco, após US-01)
+python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-19)
 pytest -q                              # testes (inclui guarda de arquitetura)
 ```
 Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`.
