@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Crosshair, CircleHelp, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
+import { CircleHelp, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
 import { FILA, PACIENTES, PACIENTE_POR_ID, TOTAL_FILA } from "@/data/fila"
 import type { Classe, Paciente } from "@/data/tipos"
 import { COR_STATUS, corClasse } from "@/lib/cores"
@@ -192,13 +192,13 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
           />
           {status === "pendente" && slot >= 7 && <circle cx={cx} cy={BASE_BARRA + 7} r={2.6} fill="none" strokeWidth={1.2} style={{ stroke: COR_STATUS.pendente }} />}
           {status === "aprovado" && (
-            <g className="fx-pop" style={{ transformBox: "fill-box", transformOrigin: "center" }}>
+            <g style={{ transformBox: "fill-box", transformOrigin: "center" }}>
               <circle cx={cx} cy={BASE_BARRA + 7} r={3.4} style={{ fill: COR_STATUS.aprovado }} />
               <path d={`M ${cx - 1.6} ${BASE_BARRA + 7} l 1.2 1.3 l 2.2 -2.6`} fill="none" stroke="white" strokeWidth={1} />
             </g>
           )}
           {status === "editado" && (
-            <g className="fx-pop" style={{ transformBox: "fill-box", transformOrigin: "center" }}>
+            <g style={{ transformBox: "fill-box", transformOrigin: "center" }}>
               <rect x={cx - 3.2} y={BASE_BARRA + 3.8} width={6.4} height={6.4} rx={1} style={{ fill: "var(--card)", stroke: COR_STATUS.editado }} strokeWidth={1.6} />
               <path d={`M ${cx - 1.6} ${BASE_BARRA + 5.4} l 3.2 3.2 m 0 -3.2 l -3.2 3.2`} style={{ stroke: COR_STATUS.editado }} strokeWidth={1} />
             </g>
@@ -315,19 +315,15 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
           <Button size="icon-xs" variant="ghost" className="text-muted-foreground max-md:size-9" onClick={() => aplicarZoom(selecionado?.posicao ?? (z0 + z1) / 2, 1.6)} title="Reduzir (-)" aria-label="Reduzir a faixa">
             <ZoomOut aria-hidden />
           </Button>
-          <Button size="icon-xs" variant="ghost" className="text-muted-foreground max-md:size-9" disabled={!selecionado} onClick={centralizar} title="Centralizar no selecionado (C)" aria-label="Centralizar no paciente selecionado">
-            <Crosshair aria-hidden />
-          </Button>
           {zoom && (
-            <Button size="xs" variant="outline" onClick={() => setZoom(null)} className="fx-pop gap-1 max-md:h-9" aria-label={`Resetar zoom (${zoom[0]} a ${zoom[1]})`}>
+            <Button size="xs" variant="outline" onClick={() => setZoom(null)} className="gap-1 max-md:h-9" aria-label="Ver a fila inteira (tirar o zoom)">
               <ZoomOut className="size-3" aria-hidden />
-              <span className="hidden sm:inline">Resetar zoom ({zoom[0]}–{zoom[1]})</span>
-              <span className="sm:hidden">Resetar</span>
+              Ver tudo
             </Button>
           )}
           <Button size="xs" variant="ghost" onClick={aoOcultar ?? (() => setFaixaOculta(true))} className="gap-1 text-muted-foreground max-md:h-9" title="Ocultar a faixa da fila" aria-label="Ocultar faixa">
             <EyeOff className="size-3" aria-hidden />
-            <span className="hidden sm:inline">Ocultar</span>
+            <span>Ocultar faixa</span>
           </Button>
         </div>
       </div>
@@ -344,7 +340,7 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
               <stop offset="1" stopColor="white" stopOpacity="1" />
             </linearGradient>
           </defs>
-          <g className="fx-grow-y" style={{ transformBox: "fill-box", transformOrigin: "center bottom" }}>
+          <g style={{ transformBox: "fill-box", transformOrigin: "center bottom" }}>
             {barras}
             {blocos.map((b) => {
               const altura = BASE_BARRA - TOPO_BARRA
@@ -381,7 +377,6 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
               const sobe = b.origemMedia > (b.de + b.ate) / 2
               const forca = Math.min(1, Math.abs(b.origemMedia - (b.de + b.ate) / 2) / 400)
               const ativo = blocoAtivo === b.indice
-              const velocidade = 1.2 + (1 - forca) * 1.6
               return (
                 <path
                   key={`fluxo-${b.indice}-${z0}-${z1}`}
@@ -391,12 +386,12 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
                   strokeDasharray="5 9"
                   strokeWidth={ativo ? 2.4 : 0.8 + forca * 1.2}
                   className="pointer-events-none"
-                  style={{ stroke: sobe ? "var(--sobe)" : "var(--desce)", opacity: ativo ? 0.9 : 0.14 + forca * 0.3, animation: `fx-fluxo ${velocidade}s linear infinite`, transition: "opacity 0.2s" }}
+                  style={{ stroke: sobe ? "var(--sobe)" : "var(--desce)", opacity: ativo ? 0.9 : 0.14 + forca * 0.3 }}
                 />
               )
             })}
 
-          {(!agregado || arcosVivos.vivo ? arcosVivos.lista : []).map((p, i) => {
+          {(!agregado || arcosVivos.vivo ? arcosVivos.lista : []).map((p) => {
             const a = xCentro(p.posicao_atual)
             const b = xCentro(p.posicao)
             const { d } = caminhoArco(a, b, Y_ARCO)
@@ -410,12 +405,11 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
                   strokeWidth={arcosVivos.vivo ? 1.8 : 1.1}
                   opacity={arcosVivos.vivo ? 0.65 : 0.3}
                   strokeLinecap="round"
-                  style={{ stroke: cor, strokeDasharray: 1, "--len": 1, animation: `fx-draw ${arcosVivos.vivo ? 0.55 : 1.1}s ease-out ${(arcosVivos.vivo ? 0.03 : 0.2) + i * (arcosVivos.vivo ? 0.035 : 0.09)}s both` } as React.CSSProperties}
+                  style={{ stroke: cor, strokeDasharray: 1 }}
                 />
                 {arcosVivos.vivo && (
                   <>
-                    <path d={d} pathLength={100} fill="none" strokeWidth={3} strokeLinecap="round" style={{ stroke: "white", strokeDasharray: "4 96", opacity: 0.8, animation: `fx-comet 1.2s linear ${0.5 + i * 0.05}s infinite` }} />
-                    <circle cx={b} cy={Y_ARCO + 2} r={2.6} className="fx-pop" style={{ fill: cor, animationDelay: `${0.4 + i * 0.035}s` }} />
+                    <circle cx={b} cy={Y_ARCO + 2} r={2.6} style={{ fill: cor }} />
                   </>
                 )}
               </g>
@@ -431,7 +425,7 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
               height={BASE_BARRA - TOPO_BARRA + SOBRA_DETALHE + 4}
               fill="none"
               strokeWidth={1.6}
-              className="fx-pop"
+             
               style={{ stroke: "var(--foreground)", transformBox: "fill-box", transformOrigin: "center" }}
             />
           )}
@@ -439,18 +433,11 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
           {selecionado && arco && !arco.igual && (
             <g key={`arco-${chaveArco}`} className="pointer-events-none">
               <path d={arco.d} fill="none" strokeWidth={5} opacity={0.14} strokeLinecap="round" style={{ stroke: corArco }} />
-              <path d={arco.d} pathLength={1} fill="none" strokeWidth={2.4} strokeLinecap="round" style={{ stroke: corArco, strokeDasharray: 1, "--len": 1, animation: "fx-draw 0.9s cubic-bezier(0.3,0.7,0.2,1) both" } as React.CSSProperties} />
-              {[0, 0.8].map((atraso) => (
-                <path key={atraso} d={arco.d} pathLength={100} fill="none" strokeWidth={4.2} strokeLinecap="round" style={{ stroke: "white", strokeDasharray: "5 95", opacity: 0.85, animation: `fx-comet 1.6s linear ${0.9 + atraso}s infinite` }} />
-              ))}
-              <path d={arco.d} pathLength={100} fill="none" strokeWidth={1.6} strokeLinecap="round" style={{ stroke: corArco, strokeDasharray: "18 82", filter: "brightness(1.25)", animation: "fx-comet 2.6s linear 0.9s infinite" }} />
-              <polygon points={`${arco.x2 - 6},${Y_ARCO - 10} ${arco.x2 + 6},${Y_ARCO - 10} ${arco.x2},${Y_ARCO + 1}`} className="fx-pop" style={{ fill: corArco, transformBox: "fill-box", transformOrigin: "center bottom", animationDelay: "0.8s" }} />
-              {[0, 0.7].map((atraso) => (
-                <circle key={atraso} cx={arco.x2} cy={Y_ARCO + 2} r={3} fill="none" strokeWidth={1.6} style={{ stroke: corArco, animation: `fx-ripple 1.8s ease-out ${1 + atraso}s infinite` }} />
-              ))}
-              <circle cx={arco.x1} cy={Y_ARCO + 2} r={3} className="fx-pop" style={{ fill: "var(--card)", stroke: corArco }} strokeWidth={1.6} />
+              <path d={arco.d} pathLength={1} fill="none" strokeWidth={2.4} strokeLinecap="round" style={{ stroke: corArco, strokeDasharray: 1 }} />
+              <polygon points={`${arco.x2 - 6},${Y_ARCO - 10} ${arco.x2 + 6},${Y_ARCO - 10} ${arco.x2},${Y_ARCO + 1}`} style={{ fill: corArco, transformBox: "fill-box", transformOrigin: "center bottom" }} />
+              <circle cx={arco.x1} cy={Y_ARCO + 2} r={3} style={{ fill: "var(--card)", stroke: corArco }} strokeWidth={1.6} />
               <g transform={`translate(${Math.min(largura - 50, Math.max(50, (arco.x1 + arco.x2) / 2))}, ${Math.max(14, arco.topo - 12)})`}>
-                <g className="fx-fade-up">
+                <g>
                   <rect x={-46} y={-11} width={92} height={22} rx={11} style={{ fill: "var(--card)", stroke: corArco }} strokeWidth={1.5} />
                   <text textAnchor="middle" dy={4.5} fontSize={12} fontWeight={700} style={{ fill: "var(--foreground)" }} className="tabular-nums">
                     {rotuloArco}
@@ -494,7 +481,7 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
           />
         </svg>
         {tip && !arrasto && (
-          <div className="pointer-events-none absolute z-20 w-56 rounded-md border bg-popover p-2 text-xs shadow-md fx-fade-up" style={{ left: Math.min(Math.max(0, tip.x - 112), Math.max(0, largura - 224)), top: BASE_BARRA + 22 }}>
+          <div className="pointer-events-none absolute z-20 w-56 rounded-md border bg-popover p-2 text-xs shadow-md" style={{ left: Math.min(Math.max(0, tip.x - 112), Math.max(0, largura - 224)), top: BASE_BARRA + 22 }}>
             {tip.paciente && (
               <>
                 <div className="flex items-center justify-between gap-2">

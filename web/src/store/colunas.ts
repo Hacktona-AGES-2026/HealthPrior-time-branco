@@ -1,21 +1,18 @@
 import { create } from "zustand"
 import type { CSSProperties } from "react"
 
-export type DefinicaoColuna = { id: string; rotulo: string; padrao: number; min: number; max: number; flexivel?: boolean; minVw?: number; compacto?: number }
+export type DefinicaoColuna = { id: string; rotulo: string; padrao: number; min: number; max: number; flexivel?: boolean; minVw?: number }
 
 export const COLUNAS: DefinicaoColuna[] = [
-  { id: "pos", rotulo: "Proposta", padrao: 76, min: 52, max: 140 },
-  { id: "antiga", rotulo: "Atual", padrao: 96, min: 70, max: 180, minVw: 768 },
-  { id: "classe", rotulo: "Classe", padrao: 84, min: 56, max: 160, compacto: 64 },
-  { id: "camada", rotulo: "Camada", padrao: 82, min: 56, max: 160, minVw: 1024 },
-  { id: "prazo", rotulo: "Prazo", padrao: 130, min: 80, max: 320, compacto: 96 },
-  { id: "sinais", rotulo: "Motivos", padrao: 180, min: 70, max: 520, flexivel: true, minVw: 1280 },
-  { id: "justificativa", rotulo: "Justificativa", padrao: 240, min: 80, max: 900, flexivel: true, minVw: 1536 },
-  { id: "alerta", rotulo: "", padrao: 28, min: 28, max: 28, minVw: 768 },
-  { id: "status", rotulo: "Status", padrao: 92, min: 70, max: 200, compacto: 80 },
+  { id: "pos", rotulo: "Posição", padrao: 72, min: 56, max: 140 },
+  { id: "paciente", rotulo: "Paciente", padrao: 240, min: 120, max: 600, flexivel: true },
+  { id: "classe", rotulo: "Classe", padrao: 72, min: 56, max: 160 },
+  { id: "prazo", rotulo: "Prazo", padrao: 168, min: 100, max: 320, minVw: 768 },
+  { id: "porque", rotulo: "Por que está na fila", padrao: 280, min: 120, max: 900, flexivel: true, minVw: 768 },
+  { id: "status", rotulo: "Situação", padrao: 112, min: 90, max: 200 },
 ]
 
-const CHAVE = "healthprior-colunas-v4"
+const CHAVE = "healthprior-colunas-v5"
 const PAINEL_PADRAO = 340
 export const ALTURA_FAIXA_PADRAO = 192
 export const ALTURA_FAIXA_MIN = 140
@@ -159,9 +156,8 @@ if (typeof window !== "undefined" && typeof window.matchMedia === "function") {
 
 export const estiloColuna = (id: string, larguras: Record<string, number>, ocultas: Record<string, boolean> = {}): CSSProperties => {
   const def = COLUNAS.find((c) => c.id === id)
-  const largura = vw()
-  const w = def?.compacto && largura < 640 ? Math.min(larguras[id], def.compacto) : larguras[id]
-  if (ocultas[id] || (def?.minVw && largura < def.minVw)) return { display: "none" }
+  if (ocultas[id] || (def?.minVw && vw() < def.minVw)) return { display: "none" }
+  const w = larguras[id] ?? def?.padrao ?? 100
   if (def?.flexivel) return { flex: `1 1 ${w}px`, minWidth: 0 }
   return { width: w, flex: "none" }
 }

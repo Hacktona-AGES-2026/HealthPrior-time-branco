@@ -23,7 +23,7 @@ function Conteudo() {
   return (
     <Suspense fallback={<CarregandoPagina rotulo="Carregando página" />}>
       {/* versaoDados: remonta a página quando a fila é recarregada da API */}
-      <div key={`${pagina}-${versaoDados}`} className="fx-fade-up flex min-h-0 min-w-0 flex-1 flex-col">
+      <div key={`${pagina}-${versaoDados}`} className="flex min-h-0 min-w-0 flex-1 flex-col">
         {pagina === "fila" && <PaginaFila />}
         {pagina === "inbox" && <PaginaInbox />}
         {pagina === "pacientes" && <PaginaPacientes />}

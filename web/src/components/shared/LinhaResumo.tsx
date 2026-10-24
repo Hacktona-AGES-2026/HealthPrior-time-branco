@@ -1,61 +1,74 @@
+import { ArrowDown, ArrowUp } from "lucide-react"
 import type { Paciente } from "@/data/tipos"
 import type { Decisao } from "@/lib/filtros"
-import { cn } from "@/lib/utils"
 import { estiloColuna, useColunas } from "@/store/colunas"
-import { useStore } from "@/store/useStore"
-import { AlertaRevisao, CamadaBadge, ClasseBadge, PrazoBar, SetaVariacao, SinalChips, StatusAprovacao } from "./Basicos"
+import { AlertaRevisao, ClasseBadge, PrazoBar, StatusAprovacao } from "./Basicos"
 
 export const etiquetas = (p: Paciente) => [...(p.oncologico ? ["oncológico"] : []), ...p.motivos, ...p.sintomas]
 
-export function LinhaResumo({ paciente: p, decisao, selecionado = false, comMarcacao = false }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean; comMarcacao?: boolean }) {
+// Principal motivo clínico, em linguagem de consultório.
+export const motivoClinico = (p: Paciente): string => {
+  const todos = [...p.motivos, ...p.sintomas].map((m) => m.toLowerCase())
+  const tem = (trecho: string) => todos.some((m) => m.includes(trecho))
+  const dor = todos.map((m) => /dor eva (\d+)/.exec(m)).find(Boolean)
+  const nota = dor ? Number(dor[1]) : null
+
+  if (p.oncologico) return tem("neoplasia maligna") || tem("biópsia positiva") ? "Câncer confirmado" : "Suspeita de câncer"
+  if (tem("sinal de alarme")) return "Sinal de alarme descrito no pedido"
+  if (tem("evento de piora")) return "Piorou enquanto esperava"
+  if (tem("biópsia positiva")) return "Biópsia positiva: conferir o diagnóstico"
+  if (tem("limitação funcional grave")) return "Limitação grave nas atividades"
+  if (nota !== null && nota >= 7) return `Dor forte (${nota}/10)`
+  if (tem("limitação funcional moderada")) return "Limitação moderada nas atividades"
+  if (nota !== null && nota >= 4) return `Dor moderada (${nota}/10)`
+  if (nota !== null) return `Dor leve (${nota}/10)`
+  if (tem("dor não informada")) return "Dor não informada"
+  if (tem("nenhum risco")) return "Sem sinal de piora registrado"
+  return p.motivos[0] ?? p.sintomas[0] ?? "Aguardando a vez na fila"
+}
+
+export const textoDias = (dias: number) => (dias === 1 ? "1 dia em fila" : `${dias.toLocaleString("pt-BR")} dias em fila`)
+
+export function LinhaResumo({ paciente: p, decisao }: { paciente: Paciente; decisao?: Decisao; selecionado?: boolean }) {
   const delta = p.posicao_atual - p.posicao
   const l = useColunas((c) => c.larguras)
   const o = useColunas((c) => c.ocultas)
-  const marcado = useStore((s) => s.marcados.includes(p.id))
-  const alternarMarcado = useStore((s) => s.alternarMarcado)
+  const motivo = motivoClinico(p)
+  const pendente = !decisao
   return (
     <>
-      {selecionado && <span key={p.id} className="fx-row-sweep pointer-events-none absolute inset-0" aria-hidden />}
-      {selecionado && delta !== 0 && <span className={cn("pointer-events-none absolute inset-y-0 left-0 w-28", delta > 0 ? "fx-row-wave-up" : "fx-row-wave-down")} aria-hidden />}
-      {decisao && <span key={decisao.status} className={cn("fx-flash-decisao pointer-events-none absolute inset-0", decisao.status === "aprovado" ? "[--flash:var(--sobe)]" : "[--flash:var(--cls-c)]")} aria-hidden />}
-      {comMarcacao && (
-        <input
-          type="checkbox"
-          checked={marcado}
-          onChange={() => alternarMarcado(p.id)}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={`Selecionar ${p.id}`}
-          className="relative size-3.5 shrink-0 cursor-pointer accent-[var(--primary)] max-md:size-5"
-        />
-      )}
-      <div className="relative shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
+      <div className="flex shrink-0 items-center gap-1 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
         #{p.posicao}
+        {delta !== 0 && (
+          <span className="text-muted-foreground" title={delta > 0 ? `Subiu ${delta} posições (era #${p.posicao_atual})` : `Desceu ${-delta} posições (era #${p.posicao_atual})`}>
+            {delta > 0 ? <ArrowUp className="size-3" aria-label={`Subiu ${delta} posições`} /> : <ArrowDown className="size-3" aria-label={`Desceu ${-delta} posições`} />}
+          </span>
+        )}
       </div>
-      <div className="relative flex shrink-0 items-center gap-1.5" style={estiloColuna("antiga", l, o)}>
-        <span className="w-8 text-xs text-muted-foreground tabular-nums">{p.posicao_atual}</span>
-        <SetaVariacao antiga={p.posicao_atual} nova={p.posicao} />
+      <div className="min-w-0" style={estiloColuna("paciente", l, o)}>
+        <div className="flex items-center gap-2 text-sm">
+          <span className="truncate font-medium">
+            {p.iniciais} · {p.idade} anos · {p.sexo}
+          </span>
+          {p.oncologico && <span className="shrink-0 text-xs font-semibold text-primary">Oncológico</span>}
+        </div>
+        <div className="truncate text-xs text-muted-foreground" title={p.procedimento}>
+          {p.procedimento}
+        </div>
       </div>
-      <div className="relative flex shrink-0 items-center gap-1" style={estiloColuna("classe", l, o)}>
+      <div className="shrink-0" style={estiloColuna("classe", l, o)}>
         <ClasseBadge classe={p.classe} />
-        {p.prioridade_atual && <span className="truncate text-xs text-muted-foreground">{p.prioridade_atual === "media" ? "méd" : p.prioridade_atual}</span>}
       </div>
-      <div className="relative shrink-0" style={estiloColuna("camada", l, o)}>
-        <CamadaBadge camada={p.camada} />
-      </div>
-      <div className="relative shrink-0" style={estiloColuna("prazo", l, o)}>
+      <div className="min-w-0 shrink-0" style={estiloColuna("prazo", l, o)}>
         <PrazoBar pct={p.pct} />
+        <div className="mt-0.5 text-xs text-muted-foreground tabular-nums">{textoDias(p.dias_em_fila)}</div>
       </div>
-      <div className="relative" style={estiloColuna("sinais", l, o)}>
-        <SinalChips sinais={etiquetas(p)} />
+      <div className="truncate text-sm text-muted-foreground" style={estiloColuna("porque", l, o)} title={[motivo, ...p.motivos, ...p.sintomas].filter((m, i, a) => a.indexOf(m) === i).join(" · ")}>
+        {motivo}
       </div>
-      <div className="relative truncate text-xs text-muted-foreground" style={estiloColuna("justificativa", l, o)} title={p.justificativa}>
-        {p.justificativa}
-      </div>
-      <div className="relative shrink-0" style={estiloColuna("alerta", l, o)}>
+      <div className="flex shrink-0 items-center gap-1" style={estiloColuna("status", l, o)}>
+        {pendente ? <span className="text-xs text-muted-foreground">A revisar</span> : <StatusAprovacao decisao={decisao} />}
         <AlertaRevisao paciente={p} />
-      </div>
-      <div className="relative shrink-0" style={estiloColuna("status", l, o)}>
-        <StatusAprovacao decisao={decisao} />
       </div>
     </>
   )

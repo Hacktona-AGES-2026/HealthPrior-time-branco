@@ -9,7 +9,6 @@ import { aplicarFiltros, statusDe, type Decisao } from "@/lib/filtros"
 import { cn } from "@/lib/utils"
 import { LinhaResumo } from "@/components/shared/LinhaResumo"
 import { PacienteDetalhe } from "@/components/shared/PacienteDetalhe"
-import { AlcaColuna } from "@/components/shared/AlcaColuna"
 import { estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 
@@ -21,15 +20,12 @@ export const usarTabela = () => {
 
   const colunas = useMemo<ColumnDef<Paciente>[]>(
     () => [
-      { id: "pos", header: "Proposta", accessorFn: (p) => p.posicao },
-      { id: "antiga", header: "Atual", accessorFn: (p) => p.posicao_atual - p.posicao },
+      { id: "pos", header: "Posição", accessorFn: (p) => p.posicao },
+      { id: "paciente", header: "Paciente", enableSorting: false, accessorFn: (p) => p.iniciais },
       { id: "classe", header: "Classe", accessorFn: (p) => indiceClasse(p.classe) },
-      { id: "camada", header: "Camada", accessorFn: (p) => p.camada },
       { id: "prazo", header: "Prazo", accessorFn: (p) => p.pct },
-      { id: "sinais", header: "Motivos", enableSorting: false, accessorFn: (p) => p.motivos.length },
-      { id: "justificativa", header: "Justificativa", enableSorting: false, accessorFn: (p) => p.justificativa },
-      { id: "alerta", header: "", enableSorting: false, accessorFn: (p) => p.alertas.length },
-      { id: "status", header: "Status", accessorFn: (p) => statusDe(decisoes, p.id) },
+      { id: "porque", header: "Por que está na fila", enableSorting: false, accessorFn: (p) => p.motivos.length },
+      { id: "status", header: "Situação", accessorFn: (p) => statusDe(decisoes, p.id) },
     ],
     [decisoes]
   )
@@ -49,38 +45,22 @@ export const usarTabela = () => {
 export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
   const larguras = useColunas((c) => c.larguras)
   const ocultas = useColunas((c) => c.ocultas)
-  const marcados = useStore((s) => s.marcados)
-  const marcarVarios = useStore((s) => s.marcarVarios)
-  const ids = table.getRowModel().rows.map((r) => r.original.id)
-  const todos = ids.length > 0 && ids.every((id) => marcados.includes(id))
-  const algum = !todos && ids.some((id) => marcados.includes(id))
   return (
     <div className="@container min-w-0">
-      <div className="flex items-center gap-2 overflow-hidden border-b border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground" role="row">
-        <input
-          type="checkbox"
-          checked={todos}
-          ref={(el) => {
-            if (el) el.indeterminate = algum
-          }}
-          onChange={() => marcarVarios(ids, !todos)}
-          aria-label="Selecionar todas as solicitações listadas"
-          className="relative size-3.5 shrink-0 cursor-pointer accent-[var(--primary)] max-md:size-5"
-        />
+      <div className="flex items-center gap-2 overflow-hidden border-b border-border px-3 py-1 text-xs font-medium text-muted-foreground" role="row">
         {table.getHeaderGroups()[0].headers.map((h) => {
           const ordenado = h.column.getIsSorted()
           const podeOrdenar = h.column.getCanSort()
           return (
-            <div key={h.id} className="relative" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
+            <div key={h.id} className="min-w-0" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
               {podeOrdenar ? (
-                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex min-h-6 items-center gap-1 rounded px-0.5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex min-h-9 items-center md:min-h-7 gap-1 rounded px-0.5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
                   {flexRender(h.column.columnDef.header, h.getContext())}
                   {ordenado === "asc" ? <ArrowUp className="size-3" /> : ordenado === "desc" ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-50" />}
                 </button>
               ) : (
                 flexRender(h.column.columnDef.header, h.getContext())
               )}
-              {h.column.id !== "alerta" && <AlcaColuna id={h.column.id} />}
             </div>
           )
         })}
@@ -95,9 +75,10 @@ type LinhaProps = {
   expandido: boolean
   decisao?: Decisao
   aoAlternar: (id: string) => void
+  par: boolean
 }
 
-const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, expandido, decisao, aoAlternar }: LinhaProps) {
+const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, expandido, decisao, aoAlternar, par }: LinhaProps) {
   return (
     <div className="@container" role="row" aria-selected={selecionado} aria-expanded={expandido}>
       <div
@@ -111,14 +92,15 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, ex
           }
         }}
         className={cn(
-          "relative flex h-11 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 text-sm outline-none transition-colors hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-          selecionado && "bg-primary/5 shadow-[inset_2px_0_0_var(--primary)]"
+          "relative flex min-h-14 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 py-1.5 text-sm outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          par && "bg-muted/20",
+          selecionado && "bg-primary/10 shadow-[inset_2px_0_0_var(--primary)] hover:bg-primary/10"
         )}
       >
-        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} comMarcacao />
+        <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} />
       </div>
       {expandido && (
-        <div className="fx-expand border-b border-border/50 px-1 pt-2 pb-5" onClick={(e) => e.stopPropagation()}>
+        <div className="border-b border-border/50 px-1 pt-2 pb-5" onClick={(e) => e.stopPropagation()}>
           <PacienteDetalhe paciente={p} />
         </div>
       )}
@@ -142,13 +124,21 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const linhas = table.getRowModel().rows
 
   useLayoutEffect(() => {
-    if (listaRef.current) setMargem(listaRef.current.offsetTop)
-  }, [alturaFixa, linhas.length])
+    const medir = () => {
+      if (listaRef.current) setMargem(listaRef.current.offsetTop)
+    }
+    medir()
+    const conteudo = rolagemRef.current?.firstElementChild
+    if (!conteudo) return
+    const obs = new ResizeObserver(medir)
+    obs.observe(conteudo)
+    return () => obs.disconnect()
+  }, [alturaFixa, linhas.length, rolagemRef])
 
   const virtualizador = useVirtualizer({
     count: linhas.length,
     getScrollElement: () => rolagemRef.current,
-    estimateSize: (i) => (linhas[i]?.original.id === expandidoId ? 1400 : 44),
+    estimateSize: (i) => (linhas[i]?.original.id === expandidoId ? 1400 : 56),
     overscan: 8,
     scrollMargin: margem,
     scrollPaddingStart: alturaFixa + 4,
@@ -172,7 +162,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
 
   if (linhas.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground fx-fade-up">
+      <div className="flex flex-col items-center gap-2 py-16 text-center text-sm text-muted-foreground">
         <SearchX className="size-8" aria-hidden />
         Nenhum caso corresponde aos filtros.
       </div>
@@ -190,7 +180,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
             ref={virtualizador.measureElement}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start - margem}px)` }}
           >
-            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} expandido={expandidoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
+            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} par={item.index % 2 === 1} expandido={expandidoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
           </div>
         )
       })}

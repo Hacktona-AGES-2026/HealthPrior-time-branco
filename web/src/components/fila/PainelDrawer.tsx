@@ -16,7 +16,7 @@ export function PainelDrawer() {
       </Button>
       <Sheet open={aberto} onOpenChange={setAberto}>
         <SheetContent side="right" className="w-full overflow-y-auto pt-10 sm:max-w-md">
-          <SheetTitle className="sr-only">Painel de aprovação</SheetTitle>
+          <SheetTitle className="sr-only">Detalhes do paciente</SheetTitle>
           <SheetDescription className="sr-only">Aprovar ou editar a classe do paciente selecionado</SheetDescription>
           <PainelAprovacao modo="drawer" />
         </SheetContent>

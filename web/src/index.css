@@ -287,3 +287,10 @@
 .fx-flash-decisao { animation: fx-flash-decisao 1.4s ease-out both; }
 
 @keyframes fx-fluxo { to { stroke-dashoffset: -14; } }
+
+/* UI calma: sem animações decorativas (contagem, ondas, varreduras, "pulos"). Estados finais ficam visíveis. */
+[class*="fx-"],
+.animate-bounce,
+.animate-pulse {
+  animation: none !important;
+}

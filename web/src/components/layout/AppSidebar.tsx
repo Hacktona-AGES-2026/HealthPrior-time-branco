@@ -46,7 +46,6 @@ export function AppSidebar() {
               </span>
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold">HealthPrior</span>
-                <span className="truncate text-xs text-muted-foreground">Regulação cirúrgica</span>
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -58,11 +57,11 @@ export function AppSidebar() {
             <SidebarMenu>
               {ITENS.map((item) => (
                 <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton isActive={pagina === item.id} tooltip={item.rotulo} onClick={() => { ir(item.id); fechar() }}>
+                  <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${item.tecla})`} onClick={() => { ir(item.id); fechar() }}>
                     <item.icone aria-hidden />
                     <span>{item.rotulo}</span>
                     {item.id === "pacientes" && selecionadoId && (
-                      <span className="fx-pop ml-auto size-2 rounded-full bg-primary group-data-[collapsible=icon]:hidden" aria-label="Paciente selecionado" />
+                      <span className="ml-auto size-2 rounded-full bg-primary group-data-[collapsible=icon]:hidden" aria-label="Paciente selecionado" />
                     )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -88,8 +87,7 @@ export function AppSidebar() {
           <SidebarMenuItem className="hidden md:block">
             <SidebarMenuButton tooltip={state === "expanded" ? "Recolher menu ([)" : "Expandir menu ([)"} onClick={toggleSidebar}>
               <PanelLeft aria-hidden />
-              <span>Recolher</span>
-              <kbd className="ml-auto rounded border bg-muted px-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">[</kbd>
+              <span>{state === "expanded" ? "Recolher menu" : "Expandir menu"}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

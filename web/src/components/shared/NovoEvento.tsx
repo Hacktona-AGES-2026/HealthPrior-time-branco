@@ -61,7 +61,7 @@ export function NovoEvento({ solicitacaoId }: { solicitacaoId: string }) {
 
   return (
     <>
-      <Button variant="outline" size="sm" className="h-9 w-full gap-1.5 sm:h-8" onClick={() => setAberto(true)}>
+      <Button variant="ghost" size="sm" className="h-9 w-full justify-start gap-1.5 text-muted-foreground sm:h-8" onClick={() => setAberto(true)}>
         <CalendarPlus aria-hidden /> Registrar evento
       </Button>
       <Dialog open={aberto} onOpenChange={setAberto}>

@@ -6,9 +6,6 @@ import { Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useColunas } from "@/store/colunas"
 import { PainelDrawer } from "./PainelDrawer"
-import { BarraLote } from "./BarraLote"
-import { DivisorFaixa } from "./DivisorFaixa"
-import { DivisorPainel } from "./DivisorPainel"
 import { useStore } from "@/store/useStore"
 import { CabecalhoTabela, CorpoTabela, usarTabela } from "./TabelaFila"
 
@@ -50,30 +47,29 @@ export default function PaginaFila() {
   return (
     <div className="flex min-h-0 flex-1">
       <div ref={rolagem} className="relative min-w-0 flex-1 overflow-y-auto">
-        <div ref={fixo} className="sticky top-0 z-20 space-y-1 bg-background px-3 pt-3 pb-0">
-          {escondida ? (
-            <div className="fx-fade-up flex items-center justify-between rounded-xl bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
-              <span>Faixa da fila</span>
-              <Button size="xs" variant="ghost" className="gap-1 max-md:h-9" onClick={mostrar}>
-                <Eye className="size-3" aria-hidden />
-                Mostrar faixa
-              </Button>
-            </div>
-          ) : (
-            <>
+        <div>
+          <div className="px-3 pt-3">
+            {escondida ? (
+              <div className="flex items-center justify-between rounded-xl bg-muted/40 px-3 py-1 text-xs text-muted-foreground">
+                <span>Gráfico da fila</span>
+                <Button size="xs" variant="ghost" className="gap-1 max-md:h-9" onClick={mostrar}>
+                  <Eye className="size-3" aria-hidden />
+                  Mostrar gráfico
+                </Button>
+              </div>
+            ) : (
               <Faixa aoOcultar={esconder} />
-              <DivisorFaixa />
-            </>
-          )}
-          <FiltrosFila total={total} visiveis={visiveis} />
-          <BarraLote />
-          <CabecalhoTabela table={table} />
-        </div>
-        <div className="px-3 pb-8">
-          <CorpoTabela key={`${visiveis}-${JSON.stringify(filtros)}`} table={table} rolagemRef={rolagem} alturaFixa={alturaFixa} />
+            )}
+          </div>
+          <div ref={fixo} className="sticky top-0 z-10 space-y-1 bg-background px-3 pt-2 pb-0">
+            <FiltrosFila total={total} visiveis={visiveis} />
+            <CabecalhoTabela table={table} />
+          </div>
+          <div className="px-3 pb-8">
+            <CorpoTabela key={`${visiveis}-${JSON.stringify(filtros)}`} table={table} rolagemRef={rolagem} alturaFixa={alturaFixa} />
+          </div>
         </div>
       </div>
-      <DivisorPainel />
       <PainelAprovacao className="hidden lg:flex" />
       <PainelDrawer />
     </div>
