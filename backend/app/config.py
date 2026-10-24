@@ -20,11 +20,28 @@ def _carregar_dotenv(caminho: Path) -> None:
 _carregar_dotenv(REPO_ROOT / ".env")
 
 
+def _url_do_banco() -> str:
+    """`HP_DB_URL` (ou `DATABASE_URL`, como Render e Neon entregam). `postgres://` e `postgresql://` viram o driver psycopg 3."""
+    url = os.getenv("HP_DB_URL") or os.getenv("DATABASE_URL") or \
+        "postgresql+psycopg://healthprior:healthprior@localhost:5432/healthprior"  # bate com o docker-compose.yml
+    for prefixo in ("postgres://", "postgresql://"):
+        if url.startswith(prefixo):
+            return "postgresql+psycopg://" + url[len(prefixo):]
+    return url
+
+
+def _origens_cors() -> tuple[str, ...]:
+    """Front local mais as origens de `HP_CORS_ORIGINS` (separadas por vírgula; ex.: o domínio da Vercel)."""
+    extras = tuple(o.strip().rstrip("/") for o in os.getenv("HP_CORS_ORIGINS", "").split(",") if o.strip())
+    return ("http://localhost:5173", "http://127.0.0.1:5173", *extras)
+
+
 @dataclass(frozen=True)
 class Settings:
     data_dir: Path
     output_dir: Path
     db_url: str
+    cors_origins: tuple[str, ...]
     verificador_path: Path
     ref_date: date
     use_mocks: bool
@@ -60,9 +77,8 @@ def _load() -> Settings:
     return Settings(
         data_dir=Path(os.getenv("HP_DATA_DIR", REPO_ROOT / "data")),
         output_dir=Path(os.getenv("HP_OUTPUT_DIR", backend_dir / "output")),
-        # Defaults batem com o docker-compose.yml da raiz.
-        db_url=os.getenv("HP_DB_URL",
-                         "postgresql+psycopg://healthprior:healthprior@localhost:5432/healthprior"),
+        db_url=_url_do_banco(),
+        cors_origins=_origens_cors(),
         verificador_path=REPO_ROOT / "src" / "verificar_fila_priorizada.py",
         # Data de referência do dataset. Nunca use date.today() nas regras.
         ref_date=date.fromisoformat(os.getenv("HP_REF_DATE", "2026-10-23")),
