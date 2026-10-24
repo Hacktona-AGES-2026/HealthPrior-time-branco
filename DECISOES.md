@@ -71,6 +71,9 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-65 | 2026-10-24 | Inbox calculado na leitura, sem tabela de propostas; `criado_em` = data da publicação | Nunca desatualizado; menos estado | Tabela de propostas | US-12 |
 | D-66 | 2026-10-24 | Coluna `classe_confirmada` (escrita pela US-13); "classe atual" do card = confirmada ou implícita da prioridade | Referência explícita para a comparação | Usar só `classe_medico` | US-12/13 |
 | D-67 | 2026-10-24 | Ordem do inbox: classe sugerida mais grave → maior divergência → posição | Regulador vê primeiro quem sobe para A1/A2 | Ordem da fila | US-12 |
+| D-68 | 2026-10-24 | Detalhe do paciente: posição/camada da fila publicada; score e motivos do SWALIS calculados na leitura | Tela bate com a fila entregue e mostra a evidência atual | Persistir score | US-21 |
+| D-69 | 2026-10-24 | Explicação em 2–4 frases montada por função pura do domínio | Testável e igual em qualquer tela (explicabilidade) | Texto montado no front | US-21 |
+| D-70 | 2026-10-24 | Com `classe_medico`, prazo e % do prazo recalculados pela classe decidida | Detalhe e fila mostram o mesmo número | Usar sempre a classe do SWALIS | US-21 |
 
 ## Solicitações fora da fila
 

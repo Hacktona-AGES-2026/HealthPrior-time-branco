@@ -10,6 +10,7 @@ from sqlmodel import Session
 from app.application.carga_inicial import CargaInicial
 from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
+from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.normalizar import Normalizar
 from app.application.recalcular_flags import RecalcularFlags
@@ -105,3 +106,16 @@ def get_comparar_filas(session: Session = Depends(get_session)) -> CompararFilas
 def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
     return ListarInbox(SqlFilaRepository(session), SqlSolicitacaoRepository(session),
                        SqlEventoRepository(session), get_scorer())
+
+
+# US-21
+def get_detalhar_solicitacao(session: Session = Depends(get_session)) -> DetalharSolicitacao:
+    return DetalharSolicitacao(
+        solicitacoes=SqlSolicitacaoRepository(session),
+        eventos=SqlEventoRepository(session),
+        correcoes=SqlCorrecaoRepository(session),
+        pendencias=SqlPendenciaRepository(session),
+        fila=SqlFilaRepository(session),
+        scorer=get_scorer(),
+        ref_date=settings.ref_date,
+    )

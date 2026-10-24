@@ -270,6 +270,8 @@ Como **regulador ou gestor**, quero ver a fila ordenada com camada, classe, % do
 - **Depende de:** US-08
 
 #### US-21 · "Por que este paciente está aqui?" — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-21-detalhe-paciente`): `GET /solicitacoes/{id}` com explicação, score, motivos, eventos, pendências e correções. Registro: `docs/implementacao/US-21-detalhe-paciente.md` (D-68..D-70). Tela do front pendente.
+
 Como **regulador**, quero abrir um paciente e ver a explicação da posição dele.
 - **CA**
   - Mostra: camada e por quê, classe (sistema × médico), % do prazo, motivos com evidência, linha do tempo de eventos (histórico separado), decisões, pendências e correções automáticas.
