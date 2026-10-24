@@ -41,7 +41,12 @@ class Solicitacao:
     observacoes: str = ""
     prioridade_regulacao: str | None = None
     flag_oncologico: str | None = None
+    flag_diabetico: str | None = None
     flag_piora_clinica: str | None = None
+    asa: int | None = None
+    distancia_hospital_km: int | None = None
+    comorbidades: str | None = None
+    hba1c_ultima: float | None = None
     # normalizados (PRE-01..PRE-06)
     cid_norm: str = ""
     nome_norm: str = ""
