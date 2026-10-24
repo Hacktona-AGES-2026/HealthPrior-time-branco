@@ -52,7 +52,7 @@ export default function App() {
             <Conteudo />
           </SidebarInset>
         </SidebarProvider>
-        <Toaster position="bottom-center" richColors closeButton offset={{ bottom: 16, left: 12, right: 12 }} mobileOffset={{ bottom: 16, left: 12, right: 12 }} />
+        <Toaster position="bottom-right" richColors closeButton offset={{ bottom: 16, right: 16 }} mobileOffset={{ bottom: 16, left: 12, right: 12 }} />
       </TooltipProvider>
     </>
   )

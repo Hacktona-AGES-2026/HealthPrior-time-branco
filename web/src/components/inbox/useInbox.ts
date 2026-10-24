@@ -1,3 +1,4 @@
+import { MENSAGEM_GENERICA, mensagemDeErro } from "@/lib/mensagens"
 import { useCallback, useEffect, useState } from "react"
 import { listarInbox, type Inbox } from "@/api/cliente"
 
@@ -19,7 +20,7 @@ export function useInbox() {
       .then((dados) => setResultado({ chave: tentativa, dados }))
       .catch((e: unknown) => {
         if (controle.signal.aborted) return
-        setResultado({ chave: tentativa, erro: e instanceof Error ? e.message : "Erro inesperado" })
+        setResultado({ chave: tentativa, erro: mensagemDeErro(e) })
       })
     return () => controle.abort()
   }, [tentativa])
@@ -29,7 +30,7 @@ export function useInbox() {
   let estado: EstadoInbox
   if (resultado === null) estado = { tipo: "carregando" }
   else if (resultado.dados) estado = { tipo: "ok", dados: resultado.dados, atualizando: resultado.chave !== tentativa }
-  else if (resultado.chave === tentativa) estado = { tipo: "erro", mensagem: resultado.erro ?? "Erro inesperado" }
+  else if (resultado.chave === tentativa) estado = { tipo: "erro", mensagem: resultado.erro ?? MENSAGEM_GENERICA }
   else estado = { tipo: "carregando" }
   return { estado, recarregar }
 }

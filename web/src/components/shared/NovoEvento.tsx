@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { ORIGEM_DADOS } from "@/data/fila"
-import { ErroApi, registrarEvento } from "@/lib/api"
+import { registrarEvento } from "@/lib/api"
+import { mensagemDeErro } from "@/lib/mensagens"
 import { useStore } from "@/store/useStore"
 
 // Tipos e resultados do dataset (docs/dicionario_dados.md).
@@ -23,9 +24,9 @@ const RESULTADOS: Record<string, string[]> = {
 const TIPOS: Record<string, string> = Object.fromEntries(Object.keys(RESULTADOS).map((t) => [t, t.replaceAll("_", " ")]))
 
 const DESFECHO = {
-  enviado_inbox: "Classe mudou: enviado ao inbox do regulador (a fila só muda após aprovação)",
-  pendencia: "Indica saída da fila: pendência aberta para o call center",
-  registrado: "Registrado (classe não mudou)",
+  enviado_inbox: "A classe mudou e o caso foi para o Inbox. A fila só muda depois da sua aprovação.",
+  pendencia: "O evento indica saída da fila. Foi aberta uma pendência para o call center.",
+  registrado: "A classe não mudou.",
 }
 
 export function NovoEvento({ solicitacaoId }: { solicitacaoId: string }) {
@@ -48,10 +49,10 @@ export function NovoEvento({ solicitacaoId }: { solicitacaoId: string }) {
       setDescricao("")
       await recarregar()
       selecionar(solicitacaoId)
-      const classes = r.classe_antes && r.classe_depois ? ` · SWALIS ${r.classe_antes} → ${r.classe_depois}` : ""
-      toast.success(`Evento ${r.evento_id} registrado`, { description: `${DESFECHO[r.desfecho]}${classes}${r.pendencia_id ? ` · ${r.pendencia_id}` : ""}` })
+      const classes = r.classe_antes && r.classe_depois && r.classe_antes !== r.classe_depois ? ` Classe de ${r.classe_antes} para ${r.classe_depois}.` : ""
+      toast.success("Evento registrado", { description: `${DESFECHO[r.desfecho]}${classes}` })
     } catch (e) {
-      toast.error("Evento recusado", { description: e instanceof ErroApi ? `${e.codigo}: ${e.message}` : String(e) })
+      toast.error("Não foi possível registrar o evento", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
     }

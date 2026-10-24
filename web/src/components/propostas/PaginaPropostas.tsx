@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { AlertTriangle, ArrowRight, Check, FileCheck2, Loader2, RefreshCw, ShieldCheck, Undo2, X } from "lucide-react"
 import { toast } from "sonner"
-import { decidirProposta, reverterRegra, URL_API, type Proposta, type StatusProposta } from "@/api/cliente"
+import { decidirProposta, reverterRegra, type Proposta, type StatusProposta } from "@/api/cliente"
+import { mensagemDeErro, plural } from "@/lib/mensagens"
 import { formatarData } from "@/lib/datas"
 import { usuarioAtual } from "@/lib/usuario"
 import { cn } from "@/lib/utils"
@@ -69,10 +70,7 @@ export default function PaginaPropostas() {
               <AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar as propostas
             </p>
             <p className="mt-1 text-muted-foreground">{estado.mensagem}</p>
-            <p className="mt-2 text-muted-foreground">
-              Confira se o back está no ar em <code className="rounded bg-muted px-1">{URL_API}</code> e, para a demo, rode <code className="rounded bg-muted px-1">python -m app.cli seed-aprendizado</code> e{" "}
-              <code className="rounded bg-muted px-1">gerar-propostas</code>.
-            </p>
+            {!estado.mensagem.includes("equipe técnica") && <p className="mt-2 text-muted-foreground">Se o problema continuar, avise a equipe técnica.</p>}
             <Button variant="outline" size="sm" className="mt-3" onClick={recarregar}>
               <RefreshCw aria-hidden /> Tentar de novo
             </Button>
@@ -108,11 +106,11 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
     try {
       const r = await reverterRegra(p.proposta_id, { usuario_id: usuarioAtual(), motivo: motivoReversao.trim() })
       toast.success("Regra revertida", {
-        description: `${r.devolvidos_ao_inbox} ${r.devolvidos_ao_inbox === 1 ? "paciente saiu" : "pacientes saíram"} do Inbox: a sugestão voltou à classe anterior.`,
+        description: `${plural(r.devolvidos_ao_inbox, "paciente saiu", "pacientes saíram")} do Inbox: a sugestão voltou à classe anterior.`,
       })
       setRevertendo(false)
     } catch (e) {
-      toast.error("Não foi possível reverter a regra", { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível reverter a regra", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
       aoDecidir() // também no erro: um 409 significa que já foi revertida
@@ -124,15 +122,15 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
     try {
       const r = await decidirProposta(p.proposta_id, { decisao, usuario_id: usuarioAtual(), observacao: observacao.trim() || undefined })
       if (r.status === "aprovada") {
-        toast.success(`Regra aprovada: versão ${r.versao}`, {
-          description: `${r.enviados_ao_inbox} ${r.enviados_ao_inbox === 1 ? "paciente foi" : "pacientes foram"} ao Inbox para decisão do regulador.`,
+        toast.success(`Regra aprovada (versão ${r.versao})`, {
+          description: `${plural(r.enviados_ao_inbox, "paciente foi", "pacientes foram")} ao Inbox para decisão do regulador.`,
         })
       } else {
         toast.info("Proposta rejeitada", { description: "O motivo ficou registrado." })
       }
       setRejeitando(false)
     } catch (e) {
-      toast.error("Não foi possível decidir a proposta", { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível decidir a proposta", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
       aoDecidir() // também no erro: um 409 significa que alguém já decidiu

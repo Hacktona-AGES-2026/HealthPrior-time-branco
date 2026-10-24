@@ -2,6 +2,7 @@ import { useRef, useState } from "react"
 import { AlertTriangle, CheckCircle2, Download, FileUp, Loader2, Upload } from "lucide-react"
 import { toast } from "sonner"
 import { importarSolicitacoes, URL_MODELO_CSV, type ResultadoImportacao } from "@/api/cliente"
+import { mensagemDeErro, plural } from "@/lib/mensagens"
 import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 import { Badge } from "@/components/ui/badge"
@@ -35,7 +36,7 @@ export default function PaginaImportar() {
   async function lerArquivo(f: File | undefined) {
     if (!f) return
     if (f.size > TAMANHO_MAX) {
-      toast.error("Arquivo maior que 2 MB", { description: "Divida em partes menores." })
+      toast.error("O arquivo passa de 2 MB", { description: "Divida em arquivos menores e envie um de cada vez." })
       return
     }
     setTexto(await f.text())
@@ -51,15 +52,15 @@ export default function PaginaImportar() {
       if (r.ok && r.resultado.novas > 0) {
         setTexto("")
         setArquivo(null)
-        toast.success(`${r.resultado.novas} ${r.resultado.novas === 1 ? "solicitação importada" : "solicitações importadas"}`, {
-          description: r.resultado.fila_publicada ? "Fila recalculada e publicada." : undefined,
+        toast.success(plural(r.resultado.novas, "solicitação importada", "solicitações importadas"), {
+          description: r.resultado.fila_publicada ? "Fila atualizada." : undefined,
         })
         await recarregar() // a fila e o inbox passam a mostrar as novas
       } else if (!r.ok) {
-        toast.error("Nada foi importado", { description: "Corrija os erros abaixo e envie de novo." })
+        toast.error("Nada foi importado", { description: "Corrija os erros listados abaixo e envie de novo." })
       }
     } catch (e) {
-      toast.error("Não foi possível importar", { description: e instanceof Error ? e.message : undefined })
+      toast.error("Não foi possível importar", { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
     }

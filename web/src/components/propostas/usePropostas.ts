@@ -1,3 +1,4 @@
+import { MENSAGEM_GENERICA, mensagemDeErro } from "@/lib/mensagens"
 import { useCallback, useEffect, useState } from "react"
 import { listarPropostas, type ListaPropostas, type StatusProposta } from "@/api/cliente"
 
@@ -20,7 +21,7 @@ export function usePropostas(status: StatusProposta) {
       .then((dados) => setResultado({ chave, dados }))
       .catch((e: unknown) => {
         if (controle.signal.aborted) return
-        setResultado({ chave, erro: e instanceof Error ? e.message : "Erro inesperado" })
+        setResultado({ chave, erro: mensagemDeErro(e) })
       })
     return () => controle.abort()
   }, [chave, status])
@@ -30,7 +31,7 @@ export function usePropostas(status: StatusProposta) {
   let estado: EstadoPropostas
   if (resultado === null) estado = { tipo: "carregando" }
   else if (resultado.dados) estado = { tipo: "ok", dados: resultado.dados, atualizando: resultado.chave !== chave }
-  else if (resultado.chave === chave) estado = { tipo: "erro", mensagem: resultado.erro ?? "Erro inesperado" }
+  else if (resultado.chave === chave) estado = { tipo: "erro", mensagem: resultado.erro ?? MENSAGEM_GENERICA }
   else estado = { tipo: "carregando" }
   return { estado, recarregar }
 }

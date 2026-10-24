@@ -1,7 +1,8 @@
 import { useState } from "react"
 import { AlertTriangle, ArrowRight, Check, Inbox as IconeInbox, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
-import { aprovarProposta, URL_API, type ItemInbox } from "@/api/cliente"
+import { aprovarProposta, type ItemInbox } from "@/api/cliente"
+import { mensagemDeErro, nomeDoPaciente } from "@/lib/mensagens"
 import { formatarData } from "@/lib/datas"
 import { reguladorAtual } from "@/lib/usuario"
 import { useStore } from "@/store/useStore"
@@ -50,12 +51,10 @@ export default function PaginaInbox() {
         {estado.tipo === "erro" && (
           <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm" role="alert">
             <p className="flex items-center gap-2 font-semibold text-destructive">
-              <AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar o inbox
+              <AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar os casos para revisar
             </p>
             <p className="mt-1 text-muted-foreground">{estado.mensagem}</p>
-            <p className="mt-2 text-muted-foreground">
-              Confira se o back está no ar em <code className="rounded bg-muted px-1">{URL_API}</code> (com <code className="rounded bg-muted px-1">HP_USE_MOCKS=false</code>) e se a carga foi feita.
-            </p>
+            {!estado.mensagem.includes("equipe técnica") && <p className="mt-2 text-muted-foreground">Se o problema continuar, avise a equipe técnica.</p>}
             <Button variant="outline" size="sm" className="mt-3" onClick={recarregar}>
               <RefreshCw aria-hidden /> Tentar de novo
             </Button>
@@ -79,6 +78,8 @@ export default function PaginaInbox() {
 function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => void }) {
   const [enviando, setEnviando] = useState(false)
 
+  const nome = nomeDoPaciente(item.solicitacao_id)
+
   async function aprovar() {
     setEnviando(true)
     try {
@@ -90,15 +91,15 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
             ? `Segue na posição ${r.posicao_nova}.`
             : ""
       if (r.fila_publicada) {
-        toast.success(`${item.solicitacao_id} aprovada como ${item.classe_sugerida}`, { description: `${posicao} Fila recalculada e publicada.`.trim() })
+        toast.success(`Classe de ${nome} aprovada: ${item.classe_sugerida}`, { description: `${posicao} Fila atualizada.`.trim() })
         void useStore.getState().recarregar()  // a fila do front acompanha a nova publicação
       } else {
-        toast.warning(`${item.solicitacao_id} aprovada, mas a fila não foi republicada`, {
-          description: "A decisão ficou registrada; a fila anterior segue publicada até a próxima publicação válida.",
+        toast.warning("Aprovado, mas a fila não foi atualizada", {
+          description: "A decisão foi salva. A fila anterior continua valendo; avise a equipe técnica.",
         })
       }
     } catch (e) {
-      toast.error(`Não foi possível aprovar ${item.solicitacao_id}`, { description: e instanceof Error ? e.message : undefined })
+      toast.error(`Não foi possível aprovar a classe de ${nome}`, { description: mensagemDeErro(e) })
     } finally {
       setEnviando(false)
       aoDecidir() // também no erro: um 409 significa que o caso já saiu do inbox

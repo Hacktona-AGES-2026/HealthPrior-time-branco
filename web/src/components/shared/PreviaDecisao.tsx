@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import type { Classe } from "@/data/tipos"
-import { ErroApi, type Previa, preverDecisao } from "@/lib/api"
+import { type Previa, preverDecisao } from "@/lib/api"
+import { MENSAGEM_GENERICA, mensagemDeErro } from "@/lib/mensagens"
 import { cn } from "@/lib/utils"
 
 const fmtPct = (n: number) => `${Math.round(n).toLocaleString("pt-BR")}%`
@@ -38,7 +39,7 @@ export function usePrevia(id: string, acao: "aprovar" | "editar" | "manter", cla
     let vivo = true
     preverDecisao(id, acao, classe)
       .then((previa) => vivo && setEstado({ chave, previa }))
-      .catch((e: unknown) => vivo && setEstado({ chave, erro: e instanceof ErroApi ? e.message : "Prévia indisponível" }))
+      .catch((e: unknown) => vivo && setEstado({ chave, erro: (mensagemDeErro(e) === MENSAGEM_GENERICA ? "Não foi possível calcular a nova posição." : mensagemDeErro(e)) }))
     return () => {
       vivo = false
     }

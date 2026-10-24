@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { AlertTriangle, ClipboardList, FilterX, RefreshCw, ShieldAlert } from "lucide-react"
-import { URL_API, type Evidencia, type Pendencia, type StatusPendencia } from "@/api/cliente"
+import { type Evidencia, type Pendencia, type StatusPendencia } from "@/api/cliente"
 import { ACOES, REGRAS_PENDENCIA, STATUS_PENDENCIA, rotuloFonte } from "@/lib/pendencias"
 import { formatarData } from "@/lib/datas"
 import { cn } from "@/lib/utils"
@@ -230,10 +230,7 @@ function ErroApi({ mensagem, onTentar }: { mensagem: string; onTentar: () => voi
         <AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar as pendências
       </p>
       <p className="mt-1 text-muted-foreground">{mensagem}</p>
-      <p className="mt-2 text-muted-foreground">
-        Confira se o back está no ar em <code className="break-all rounded bg-muted px-1">{URL_API}</code> (<code className="rounded bg-muted px-1">uvicorn app.main:app</code>, com{" "}
-        <code className="rounded bg-muted px-1">HP_USE_MOCKS=false</code> para ver os dados reais) e se a carga foi feita.
-      </p>
+      {!mensagem.includes("equipe técnica") && <p className="mt-2 text-muted-foreground">Se o problema continuar, avise a equipe técnica.</p>}
       <Button variant="outline" size="sm" className="mt-3" onClick={onTentar}>
         <RefreshCw aria-hidden /> Tentar de novo
       </Button>
