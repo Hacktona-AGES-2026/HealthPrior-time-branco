@@ -218,9 +218,11 @@ Como **sistema**, quero recalcular o % do prazo de todos uma vez por dia, para a
 - **CA**
   - Recalcula score efetivo (inclusive overrides), aplica eventos registrados, roda trava + verificador.
   - Disparo manual para a demo (sem cron real).
-- **Back:** `POST /admin/atualizacao-diaria`
+- **Back:** `POST /admin/atualizacao-diaria` (`?data=AAAA-MM-DD` opcional; resposta = a do `publicar-fila` + `data_referencia`)
 - **Front:** botão "Rodar atualização diária".
 - **Depende de:** US-10
+
+> **Status: back implementado** (branch `feat/US-16-atualizacao-diaria`, D-76): relógio simulado, data em `fila_publicada.data_referencia`, fila e detalhe usam a mesma. Recontato (passo 3 do C-13) é a US-17; botão no front pendente.
 
 #### US-17 · Recontato de quem está sem eventos — **P2** · Back
 Como **equipe administrativa**, quero ser avisada de quem está sem eventos há N dias, para não confundir silêncio com estabilidade (I-08).

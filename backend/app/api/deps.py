@@ -2,11 +2,13 @@
 
 Rotas recebem casos de uso prontos via Depends; trocar a implementação do SWALIS é só aqui.
 """
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from fastapi import Depends
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session
 
+from app.application.atualizacao_diaria import AtualizacaoDiaria
 from app.application.carga_inicial import CargaInicial
 from app.application.comparar_filas import CompararFilas
 from app.application.decidir import DecidirClasse
@@ -37,8 +39,21 @@ from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
 
-def get_scorer():
-    return criar_swalis()
+def get_scorer(data: date | None = None):
+    return criar_swalis(ref_date=data)
+
+
+# US-16
+def get_data_referencia(session: Session = Depends(get_session)) -> date:
+    """Data da última fila publicada (relógio simulado da demo); sem fila, a oficial (HP_REF_DATE).
+
+    Banco fora do ar ou sem a tabela: cai na oficial, para as rotas em mock não dependerem do banco.
+    """
+    try:
+        return SqlFilaRepository(session).data_referencia() or settings.ref_date
+    except SQLAlchemyError:
+        session.rollback()
+        return settings.ref_date
 
 
 def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
@@ -52,26 +67,44 @@ def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
                         SqlUnidadeDeTrabalho(session), flags, inconsistencias)
 
 
-def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:
+def _gerar_fila_em(session: Session, data: date) -> GerarFila:
+    # Uma data só por execução: a mesma vai para o GerarFila e para o SWALIS (% do prazo).
     return GerarFila(
         solicitacoes=SqlSolicitacaoRepository(session),
         eventos=SqlEventoRepository(session),
-        scorer=get_scorer(),
+        scorer=get_scorer(data),
         exportador=ExportadorCsv(),
-        ref_date=settings.ref_date,
+        ref_date=data,
     )
 
 
-def get_publicar_fila(session: Session = Depends(get_session),
-                      gerar: GerarFila = Depends(get_gerar_fila)) -> PublicarFila:
+def _publicar_fila_em(session: Session, data: date) -> PublicarFila:
+    # Com data simulada (US-16) os arquivos vão para output/simulada/: o fila_priorizada.csv
+    # oficial (entregável) só é escrito com a data oficial.
+    output_dir = settings.output_dir if data == settings.ref_date else settings.output_dir / "simulada"
     return PublicarFila(
-        gerar=gerar,
+        gerar=_gerar_fila_em(session, data),
         verificador=VerificadorOficial(),
         fila=SqlFilaRepository(session),
         uow=SqlUnidadeDeTrabalho(session),
         relogio=lambda: datetime.now(timezone.utc),
-        output_dir=settings.output_dir,
+        output_dir=output_dir,
     )
+
+
+def get_gerar_fila(session: Session = Depends(get_session),
+                   data: date = Depends(get_data_referencia)) -> GerarFila:
+    return _gerar_fila_em(session, data)
+
+
+def get_publicar_fila(session: Session = Depends(get_session),
+                      data: date = Depends(get_data_referencia)) -> PublicarFila:
+    return _publicar_fila_em(session, data)
+
+
+def get_atualizacao_diaria(session: Session = Depends(get_session)) -> AtualizacaoDiaria:
+    return AtualizacaoDiaria(SqlFilaRepository(session), lambda data: _publicar_fila_em(session, data),
+                             settings.ref_date)
 
 
 def get_exportar_fila_publicada(session: Session = Depends(get_session)) -> ExportarFilaPublicada:
@@ -87,12 +120,14 @@ def get_registrar_evento(session: Session = Depends(get_session)) -> RegistrarEv
 
 # US-13/14
 def get_decidir(session: Session = Depends(get_session),
+                data: date = Depends(get_data_referencia),
                 publicar: PublicarFila = Depends(get_publicar_fila)) -> DecidirClasse:
+    # Mesma data da fila (US-16): `editado_em` e o envelhecimento do score editado partem dela.
     return DecidirClasse(
         solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
-        decisoes=SqlDecisaoRepository(session), scorer=get_scorer(),
+        decisoes=SqlDecisaoRepository(session), scorer=get_scorer(data),
         uow=SqlUnidadeDeTrabalho(session), publicar=publicar, fila=SqlFilaRepository(session),
-        relogio=lambda: datetime.now(timezone.utc), ref_date=settings.ref_date)
+        relogio=lambda: datetime.now(timezone.utc), ref_date=data)
 
 
 # US-20
@@ -117,13 +152,15 @@ def get_listar_inbox(session: Session = Depends(get_session)) -> ListarInbox:
 
 
 # US-21
-def get_detalhar_solicitacao(session: Session = Depends(get_session)) -> DetalharSolicitacao:
+def get_detalhar_solicitacao(session: Session = Depends(get_session),
+                              data: date = Depends(get_data_referencia)) -> DetalharSolicitacao:
+    # Mesma data da fila publicada: detalhe e fila mostram o mesmo % do prazo (D-70).
     return DetalharSolicitacao(
         solicitacoes=SqlSolicitacaoRepository(session),
         eventos=SqlEventoRepository(session),
         correcoes=SqlCorrecaoRepository(session),
         pendencias=SqlPendenciaRepository(session),
         fila=SqlFilaRepository(session),
-        scorer=get_scorer(),
-        ref_date=settings.ref_date,
+        scorer=get_scorer(data),
+        ref_date=data,
     )

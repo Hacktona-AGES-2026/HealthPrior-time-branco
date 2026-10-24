@@ -381,7 +381,7 @@ class SqlFilaRepository:
         self._s = session
 
     def salvar_publicada(self, linhas: list[LinhaFila], versao_regras: str,
-                         publicada_em: datetime) -> None:
+                         publicada_em: datetime, data_referencia: date) -> None:
         """Substitui a fila publicada inteira. Não confirma: a unidade de trabalho confirma."""
         self._s.execute(delete(FilaPublicadaTable))
         self._s.add_all(
@@ -391,6 +391,7 @@ class SqlFilaRepository:
                 dias_em_fila=l.dias_em_fila, score_efetivo=l.score_efetivo,
                 justificativa=l.justificativa, editado_manualmente=l.editado_manualmente,
                 versao_regras=versao_regras, publicada_em=publicada_em,
+                data_referencia=data_referencia,
             )
             for l in linhas
         )
@@ -411,6 +412,9 @@ class SqlFilaRepository:
 
     def publicada_em(self) -> datetime | None:
         return self._s.execute(select(func.max(FilaPublicadaTable.publicada_em))).scalar()
+
+    def data_referencia(self) -> date | None:
+        return self._s.execute(select(func.max(FilaPublicadaTable.data_referencia))).scalar()
 
 
 class SqlUnidadeDeTrabalho:

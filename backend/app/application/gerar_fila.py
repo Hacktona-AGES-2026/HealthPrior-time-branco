@@ -24,6 +24,7 @@ class ResultadoGeracao:
     total: int
     versao_regras: str
     por_camada: dict[int, int]
+    ref_date: date
 
 
 class GerarFila:
@@ -58,4 +59,5 @@ class GerarFila:
             total=len(linhas),
             versao_regras=self._scorer.versao_regras,
             por_camada=dict(sorted(contagem.items())),
+            ref_date=self._ref_date,
         )
