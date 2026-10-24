@@ -35,10 +35,17 @@ class ResultadoTabelaOut(BaseModel):
     atualizados: int
 
 
+class NormalizacaoOut(BaseModel):
+    solicitacoes: int
+    correcoes: int
+    por_regra: dict[str, int]
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
     eventos: ResultadoTabelaOut
+    normalizacao: NormalizacaoOut
 
 
 # ---------- fila ----------

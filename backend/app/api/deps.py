@@ -7,6 +7,7 @@ from sqlmodel import Session
 
 from app.application.carga_inicial import CargaInicial
 from app.application.decidir import DecidirClasse
+from app.application.normalizar import Normalizar
 from app.application.gerar_fila import GerarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.config import settings
@@ -15,8 +16,10 @@ from app.infrastructure.db import get_session
 from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
+    SqlCorrecaoRepository,
     SqlEventoRepository,
     SqlSolicitacaoRepository,
+    SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.swalis_stub import SwalisStub
 from app.infrastructure.verificador import VerificadorOficial
@@ -27,7 +30,9 @@ def get_scorer():
 
 
 def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:
-    return CargaInicial(LeitorDataset(), SqlCargaRepository(session))
+    normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+    return CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
+                        SqlUnidadeDeTrabalho(session))
 
 
 def get_gerar_fila(session: Session = Depends(get_session)) -> GerarFila:

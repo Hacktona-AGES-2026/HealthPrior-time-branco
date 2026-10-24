@@ -12,7 +12,7 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 
 @router.post("/carga", response_model=CargaOut)
 def carga(caso_de_uso: CargaInicial = Depends(get_carga_inicial)):
-    """US-01. Idempotente: repetir não duplica registros."""
+    """US-01 (carga) + US-02 (normalização), na mesma transação. Idempotente."""
     return asdict(caso_de_uso.executar())
 
 

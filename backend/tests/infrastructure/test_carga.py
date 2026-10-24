@@ -8,11 +8,17 @@ from fastapi.testclient import TestClient
 from sqlmodel import func, select, text
 
 from app.application.carga_inicial import CargaInicial
+from app.application.normalizar import Normalizar
 from app.config import settings
 from app.domain.errors import CargaInvalidaError
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.db import get_session
-from app.infrastructure.repositories import SqlCargaRepository
+from app.infrastructure.repositories import (
+    SqlCargaRepository,
+    SqlCorrecaoRepository,
+    SqlSolicitacaoRepository,
+    SqlUnidadeDeTrabalho,
+)
 from app.infrastructure.tables import EventoTable, ProcedimentoTable, SolicitacaoTable
 from app.main import app
 
@@ -25,7 +31,9 @@ ARQUIVOS = [
 
 
 def carregar(session, data_dir=DATA):
-    return CargaInicial(LeitorDataset(data_dir), SqlCargaRepository(session)).executar()
+    normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+    return CargaInicial(LeitorDataset(data_dir), SqlCargaRepository(session), normalizar,
+                        SqlUnidadeDeTrabalho(session)).executar()
 
 
 def contar(session, tabela):
@@ -140,6 +148,8 @@ def test_post_admin_carga(client):
     assert primeira.status_code == 200
     assert primeira.json()["solicitacoes"] == {"lido": 941, "inseridos": 941, "atualizados": 0}
     assert segunda.json()["solicitacoes"] == {"lido": 941, "inseridos": 0, "atualizados": 941}
+    assert primeira.json()["normalizacao"]["solicitacoes"] == 941
+    assert primeira.json()["normalizacao"]["por_regra"] == segunda.json()["normalizacao"]["por_regra"]
 
 
 def test_post_admin_carga_com_arquivo_ausente(client, monkeypatch, tmp_path):

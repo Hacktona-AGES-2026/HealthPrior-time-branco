@@ -62,10 +62,12 @@ backend/
       ranking.py             trava da regra de ouro: definir_camada, ordenar_fila (US-08)
       preprocessing/
         normalizacao.py      PRE-01..04 (US-02)
+        municipios.py        nomes oficiais dos 38 municípios do dataset (PRE-03, D-19)
         flags.py             PRE-05..08 (US-03)
         inconsistencias.py   PRE-10..25 (US-04, US-05)
     application/
-      carga_inicial.py       US-01
+      carga_inicial.py       US-01 (+ normalização, mesma transação)
+      normalizar.py          US-02
       gerar_fila.py          US-08/09/10
       registrar_evento.py    US-15
       decidir.py             US-13/14

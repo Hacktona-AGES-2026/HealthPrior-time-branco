@@ -13,7 +13,8 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload          # API em http://localhost:8000, docs em /docs
 python -m app.cli init-db              # cria as tabelas
-python -m app.cli carga                # US-01
+python -m app.cli carga                # US-01 + US-02 (carga e normalização, mesma transação)
+python -m app.cli normalizar           # US-02: recalcula só as colunas *_norm e o correcoes_log
 python -m app.cli gerar-fila           # US-08/09/10
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
@@ -34,7 +35,8 @@ app/
     ranking.py         trava da regra de ouro (US-08)
     preprocessing/     regras PRE-xx (US-02..05)
   application/       CASOS DE USO. Orquestram domínio + portas. Um arquivo por caso de uso.
-    carga_inicial.py   US-01
+    carga_inicial.py   US-01 (+ normalização na mesma transação, D-20)
+    normalizar.py      US-02
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
     decidir.py         US-13/14
@@ -72,6 +74,8 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 ## Convenções locais
 - Sem migrations (D-16): tabelas via `create_all`. Mudou o schema? `docker compose down -v` e rode a carga de novo.
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
+- Transação: repositórios não confirmam; o caso de uso chama `UnidadeDeTrabalho.confirmar()/desfazer()` (carga + normalização entram juntas ou não entram).
+- Regra nova de pré-processamento: função pura em `domain/preprocessing/` + teste em `tests/domain/`; coluna nova na tabela; log só para mudança de valor visível (D-18).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).
 - Rotas não têm regra de negócio. Se aparecer um `if` de regra numa rota, mova para domain/application.
 - Erros de regra: lance um `DomainError` específico; a API converte. `NotImplementedError` vira 501.
