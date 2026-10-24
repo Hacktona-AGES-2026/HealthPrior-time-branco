@@ -1,8 +1,9 @@
 """Comandos de linha (rode dentro de backend/):
 
     python -m app.cli init-db     cria as tabelas
-    python -m app.cli carga       US-01/02: carga inicial + normalização (mesma transação)
+    python -m app.cli carga       US-01/02/03: carga inicial + normalização + flags (mesma transação)
     python -m app.cli normalizar  US-02: recalcula as colunas *_norm e o correcoes_log
+    python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
     python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
@@ -19,6 +20,7 @@ from app.application.gerar_fila import GerarFila
 from app.application.montar_fila import linhas_para_dicts, montar_fila
 from app.application.publicar_fila import PublicarFila
 from app.application.normalizar import Normalizar, ResumoNormalizacao
+from app.application.recalcular_flags import RecalcularFlags, ResumoFlags
 from app.config import settings
 from app.domain.errors import CargaInvalidaError
 from app.infrastructure.csv_loader import LeitorDataset
@@ -47,19 +49,32 @@ def _imprimir_normalizacao(r: ResumoNormalizacao) -> None:
     print(f"normalização: {r.solicitacoes} solicitações, {r.correcoes} correções ({regras})")
 
 
+def _imprimir_flags(r: ResumoFlags) -> None:
+    regras = ", ".join(f"{regra}: {n}" for regra, n in sorted(r.correcoes.items())) or "nenhuma"
+    print(f"flags: {r.solicitacoes} solicitações, correções ({regras})")
+    print(f"eventos: {r.eventos_duplicados} duplicados, {r.eventos_historicos} históricos")
+
+
+def _recalcular_flags(session: Session) -> RecalcularFlags:
+    return RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                           SqlCorrecaoRepository(session))
+
+
 def cmd_carga() -> None:
     criar_tabelas()
     with Session(engine) as session:
         normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
         try:
             resumo = CargaInicial(LeitorDataset(), SqlCargaRepository(session), normalizar,
-                                  SqlUnidadeDeTrabalho(session)).executar()
+                                  SqlUnidadeDeTrabalho(session),
+                                  _recalcular_flags(session)).executar()
         except CargaInvalidaError as e:
             sys.exit(f"Erro na carga: {e.mensagem}")
     for tabela in ("procedimentos", "solicitacoes", "eventos"):
         r = getattr(resumo, tabela)
         print(f"{tabela}: {r.lido} lidos, {r.inseridos} inseridos, {r.atualizados} atualizados")
     _imprimir_normalizacao(resumo.normalizacao)
+    _imprimir_flags(resumo.flags)
 
 
 def cmd_normalizar() -> None:
@@ -67,6 +82,13 @@ def cmd_normalizar() -> None:
         resumo = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session)).executar()
         SqlUnidadeDeTrabalho(session).confirmar()
     _imprimir_normalizacao(resumo)
+
+
+def cmd_flags() -> None:
+    with Session(engine) as session:
+        resumo = _recalcular_flags(session).executar()
+        SqlUnidadeDeTrabalho(session).confirmar()
+    _imprimir_flags(resumo)
 
 
 def cmd_gerar_fila() -> None:
@@ -115,7 +137,7 @@ def cmd_decisoes() -> None:
 
 
 COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
-            "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
+            "flags": cmd_flags, "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "decisoes": cmd_decisoes}
 
 

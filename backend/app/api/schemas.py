@@ -41,11 +41,19 @@ class NormalizacaoOut(BaseModel):
     por_regra: dict[str, int]
 
 
+class FlagsOut(BaseModel):
+    solicitacoes: int
+    eventos_duplicados: int
+    eventos_historicos: int
+    correcoes: dict[str, int]  # por regra (PRE-xx)
+
+
 class CargaOut(BaseModel):
     procedimentos: ResultadoTabelaOut
     solicitacoes: ResultadoTabelaOut
     eventos: ResultadoTabelaOut
     normalizacao: NormalizacaoOut
+    flags: Optional[FlagsOut] = None
 
 
 class PublicacaoOut(BaseModel):

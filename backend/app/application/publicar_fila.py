@@ -53,7 +53,7 @@ class PublicarFila:
             if passou:
                 self._fila.salvar_publicada(res.linhas, res.versao_regras, self._relogio())
                 # Promove o arquivo ANTES do commit: se a cópia falhar, o banco é desfeito e
-                # arquivo e banco continuam apontando para a mesma fila anterior (D-33).
+                # arquivo e banco continuam apontando para a mesma fila anterior (D-39).
                 shutil.copyfile(res.caminho_csv, final)
                 self._uow.confirmar()
             else:

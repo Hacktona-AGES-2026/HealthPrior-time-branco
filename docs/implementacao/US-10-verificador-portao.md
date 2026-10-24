@@ -51,21 +51,22 @@ flowchart TD
 
 | ID | Decisão | Motivo |
 |---|---|---|
-| D-31 | Gerar primeiro um **arquivo candidato** (`fila_priorizada.candidata.csv`) e só promovê-lo a `fila_priorizada.csv` se o verificador aprovar | O arquivo bom anterior nunca é sobrescrito por um reprovado (I-07) |
-| D-32 | Publicar = **substituir a fila inteira** em `fila_publicada` dentro da unidade de trabalho; reprovação ou erro → rollback | Fila publicada sempre consistente; a anterior continua valendo |
-| D-33 | Ordem: salvar no banco → copiar o arquivo → commit | Se a cópia falhar, o banco é desfeito e arquivo e banco seguem iguais. (Risco residual: commit falhar depois da cópia — raro) |
-| D-34 | `GET /fila/export` serve **só a fila publicada** (substitui D-30); 409 se não houver | Ninguém baixa uma fila que não passou no verificador |
-| D-35 | `POST /admin/publicar-fila` responde 200 (publicada) ou **422** (reprovada) com o mesmo corpo | Front/demo sabem o resultado sem ler logs |
-| D-36 | CI roda pytest **com Postgres** e depois a publicação real; falha se o verificador reprovar | Garante a regra de ouro a cada push/PR |
-| D-37 | O relógio da publicação é injetado (`relogio`) | Aplicação sem `datetime.now()`; testes determinísticos |
+| D-37 | Gerar primeiro um **arquivo candidato** (`fila_priorizada.candidata.csv`) e só promovê-lo a `fila_priorizada.csv` se o verificador aprovar | O arquivo bom anterior nunca é sobrescrito por um reprovado (I-07) |
+| D-38 | Publicar = **substituir a fila inteira** em `fila_publicada` dentro da unidade de trabalho; reprovação ou erro → rollback | Fila publicada sempre consistente; a anterior continua valendo |
+| D-39 | Ordem: salvar no banco → copiar o arquivo → commit | Se a cópia falhar, o banco é desfeito e arquivo e banco seguem iguais. (Risco residual: commit falhar depois da cópia — raro) |
+| D-40 | `GET /fila/export` serve **só a fila publicada** (substitui D-36); 409 se não houver | Ninguém baixa uma fila que não passou no verificador |
+| D-41 | `POST /admin/publicar-fila` responde 200 (publicada) ou **422** (reprovada) com o mesmo corpo | Front/demo sabem o resultado sem ler logs |
+| D-42 | CI roda pytest **com Postgres** e depois a publicação real; falha se o verificador reprovar | Garante a regra de ouro a cada push/PR |
+| D-43 | O relógio da publicação é injetado (`relogio`) | Aplicação sem `datetime.now()`; testes determinísticos |
 
 Decisões menores (subagente, revisadas pelo lead):
 - Novas colunas em `fila_publicada`: `classe`, `pct_prazo_consumido`, `dias_em_fila` (obrigatórias) e `editado_manualmente` (padrão False). **Exige recriar o banco** (`docker compose down -v`), conforme D-16.
 - `publicada_em()` = maior `publicada_em` da tabela (todas as linhas têm o mesmo).
 - `ExportarFilaPublicada` grava `output/fila_publicada.csv`; o download se chama `fila_priorizada.csv`.
-- Correção do lead: a cópia do arquivo foi movida para **antes** do commit (D-33); o subagente fazia depois.
+- Correção do lead: a cópia do arquivo foi movida para **antes** do commit (D-39); o subagente fazia depois.
 
 ## 4. Limitações
 - Não rodei o CI nem os testes de banco no ambiente do lead (sem Postgres); rodam no Docker local e no GitHub Actions.
+- Antes do merge, os testes de banco (189) e o fluxo `init-db` → `carga` → `gerar-fila` → `GET /fila/export` foram rodados num Postgres 16 local: fila publicada idêntica à do dataset e verificador OK. O CI do GitHub Actions ainda não tinha rodado.
 - Banner "fila não publicada" no front (P2) não implementado.
 - O CI sobe o Postgres e carrega o dataset a cada execução (~1 min); aceitável para o hackathon.

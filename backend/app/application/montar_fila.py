@@ -5,6 +5,7 @@ from dataclasses import asdict
 from datetime import date
 from typing import Protocol
 
+from app.domain.cid import is_oncologico
 from app.domain.enums import PRAZO_MAXIMO_DIAS, Classe, StatusFila
 from app.domain.models import Evento, ItemRanking, LinhaFila, ResultadoScore, Solicitacao
 from app.domain.ranking import ordenar_fila
@@ -91,7 +92,10 @@ def montar_fila(
             justificativa_clinica=sol.justificativa_clinica,
             tem_biopsia_positiva=tem_biopsia_positiva(eventos),
         )
-        itens.append(ItemRanking(sol.solicitacao_id, sol.oncologico, is_urgente(sinais),
+        # I-09: o CID manda. Se o `oncologico` gravado estiver desatualizado (flags não
+        # recalculadas), um câncer não pode cair fora da camada 1.
+        oncologico = sol.oncologico or is_oncologico(sol.cid_principal)
+        itens.append(ItemRanking(sol.solicitacao_id, oncologico, is_urgente(sinais),
                                  score, sol.data_entrada_fila))
         contexto[sol.solicitacao_id] = (sol, res, motivos_urgencia(sinais),
                                         motivos_sintomas(sinais), score, classe)
