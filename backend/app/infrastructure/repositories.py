@@ -364,7 +364,7 @@ class SqlPendenciaRepository:
 
     def listar(self, bloqueante: bool | None = None, regra: str | None = None,
                status: str | None = "aberta") -> list[Pendencia]:
-        # D-86: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
+        # D-77: bloqueantes primeiro, depois as mais antigas; o id desempata (ordem estável)
         consulta = select(PendenciaTable).order_by(
             PendenciaTable.bloqueante.desc(), PendenciaTable.aberta_em, PendenciaTable.pendencia_id)
         if bloqueante is not None:
@@ -381,22 +381,22 @@ class SqlPendenciaRepository:
         return [_para_pendencia(t) for t in self._s.exec(consulta).scalars()]
 
     def salvar(self, pendencia: Pendencia) -> None:
-        """Pendência nova (id vazio ganha PEN-xxxx, US-15) é aberta; existente grava só o desfecho
-        (status, quem, quando, resolução, observação, US-07): o achado não muda."""
+        """Pendência nova (id vazio ganha PEN-xxxx) ou, se já existe, só o desfecho (status, quem, quando,
+        resolução, observação); o achado não muda."""
         p = pendencia
         linha = self._s.get(PendenciaTable, p.pendencia_id) if p.pendencia_id else None
-        if linha is not None:
-            linha.status = p.status.value
-            linha.resolvido_por, linha.resolvido_em = p.resolvido_por, p.resolvido_em
-            linha.resolucao, linha.observacao = p.resolucao, p.observacao
+        if linha is None:
+            if not p.pendencia_id:
+                p.pendencia_id = f"PEN-{self._proximo_numero():04d}"
+            self._s.add(PendenciaTable(
+                pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
+                titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
+                acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
             self._s.flush()
             return
-        if not p.pendencia_id:
-            p.pendencia_id = f"PEN-{self._proximo_numero():04d}"
-        self._s.add(PendenciaTable(
-            pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
-            titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
-            acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
+        linha.status = pendencia.status.value
+        linha.resolvido_por, linha.resolvido_em = pendencia.resolvido_por, pendencia.resolvido_em
+        linha.resolucao, linha.observacao = pendencia.resolucao, pendencia.observacao
         self._s.flush()
 
     def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:

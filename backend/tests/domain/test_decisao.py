@@ -101,7 +101,7 @@ def test_decisao_descongela_classe_vigente():
     assert s.classe_vigente is None and s.classe_confirmada is Classe.A2
 
 
-# --- aprovar só o que o inbox mostraria (D-98) ---
+# --- aprovar só o que o inbox mostraria (D-94) ---
 
 def test_nunca_confirmada_diverge_dois_niveis_tem_proposta():
     validar_proposta(_sol(prioridade="baixa"), Classe.B)  # implícita D, sugerida B: 2 níveis
@@ -133,7 +133,7 @@ def test_solicitacao_fora_da_fila_nao_tem_proposta(status):
         validar_proposta(_sol(status_fila=status), Classe.A1)
 
 
-# --- aprovar remove o override e o log diz o que saiu (D-100) ---
+# --- aprovar remove o override e o log diz o que saiu (D-95) ---
 
 def test_aprovar_remove_o_override_inteiro_e_o_texto_do_log_diz_qual_era():
     s = _sol(classe_medico=Classe.C, score_medico=12.5, editado_manualmente=True,

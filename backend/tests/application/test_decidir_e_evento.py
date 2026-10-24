@@ -134,7 +134,7 @@ def test_aprovar_confirma_e_devolve_posicoes(dataset):
 
 
 def test_aprovar_o_que_o_inbox_nao_mostra_da_409_sem_gravar(dataset):
-    r = Repos(dataset)  # SOL-2023-00060: prioridade "baixa" e D pelo SWALIS, nada a aprovar (D-98)
+    r = Repos(dataset)  # SOL-2023-00060: prioridade "baixa" e D pelo SWALIS, nada a aprovar (D-94)
     with pytest.raises(SemPropostaError):
         _decidir(r).executar(ComandoDecisao("SOL-2023-00060", "REG-1", AcaoDecisao.APROVAR))
     assert r.decisoes == [] and r.commits == 0
@@ -180,7 +180,7 @@ def test_decisao_de_solicitacao_inexistente(dataset):
 def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
     # C-08: depois de confirmada, a classe da fila só muda com nova decisão do regulador.
     r = Repos(dataset)
-    s = r.sols["SOL-2026-00239"]  # já confirmada em C (C pelo SWALIS = implícita: fora do inbox, D-98)
+    s = r.sols["SOL-2026-00239"]  # já confirmada em C (C pelo SWALIS = implícita: fora do inbox, D-94)
     s.classe_status, s.classe_confirmada = ClasseStatus.CONFIRMADA, Classe.C
     _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia", "positivo",
                                       descricao="AP: adenocarcinoma"))

@@ -4,13 +4,13 @@
 - editar: override de classe ou score, com motivo + justificativa obrigatórios.
 - manter: recusa a sugestão, com motivo + justificativa.
 Bloqueia edição que rebaixe oncológico (I-01) -> OncologicoRebaixadoError.
-Aprovar só vale para o que o inbox mostraria (409 SEM_PROPOSTA, D-98) e o log diz que override
-saiu (D-100). Edita classe/score, nunca posição (D-03).
+Aprovar só vale para o que o inbox mostraria (409 SEM_PROPOSTA, D-94) e o log diz que override
+saiu (D-95). Edita classe/score, nunca posição (D-03).
 
 A decisão é gravada e **confirmada** antes; só então a fila é refeita pelo portão do verificador
 (C-11, C-12), em transação própria: a publicação desfaz a *própria* transação quando reprova. Se ela
 reprovar ou falhar, a decisão continua valendo, a fila anterior segue publicada (I-07) e
-`fila_publicada = false` (D-73, D-101).
+`fila_publicada = false` (D-73, D-96).
 """
 from __future__ import annotations
 
@@ -121,6 +121,6 @@ class DecidirClasse:
     def _republicar(self) -> bool:
         try:
             return self._publicar.executar().publicada
-        except Exception:  # a decisão já foi confirmada: não esconder isso atrás de um 500 (D-101)
+        except Exception:  # a decisão já foi confirmada: não esconder isso atrás de um 500 (D-96)
             log.exception("Decisão confirmada, mas a fila não foi republicada")
             return False

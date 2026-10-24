@@ -46,9 +46,9 @@ app/
     carga_inicial.py   US-01 (+ normalização na mesma transação, D-20)
     normalizar.py      US-02
     recalcular_flags.py US-03 (PRE-05..08; roda na carga, mesma transação, D-32)
-    resolver_pendencia.py US-07 (POST /pendencias/{id}/resolver: confirma a resolução e só então republica a fila, D-95)
-    listar_pendencias.py US-06 (GET /pendencias: filtros bloqueante, regra e status; D-86)
-    detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-85)
+    resolver_pendencia.py US-07 (POST /pendencias/{id}/resolver: confirma a resolução e só então republica a fila, D-91)
+    listar_pendencias.py US-06 (GET /pendencias: filtros bloqueante, regra e status; D-84)
+    detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-83)
     detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
@@ -92,7 +92,7 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
 - Transação: repositórios não confirmam; o caso de uso chama `UnidadeDeTrabalho.confirmar()/desfazer()` (carga + normalização entram juntas ou não entram).
 - Flags (US-03): `oncologico` pelo CID (nunca pela flag) e `piora_recalculada` pelos eventos; eventos recebem `duplicado_de`/`historico` (nunca são apagados). As flags originais ficam intactas e cada divergência vai para `correcoes_log` (PRE-05/06).
-- Inconsistências bloqueantes (US-04): cada achado vira pendência bloqueante; enquanto estiver aberta, a solicitação fica `suspensa` com `motivo_status` = PRE-xx e sai da fila. **Oncológico nunca é suspenso** (I-02): fica `ativa` com o alerta `saida_a_confirmar`. A pendência manda: resolvida por pessoa não suspende de novo, e achado que some reativa só a suspensão automática; `removida` nunca é tocada (D-84).
+- Inconsistências bloqueantes (US-04): cada achado vira pendência bloqueante; enquanto estiver aberta, a solicitação fica `suspensa` com `motivo_status` = PRE-xx e sai da fila. **Oncológico nunca é suspenso** (I-02): fica `ativa` com o alerta `saida_a_confirmar`. A pendência manda: resolvida por pessoa não suspende de novo, e achado que some reativa só a suspensão automática; `removida` nunca é tocada (D-82).
 - Inconsistências não bloqueantes (US-05): o paciente segue `ativa`; o achado vira alerta em `alertas` (PRE-10..15) e, em PRE-10..13, uma pendência aberta (`pendencias`, uma por solicitação e regra). Reprocessar não duplica, encerra a que deixou de valer e nunca reabre a que uma pessoa resolveu (D-51).
 - Regra nova de pré-processamento: função pura em `domain/preprocessing/` + teste em `tests/domain/`; coluna nova na tabela; log só para mudança de valor visível (D-18).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).

@@ -8,6 +8,7 @@ export type Resolucao = components["schemas"]["ResolucaoPendencia"]
 export type ResolverPendenciaIn = components["schemas"]["ResolverPendenciaIn"]
 export type ResultadoResolucao = components["schemas"]["ResolverPendenciaOut"]
 
+
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export class ErroApi extends Error {

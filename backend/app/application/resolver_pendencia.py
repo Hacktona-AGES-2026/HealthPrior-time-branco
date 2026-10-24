@@ -104,7 +104,7 @@ class ResolverPendencia:
         # 2) o que acontece com a solicitação
         if s is not None:
             if resolucao == R.CONFIRMAR_SAIDA:
-                s.status_fila, s.motivo_status = StatusFila.REMOVIDA, p.regra  # D-94: o motivo é a regra
+                s.status_fila, s.motivo_status = StatusFila.REMOVIDA, p.regra  # D-90: o motivo é a regra
             for sol in alteradas or [s]:
                 if sol.status_fila != StatusFila.REMOVIDA or resolucao == R.REATIVAR:
                     self._reavaliar(sol, resolucao)
@@ -120,7 +120,7 @@ class ResolverPendencia:
 
     def _fundir(self, p: Pendencia, s: Solicitacao | None, fundir_com: str | None
                 ) -> tuple[list[Solicitacao], list[Correcao]]:
-        """D-91: `fundir_com` permanece; a outra sai (`removida`), os eventos vão junto e a data mais antiga vale."""
+        """D-89: `fundir_com` permanece; a outra sai (`removida`), os eventos vão junto e a data mais antiga vale."""
         outras = [m.ref for m in p.evidencias if m.fonte == "solicitacao" and m.ref and m.ref != s.solicitacao_id]
         outra = self._solicitacoes.obter(outras[0]) if outras else None
         if outra is None:
@@ -145,7 +145,7 @@ class ResolverPendencia:
         return alteradas[1] if alteradas else s
 
     def _reavaliar(self, s: Solicitacao, resolucao: R) -> None:
-        """Mesma regra da detecção (D-84): quem manda é a pendência bloqueante que continua aberta."""
+        """Mesma regra da detecção (D-82): quem manda é a pendência bloqueante que continua aberta."""
         abertas = sorted(regra for sid, regra in self._pendencias.chaves_abertas(REGRAS_DE_SOLICITACAO)
                          if sid == s.solicitacao_id)
         suspensa_por_regra = s.status_fila == StatusFila.SUSPENSA and s.motivo_status in REGRAS_DE_SOLICITACAO
@@ -160,6 +160,6 @@ class ResolverPendencia:
     def _republicar(self) -> bool:
         try:
             return self._publicar.executar().publicada
-        except Exception:  # a resolução já foi confirmada: não esconder isso atrás de um 500 (D-95)
+        except Exception:  # a resolução já foi confirmada: não esconder isso atrás de um 500 (D-91)
             log.exception("Resolução confirmada, mas a fila não foi republicada")
             return False

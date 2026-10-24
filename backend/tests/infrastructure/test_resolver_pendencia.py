@@ -99,7 +99,7 @@ def test_confirmar_saida_remove_com_motivo_e_registra_quem_e_quando(session, res
 
     assert (r.status_fila.value, r.fila_publicada) == ("removida", True)
     s = solicitacao(session, "SOL-2024-00076")
-    assert (s.status_fila, s.motivo_status) == ("removida", "PRE-23")  # a regra é o motivo (D-94)
+    assert (s.status_fila, s.motivo_status) == ("removida", "PRE-23")  # a regra é o motivo (D-90)
     p = pendencia(session, "SOL-2024-00076", "PRE-23")
     assert (p.status, p.resolvido_por, p.resolucao) == ("resolvida", "adm-01", "confirmar_saida")
     assert p.observacao == "Confirmado por telefone: desistiu." and p.resolvido_em is not None

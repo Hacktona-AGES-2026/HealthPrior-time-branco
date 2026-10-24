@@ -1,5 +1,5 @@
 """US-01 · Carga inicial (C-02), seguida da normalização (US-02, D-20), das flags (US-03, D-32) e
-dos alertas/pendências não bloqueantes (US-05, D-52) e das bloqueantes, que suspendem (US-04, D-85).
+dos alertas/pendências não bloqueantes (US-05, D-52) e das bloqueantes, que suspendem (US-04, D-83).
 
 Lê o dataset e grava com os valores originais, sem alterar nada; os passos seguintes escrevem só
 em colunas novas, em alertas e em pendências. Tudo na mesma transação: ou entra tudo, ou nada. Não passa pelo regulador (D-01).

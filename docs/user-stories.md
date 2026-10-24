@@ -471,7 +471,7 @@ Erros:
 - `422 {"erro": "JUSTIFICATIVA_OBRIGATORIA", "mensagem": "…"}`
 - `404 {"erro": "SOLICITACAO_NAO_ENCONTRADA", "mensagem": "…"}`
 - `422 {"erro": "DECISAO_INVALIDA", "mensagem": "…"}`: `editar` sem classe nem score, ou score inválido
-- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-98); `editar` e `manter` valem para qualquer solicitação
+- `409 {"erro": "SEM_PROPOSTA", "mensagem": "…"}`: `aprovar` só vale para o que o Inbox mostra hoje (D-94); `editar` e `manter` valem para qualquer solicitação
 
 ### 5.5 `POST /eventos`
 Request:
@@ -524,7 +524,7 @@ Erros: `404 SOLICITACAO_NAO_ENCONTRADA` (vira pendência de evento órfão quand
 
 - `status_fila` é o da solicitação da pendência depois de resolver, ou `null` quando não há solicitação (PRE-24, evento órfão).
 - `fila_publicada = false`: a resolução valeu, mas o verificador reprovou (ou a publicação falhou) e a fila anterior segue publicada (I-07).
-- `observacao` é obrigatória em `confirmar_saida`. Cada regra aceita só algumas resoluções (D-89); `fundir_com` é a solicitação que permanece (padrão: a mais antiga das duas duplicadas).
+- `observacao` é obrigatória em `confirmar_saida`. Cada regra aceita só algumas resoluções (D-87); `fundir_com` é a solicitação que permanece (padrão: a mais antiga das duas duplicadas).
 - Erros: `404 PENDENCIA_NAO_ENCONTRADA`, `409 PENDENCIA_JA_RESOLVIDA`, `422 RESOLUCAO_INVALIDA`, `422 OBSERVACAO_OBRIGATORIA`.
 - Depois de resolvida, a pendência traz `resolvido_por`, `resolvido_em`, `resolucao` e `observacao` em `GET /pendencias?status=resolvida|descartada` (`null` enquanto aberta).
 

@@ -58,7 +58,7 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
     )
   }
 
-  // API: só se aprova o que está no inbox (D-98)
+  // API: só se aprova o que está no inbox (D-94)
   const semProposta = daApi(paciente) && !paciente.divergencia
 
   if (rejeitando) {

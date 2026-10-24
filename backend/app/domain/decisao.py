@@ -1,7 +1,7 @@
 """US-13/14 · Regras da decisão do regulador (C-09, C-10). Funções puras.
 
-- aprovar: confirma a classe sugerida pelo SWALIS; só vale para o que o inbox mostraria (D-98) e
-  desfaz o override anterior, de forma explícita: o log diz o que foi removido (D-100).
+- aprovar: confirma a classe sugerida pelo SWALIS; só vale para o que o inbox mostraria (D-94) e
+  desfaz o override anterior, de forma explícita: o log diz o que foi removido (D-95).
 - editar: override de classe e/ou score; motivo + justificativa obrigatórios.
 - manter: recusa a sugestão e fixa a classe atual; motivo + justificativa obrigatórios.
 Edita classe/score, nunca posição (D-03).
@@ -44,7 +44,7 @@ def validar_decisao(solicitacao: Solicitacao, acao: AcaoDecisao, classe: Classe 
 
 
 def validar_proposta(solicitacao: Solicitacao, sugerida: Classe) -> None:
-    """Só se aprova o que o inbox mostraria: solicitação ativa e classe sugerida que merece decisão (D-64, D-98)."""
+    """Só se aprova o que o inbox mostraria: solicitação ativa e classe sugerida que merece decisão (D-64, D-94)."""
     s = solicitacao
     if s.status_fila != StatusFila.ATIVA or not entra_no_inbox(
             sugerida, s.classe_status, s.classe_confirmada, s.prioridade_norm, s.classe_vigente):
@@ -54,7 +54,7 @@ def validar_proposta(solicitacao: Solicitacao, sugerida: Classe) -> None:
 
 
 def override_removido(s: Solicitacao) -> str | None:
-    """Texto para o log, se aprovar vai remover um override do regulador (`classe_medico`, D-100)."""
+    """Texto para o log, se aprovar vai remover um override do regulador (`classe_medico`, D-95)."""
     if s.classe_medico is None and s.score_medico is None and not s.editado_manualmente:
         return None
     partes = []
@@ -92,7 +92,7 @@ def aplicar_decisao(solicitacao: Solicitacao, acao: AcaoDecisao, classe_sugerida
     # Vale para a classe final (inclusive manter/editar só score), antes de mexer no estado.
     if decidida in CLASSES_PROIBIDAS_ONCOLOGICO and is_oncologico(s.cid_principal):
         raise OncologicoRebaixadoError()
-    if acao == AcaoDecisao.APROVAR:  # D-100: o override sai inteiro (o log guarda o que era)
+    if acao == AcaoDecisao.APROVAR:  # D-95: o override sai inteiro (o log guarda o que era)
         s.classe_medico, s.score_medico = None, None
         s.editado_manualmente = False
         s.editado_por, s.editado_em = None, None

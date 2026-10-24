@@ -190,7 +190,7 @@ def test_editar_vale_fora_do_inbox(api, session):
     r = api.post("/decisoes", json={"solicitacao_id": fora, "regulador_id": "reg-01", "acao": "editar",
                                     "classe": "B", "motivo_codificado": "outro", "justificativa": "teste"})
 
-    assert r.status_code == 200 and r.json()["decisao_id"] == "DEC-0001"  # só aprovar exige proposta (D-98)
+    assert r.status_code == 200 and r.json()["decisao_id"] == "DEC-0001"  # só aprovar exige proposta (D-94)
 
 
 def test_regulador_e_obrigatorio(api):
@@ -220,7 +220,7 @@ def test_aprovar_remove_o_override_e_o_paciente_sobe(api, session):
     assert r.json()["posicao_nova"] < antes  # sem o override D, vale a classe A2 do SWALIS
 
 
-# --- a decisão vale mesmo se a fila não for republicada (I-07, D-101) ---
+# --- a decisão vale mesmo se a fila não for republicada (I-07, D-96) ---
 
 def test_verificador_reprova_a_decisao_fica_e_a_posicao_nao_muda(api, session, monkeypatch):
     anterior = SqlFilaRepository(session).obter_publicada()
