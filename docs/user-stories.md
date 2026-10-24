@@ -156,6 +156,8 @@ Como **equipe**, quero que a fila só seja publicada se passar no verificador of
 - **Depende de:** US-09
 
 #### US-11 · Exclusões no `DECISOES.md` — **P0** · Back
+> **Status: ✅ implementado** (branch `feat/US-11-exclusoes-decisoes`): `python -m app.cli decisoes [--gravar]`; 41 de 941 fora da fila, conferindo com o verificador (D-94, D-95).
+
 Como **equipe**, quero listar no `DECISOES.md` quem ficou fora da fila e por quê, como o desafio pede.
 - **CA**
   - Comando gera a tabela "Solicitações fora da fila" agrupada por motivo (regra PRE-xx), com contagem e IDs.

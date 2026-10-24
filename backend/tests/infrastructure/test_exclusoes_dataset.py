@@ -2,17 +2,35 @@
 from __future__ import annotations
 
 import re
+from datetime import datetime, timezone
 
 import pytest
 from sqlmodel import text
 
 from app import cli
+from app.application.gerar_fila import GerarFila
 from app.application.listar_exclusoes import ListarExclusoes
-from app.infrastructure.repositories import SqlFilaRepository, SqlSolicitacaoRepository
-from tests.infrastructure.test_aprovar_proposta import publicar
+from app.application.publicar_fila import PublicarFila
+from app.config import settings
+from app.infrastructure.exportador import ExportadorCsv
+from app.infrastructure.repositories import (
+    SqlEventoRepository,
+    SqlFilaRepository,
+    SqlSolicitacaoRepository,
+    SqlUnidadeDeTrabalho,
+)
+from app.infrastructure.swalis_regras import criar_swalis
+from app.infrastructure.verificador import VerificadorOficial
 from tests.infrastructure.test_resolver_pendencia import carregar
 
 DOC = "# Decisões\n\n## Solicitações fora da fila\n\n> rascunho\n\n## Premissas\n\n- dados sintéticos\n"
+
+
+def publicar(session, tmp_path):
+    gerar = GerarFila(SqlSolicitacaoRepository(session), SqlEventoRepository(session), criar_swalis(),
+                      ExportadorCsv(), settings.ref_date)
+    return PublicarFila(gerar, VerificadorOficial(), SqlFilaRepository(session), SqlUnidadeDeTrabalho(session),
+                        lambda: datetime(2026, 10, 24, tzinfo=timezone.utc), tmp_path).executar()
 
 
 def exclusoes(session) -> ListarExclusoes:
