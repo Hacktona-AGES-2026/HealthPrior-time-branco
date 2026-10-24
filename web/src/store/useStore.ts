@@ -3,12 +3,11 @@ import { toast } from "sonner"
 import { ORIGEM_DADOS, PACIENTES, PACIENTE_POR_ID, carregarFila } from "@/data/fila"
 import type { Classe } from "@/data/tipos"
 import { ErroApi, decidir, type MotivoCodificado } from "@/lib/api"
+import { reguladorAtual } from "@/lib/usuario"
 import { FILTROS_VAZIOS, aplicarFiltros, type Decisao, type Filtros, type Pagina } from "@/lib/filtros"
 
 type Zoom = [number, number] | null
 
-// Sem login no hackathon: o seletor de persona (US-23) ainda não existe.
-export const REGULADOR_ID = "REG-DEMO"
 
 /** Decisões já gravadas na API (classe confirmada) viram o status do card. */
 export const decisoesDaApi = (): Record<string, Decisao> =>
@@ -82,7 +81,7 @@ export const useStore = create<Estado>((set, get) => {
   const enviarDecisao = async (id: string, corpo: Omit<Parameters<typeof decidir>[0], "solicitacao_id" | "regulador_id">, titulo: string) => {
     set({ enviando: true })
     try {
-      const r = await decidir({ solicitacao_id: id, regulador_id: REGULADOR_ID, ...corpo })
+      const r = await decidir({ solicitacao_id: id, regulador_id: reguladorAtual(), ...corpo })
       await get().recarregar()
       const mov = r.posicao_anterior != null && r.posicao_nova != null ? `posição ${r.posicao_anterior} → ${r.posicao_nova}` : ""
       toast.success(titulo, {
