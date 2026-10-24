@@ -1,28 +1,33 @@
-from typing import Dict
-
+"""Ponto de entrada da API. Rode: uvicorn app.main:app --reload (dentro de backend/)."""
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-from app import config
-from app.db import get_engine
-from app.loader import CargaError, carga
-
-app = FastAPI(title="HealthPrior", version="0.1.0")
+from app.api.errors import registrar_handlers
+from app.api.routers import admin, decisoes, eventos, fila, inbox, pendencias, solicitacoes
+from app.config import settings
 
 
-class TableResultOut(BaseModel):
-    lido: int
-    inseridos: int
-    atualizados: int
+def create_app() -> FastAPI:
+    app = FastAPI(
+        title="HealthPrior API",
+        version="0.1.0",
+        description="Priorização auditável da fila cirúrgica. Contrato: docs/user-stories.md §5.",
+    )
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    registrar_handlers(app)
+    for r in (fila, solicitacoes, inbox, decisoes, eventos, pendencias, admin):
+        app.include_router(r.router)
+
+    @app.get("/health", tags=["infra"])
+    def health():
+        return {"status": "ok", "mocks": settings.use_mocks, "ref_date": settings.ref_date}
+
+    return app
 
 
-@app.exception_handler(CargaError)
-def carga_error_handler(_, exc: CargaError) -> JSONResponse:
-    return JSONResponse(status_code=422, content={"erro": "CARGA_INVALIDA", "mensagem": str(exc)})
-
-
-@app.post("/admin/carga", response_model=Dict[str, TableResultOut])
-def post_carga():
-    """Carga inicial (US-01). Idempotente: repetir não duplica registros."""
-    return carga(get_engine(), config.DATA_DIR)
+app = create_app()

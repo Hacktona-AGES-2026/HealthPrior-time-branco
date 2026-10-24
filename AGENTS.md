@@ -9,7 +9,7 @@ Priorização inteligente da fila de cirurgias eletivas (Desafio 1 · Fin-X · P
 Entrada: dataset sintético (data de referência **23/10/2026**). Saída obrigatória: `fila_priorizada.csv`
 (`solicitacao_id`, `posicao`, `justificativa`), validada por `src/verificar_fila_priorizada.py`.
 
-**Fonte de verdade do comportamento:** `docs/fluxo-sistema.md`. **O que construir:** `docs/user-stories.md` (US-xx, prioridades P0/P1/P2, divisão back × front e contrato da API). Leia as seções 9 (invariantes), 10 (decisões) e 11 (questões abertas) antes de codar.
+**Fonte de verdade do comportamento:** `docs/fluxo-sistema.md`. **O que construir:** `docs/user-stories.md` (US-xx, prioridades P0/P1/P2, divisão back × front e contrato da API). **Como o backend é organizado:** `docs/arquitetura-backend.md` (camadas, regra de dependência, receitas). Leia as seções 9 (invariantes), 10 (decisões) e 11 (questões abertas) antes de codar.
 
 ## Prazos
 
@@ -43,12 +43,14 @@ src/
   score_mortalidade.py           score de comorbidade (Charlson/Elixhauser) — contexto, não ordena a fila
 docs/
   fluxo-sistema.md         fluxo do sistema, componentes C-xx, invariantes I-xx, decisões D-xx
+  user-stories.md          histórias US-xx, divisão back × front, contrato da API
+  arquitetura-backend.md   Clean Architecture do backend: camadas, dependências, receitas
   dataset-readme.md        README original do dataset (enunciado, entregável)
   dicionario_dados.md      descrição das colunas
   templates/               modelos (ex.: AGENTS.md de módulo)
   (swalis.md)              a criar: regras internas do SWALIS
 DECISOES.md                decisões e exclusões (entregável)
-backend/                   a criar — tem seu próprio AGENTS.md
+backend/                   API FastAPI + pipeline (Clean Architecture) — ver backend/AGENTS.md
 frontend/                  a criar — tem seu próprio AGENTS.md
 .claude/                   skills e subagentes do Claude Code
 ```
@@ -57,7 +59,7 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 
 ## Stack e comandos
 
-- **Back:** Python + **FastAPI** + **PostgreSQL 16** (Docker, SQLAlchemy 2) + pandas no pipeline. Pasta `backend/` (ver `backend/AGENTS.md`).
+- **Back:** Python + **FastAPI** + **PostgreSQL 16** (Docker, SQLModel/SQLAlchemy 2) + pandas no pipeline. Pasta `backend/` (ver `backend/AGENTS.md`).
 - **Front:** **React** (Vite + TypeScript). Pasta `frontend/`. Tipos da API gerados do OpenAPI do FastAPI.
 - **Fronteira:** o back é dono de toda regra de negócio; o front só exibe e coleta decisões (ver `docs/user-stories.md` §1 e §5). Sem login: seletor de persona no front.
 
@@ -70,8 +72,8 @@ Ao criar uma pasta de módulo (`backend/`, `frontend/`, `pipeline/`…), crie ju
 | Instalar deps (Python) | `pip install -r requirements.txt` |
 | Subir o Postgres | `docker compose up -d --wait` |
 | Carga inicial | `cd backend && python -m app.cli carga` |
-| Testes do backend | `cd backend && python -m pytest` |
-| Rodar backend | `cd backend && uvicorn app.main:app --reload` |
+| Testes (back) | `cd backend && pytest -q` |
+| Rodar backend | `cd backend && uvicorn app.main:app --reload` (docs em `/docs`) |
 | Rodar frontend | _a definir_ |
 
 Dependência mínima de dados: `pandas` (o verificador usa).
@@ -80,7 +82,7 @@ Dependência mínima de dados: `pandas` (o verificador usa).
 
 1. **Entenda a tarefa**: ache a história (`US-xx`) em `docs/user-stories.md` e o componente (`C-xx`) em `docs/fluxo-sistema.md`. Se não houver, pergunte antes de inventar.
 2. **Planeje em poucas linhas** (o que muda, quais arquivos). Para mudanças grandes, mostre o plano antes de codar.
-3. **Implemente o mínimo** que resolve. Sem abstrações "para o futuro".
+3. **Implemente o mínimo** que resolve, **na camada certa** (`docs/arquitetura-backend.md` §6). Sem abstrações "para o futuro".
 4. **Teste com dados reais** do dataset. Os exemplos da §7 do fluxo (ex.: SOL-2023-00010, SOL-2025-00149, PAC-00151) são casos de teste prontos.
 5. **Se mexeu na ordenação**, rode o verificador. Falhou = não terminou.
 6. **Se tomou uma decisão** que não estava documentada, registre em `DECISOES.md` (skill `/registrar-decisao` no Claude Code).
@@ -88,7 +90,7 @@ Dependência mínima de dados: `pandas` (o verificador usa).
 
 ## Convenções
 
-- Idioma: código em **inglês** (nomes de variáveis/funções), comentários, docs e mensagens de commit em **português**. Nomes de colunas do dataset ficam como estão.
+- Idioma: **nomes do domínio em português** (termos do dataset e do fluxo: `solicitacao`, `camada`, `pendencia`); termos técnicos genéricos podem ficar em inglês. Comentários, docs e mensagens de commit em português. Nomes de colunas do dataset ficam como estão.
 - Commits: `tipo(escopo): descrição`, ex. `feat(C-05): normaliza CID sem ponto`, `fix(C-11): oncológico abaixo de não urgente`. Tipos: `feat`, `fix`, `docs`, `test`, `chore`, `refactor`.
 - Branches curtas: `feat/<nome>`; PR pequeno e rápido. `main` sempre com fila válida.
 - Datas sempre relativas a `REF = 2026-10-23`, nunca `today()`.

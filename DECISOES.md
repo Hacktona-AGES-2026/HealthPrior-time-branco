@@ -17,12 +17,13 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-08 | 2026-10-24 | Aprendizado propõe regras; comitê aprova; versões | Controle humano | Retreino automático | C-14 |
 | D-09 | 2026-10-24 | SWALIS interno documentado à parte | Separação de responsabilidades | — | C-07 |
 | D-10 | 2026-10-24 | Duplicatas fundidas mantendo a data de entrada mais antiga | Favorece o paciente | Manter a mais recente | C-05 |
-| D-11 | 2026-10-24 | Stack: FastAPI + pandas no back; React (Vite + TS) no front (banco: ver D-14) | Conhecimento do time; rapidez | — | todos |
+| D-11 | 2026-10-24 | Stack: FastAPI + pandas no back; React (Vite + TS) no front (banco: ver D-15) | Conhecimento do time; rapidez | — | todos |
 | D-12 | 2026-10-24 | Sem login: seletor de persona e de usuário fixo no front | Hackathon; o log ainda registra autores distintos | Autenticação real | US-23 |
 | D-13 | 2026-10-24 | API é a fronteira back × front; back sobe mocks com o contrato final primeiro | Trabalho em paralelo sem retrabalho | Front esperar o back | US-01..US-23 |
-| D-14 | 2026-10-24 | Banco: PostgreSQL 16 (Docker) com SQLAlchemy 2, no lugar do SQLite | Banco de verdade para o pitch; concorrência (API + CLI) sem travar arquivo; upsert nativo para a carga idempotente | SQLite (simples, mas limitado para a demo); DuckDB (analítico, escrita de um processo só) | US-01 |
-| D-15 | 2026-10-24 | Sem migrations (Alembic): tabelas criadas com `create_all`; mudança de schema = `docker compose down -v` e recarga | Hackathon; dados são reproduzíveis a partir dos CSVs | Alembic | US-01 |
-| D-16 | 2026-10-24 | `eventos.solicitacao_id` sem chave estrangeira | Eventos órfãos existem no dataset e nada é apagado (I-03); a US-04 os sinaliza | FK (rejeitaria os órfãos na carga) | US-01 |
+| D-14 | 2026-10-24 | Backend em Clean Architecture enxuta (domain / application / infrastructure / api), com teste que protege a regra de dependência | Separar regra clínica de detalhe técnico; trocar SWALIS stub pelo real sem mexer no resto | Rotas com regra de negócio direto no banco | backend |
+| D-15 | 2026-10-24 | Banco: PostgreSQL 16 (Docker) com SQLModel/SQLAlchemy 2, no lugar do SQLite | Banco de verdade para o pitch; concorrência (API + CLI) sem travar arquivo; upsert nativo para a carga idempotente | SQLite (simples, mas limitado para a demo); DuckDB (analítico, escrita de um processo só) | US-01 |
+| D-16 | 2026-10-24 | Sem migrations (Alembic): tabelas criadas com `create_all`; mudança de schema = `docker compose down -v` e recarga | Hackathon; dados são reproduzíveis a partir dos CSVs | Alembic | US-01 |
+| D-17 | 2026-10-24 | `eventos.solicitacao_id` sem chave estrangeira | Eventos órfãos existem no dataset e nada é apagado (I-03); a US-04 os sinaliza | FK (rejeitaria os órfãos na carga) | US-01 |
 
 ## Solicitações fora da fila
 
