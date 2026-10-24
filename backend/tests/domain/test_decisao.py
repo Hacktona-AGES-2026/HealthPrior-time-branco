@@ -1,10 +1,16 @@
+"""US-13/14: decisão do regulador (regras puras, sem banco)."""
 from datetime import date, datetime, timezone
 
 import pytest
 
-from app.domain.decisao import aplicar_decisao, validar_decisao
-from app.domain.enums import AcaoDecisao, Classe, ClasseStatus, MotivoCodificado
-from app.domain.errors import DecisaoInvalidaError, JustificativaObrigatoriaError, OncologicoRebaixadoError
+from app.domain.decisao import aplicar_decisao, override_removido, validar_decisao, validar_proposta
+from app.domain.enums import AcaoDecisao, Classe, ClasseStatus, MotivoCodificado, StatusFila
+from app.domain.errors import (
+    DecisaoInvalidaError,
+    JustificativaObrigatoriaError,
+    OncologicoRebaixadoError,
+    SemPropostaError,
+)
 from app.domain.models import Solicitacao
 
 AGORA = datetime(2026, 10, 24, 10, 0, tzinfo=timezone.utc)
@@ -93,3 +99,62 @@ def test_decisao_descongela_classe_vigente():
     s = _sol(classe_vigente=Classe.C)
     aplicar_decisao(s, AcaoDecisao.APROVAR, Classe.A2, None, None, None, "R", AGORA)
     assert s.classe_vigente is None and s.classe_confirmada is Classe.A2
+
+
+# --- aprovar só o que o inbox mostraria (D-94) ---
+
+def test_nunca_confirmada_diverge_dois_niveis_tem_proposta():
+    validar_proposta(_sol(prioridade="baixa"), Classe.B)  # implícita D, sugerida B: 2 níveis
+
+
+def test_nunca_confirmada_diverge_so_um_nivel_nao_tem_proposta():
+    with pytest.raises(SemPropostaError) as erro:
+        validar_proposta(_sol(prioridade="baixa"), Classe.C)  # D -> C: 1 nível
+
+    assert erro.value.codigo == "SEM_PROPOSTA" and erro.value.status_http == 409
+
+
+def test_confirmada_na_mesma_classe_nao_tem_proposta():
+    with pytest.raises(SemPropostaError):
+        validar_proposta(_sol(classe_status=ClasseStatus.CONFIRMADA, classe_confirmada=Classe.B), Classe.B)
+
+
+def test_confirmada_com_classe_diferente_tem_proposta():
+    validar_proposta(_sol(classe_status=ClasseStatus.CONFIRMADA, classe_confirmada=Classe.C), Classe.B)
+
+
+def test_classe_congelada_por_evento_tem_proposta_com_um_nivel():
+    validar_proposta(_sol(prioridade="media", classe_vigente=Classe.C), Classe.B)  # US-15 (D-75)
+
+
+@pytest.mark.parametrize("status", [StatusFila.SUSPENSA, StatusFila.REMOVIDA])
+def test_solicitacao_fora_da_fila_nao_tem_proposta(status):
+    with pytest.raises(SemPropostaError):
+        validar_proposta(_sol(status_fila=status), Classe.A1)
+
+
+# --- aprovar remove o override e o log diz o que saiu (D-95) ---
+
+def test_aprovar_remove_o_override_inteiro_e_o_texto_do_log_diz_qual_era():
+    s = _sol(classe_medico=Classe.C, score_medico=12.5, editado_manualmente=True,
+             editado_por="reg-02", editado_em=datetime(2026, 10, 12, 9, 0, tzinfo=timezone.utc))
+
+    texto = override_removido(s)
+    aplicar_decisao(s, AcaoDecisao.APROVAR, Classe.B, None, None, None, "reg-01", AGORA)
+
+    assert texto == "Override anterior removido (classe C, score 12.5; editado por reg-02 em 12/10/2026)."
+    assert (s.classe_medico, s.score_medico, s.editado_manualmente, s.editado_por, s.editado_em) == (
+        None, None, False, None, None)
+
+
+def test_sem_override_o_log_nao_diz_nada():
+    assert override_removido(_sol()) is None
+
+
+def test_aprovar_nao_toca_na_posicao_nem_nos_dados_originais():
+    s = _sol(observacoes="x", justificativa_clinica="y")
+
+    aplicar_decisao(s, AcaoDecisao.APROVAR, Classe.A2, None, None, None, "reg-01", AGORA)
+
+    assert (s.observacoes, s.justificativa_clinica, s.prioridade_regulacao) == ("x", "y", None)
+    assert s.status_fila == StatusFila.ATIVA
