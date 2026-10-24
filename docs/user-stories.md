@@ -257,6 +257,8 @@ Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto 
 ### E7 · Visualização e navegação
 
 #### US-20 · Ver a fila priorizada — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-20-fila-api`): `GET /fila` real a partir da fila publicada. Registro: `docs/implementacao/US-20-fila-api.md` (D-56..D-58). Tela do front pendente.
+
 Como **regulador ou gestor**, quero ver a fila ordenada com camada, classe, % do prazo, dias de espera, flag de edição manual e alertas.
 - **CA**
   - Paginação; filtros por camada, procedimento, especialidade; busca por `solicitacao_id`.
@@ -275,6 +277,8 @@ Como **regulador**, quero abrir um paciente e ver a explicação da posição de
 - **Depende de:** US-08
 
 #### US-22 · Antes × depois — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-22-antes-depois`): `GET /metricas/comparacao`. "Antes": 177 violações, mediana dos oncológicos 287. Registro: `docs/implementacao/US-22-antes-depois.md` (D-59..D-62). Tela do front pendente.
+
 Como **apresentador**, quero comparar a fila atual (prioridade manual + data) com a proposta.
 - **CA**
   - Métricas: violações da regra de ouro (hoje 177 → 0), posição mediana dos oncológicos, % PS/internação recente na 1ª metade, % sem urgência no último terço.

@@ -96,8 +96,8 @@ class ItemFilaOut(BaseModel):
 
 
 class FilaOut(BaseModel):
-    versao_regras: str
-    gerada_em: datetime
+    versao_regras: Optional[str] = None
+    gerada_em: Optional[datetime] = None
     publicada: bool
     total: int
     itens: list[ItemFilaOut]
@@ -277,3 +277,27 @@ class ResolverPendenciaIn(BaseModel):
 class ResolverPendenciaOut(BaseModel):
     status_fila: StatusFila
     fila_publicada: bool
+
+
+# US-22
+class IndicadoresOut(BaseModel):
+    total: int
+    violacoes_regra_ouro: int
+    posicao_mediana_oncologicos: Optional[float] = None
+    pct_oncologicos_primeiro_terco: float
+    pct_ps_recente_primeira_metade: float
+    pct_sem_urgencia_ultimo_terco: float
+
+
+class DestaqueOut(BaseModel):
+    solicitacao_id: str
+    posicao_antes: Optional[int] = None
+    posicao_depois: Optional[int] = None
+    camada_depois: Optional[int] = None
+
+
+class ComparacaoOut(BaseModel):
+    antes: IndicadoresOut
+    depois: Optional[IndicadoresOut] = None
+    publicada: bool
+    destaques: list[DestaqueOut]

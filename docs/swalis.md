@@ -25,7 +25,7 @@ regras), `domain/texto.py` (frases e negação), `infrastructure/swalis_regras.p
 - **O Jev só sobe, nunca baixa:** como o eixo é o máximo, sem o Jev a classe é a das regras; com ele,
   só pode ficar igual ou maior.
 - **Quem decide é a tabela** e a classe continua `sugerida_nao_confirmada` até o regulador (I-04, I-05).
-  Leitura da I-05 adotada (D-53): o Jev aponta e cita; "nunca decide classe sozinho" vale porque a
+  Leitura da I-05 adotada (D-63): o Jev aponta e cita; "nunca decide classe sozinho" vale porque a
   classe sai da tabela **e** só vale depois de o regulador confirmar. Por isso a UI deve mostrar a origem
   ("Jev p=…") ao lado de cada ponto.
 - Sem chave e sem cache, roda só com campos + palavra-chave (o comportamento anterior).
