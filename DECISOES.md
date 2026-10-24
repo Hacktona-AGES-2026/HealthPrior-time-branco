@@ -74,6 +74,7 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-68 | 2026-10-24 | Detalhe do paciente: posição/camada da fila publicada; score e motivos do SWALIS calculados na leitura | Tela bate com a fila entregue e mostra a evidência atual | Persistir score | US-21 |
 | D-69 | 2026-10-24 | Explicação em 2–4 frases montada por função pura do domínio | Testável e igual em qualquer tela (explicabilidade) | Texto montado no front | US-21 |
 | D-70 | 2026-10-24 | Com `classe_medico`, prazo e % do prazo recalculados pela classe decidida | Detalhe e fila mostram o mesmo número | Usar sempre a classe do SWALIS | US-21 |
+| D-75 | 2026-10-24 | Atualização diária (`POST /admin/atualizacao-diaria`) = relógio simulado: avança a data de referência +1 dia (ou `?data=`) e republica como o `publicar-fila` (trava + verificador, I-07). A data fica em `fila_publicada.data_referencia` (≠ `publicada_em`, que é o relógio real) e é a fonte única da API: `GerarFila`, SWALIS e detalhe usam a mesma. `dias_em_fila`/% do prazo são recalculados da data, nunca `+1` gravado. Data anterior a 23/10 → 422. Com data simulada, os arquivos vão para `output/simulada/`. CLI, carga, inconsistências, comparação antes × depois (definição do verificador, REF fixa) e entregável ficam em 23/10 | Idempotente e reproduzível (mesma data = mesma fila); o entregável nunca é sobrescrito pela demo; fila e detalhe mostram o mesmo número | Somar +1 em `dias_em_fila` no banco; deduzir a data de `data_entrada_fila + dias_em_fila`; mudar `HP_REF_DATE` | US-16 / C-13 |
 
 ## Solicitações fora da fila
 
