@@ -34,7 +34,7 @@ ALERTA_SAIDA_A_CONFIRMAR = "saida_a_confirmar"
 
 REGRAS_NAO_BLOQUEANTES = (PRE_CONTATO_PERDIDO, PRE_SEM_TELEFONE, PRE_CANCER_ESCONDIDO,
                           PRE_DIABETES_FORA_DO_CADASTRO, PRE_JUSTIFICATIVA_VAZIA, PRE_CAMPO_VAZIO)
-# D-46: PRE-14 e PRE-15 só alertam; PRE-10..13 também abrem pendência (não bloqueante).
+# D-49: PRE-14 e PRE-15 só alertam; PRE-10..13 também abrem pendência (não bloqueante).
 REGRAS_COM_PENDENCIA = REGRAS_NAO_BLOQUEANTES[:4]
 
 # Alerta que cada regra põe em `Solicitacao.alertas` (aparece na fila, GET /fila).
@@ -48,9 +48,9 @@ ALERTA_POR_REGRA = {
 }
 ALERTAS_NAO_BLOQUEANTES = frozenset(ALERTA_POR_REGRA.values())
 
-MIN_TENTATIVAS_SEM_RESPOSTA = 2   # PRE-10 (D-44)
-HBA1C_DIABETES = 6.5              # PRE-13 (D-45): critério diagnóstico de diabetes, em %
-MAX_CARACTERES_GENERICA = 60      # PRE-14 (D-46)
+MIN_TENTATIVAS_SEM_RESPOSTA = 2   # PRE-10 (D-47)
+HBA1C_DIABETES = 6.5              # PRE-13 (D-48): critério diagnóstico de diabetes, em %
+MAX_CARACTERES_GENERICA = 60      # PRE-14 (D-49)
 
 _RE_NUMERO_INEXISTENTE = re.compile(r"numero nao existe")
 _RE_SEM_TELEFONE = re.compile(r"\bacs\b|nao possui telefone|sem telefone")
@@ -61,7 +61,7 @@ _RE_JUSTIFICATIVA_GENERICA = re.compile(
 )
 _CAMPOS_DE_COMPLETUDE = ("prioridade_regulacao", "intensidade_dor_eva", "asa", "distancia_hospital_km")
 
-# PRE-21/22/23: o que cada fonte diz sobre a saída do paciente (D-50).
+# PRE-21/22/23: o que cada fonte diz sobre a saída do paciente (D-53).
 _SAIDA_NA_OBSERVACAO = (
     ("operou_fora", PRE_OPEROU_FORA, re.compile(r"outro servico|operou em outro|operou fora")),
     ("operou_convenio", PRE_OPEROU_CONVENIO, re.compile(r"operou pelo convenio|cirurgia pelo convenio")),
@@ -109,7 +109,7 @@ def detectar_eventos_orfaos(eventos: list[Evento], solicitacoes_existentes: set[
 
 
 def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
-    """PRE-20 (D-10, D-51): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
+    """PRE-20 (D-10, D-54): mesmo paciente e procedimento. Só a mais recente é o achado; a mais antiga fica
     com a data de entrada que já tem (a fusão dos eventos é da resolução, US-07)."""
     anteriores = [o for o in outras
                   if o.solicitacao_id != s.solicitacao_id and o.paciente_id == s.paciente_id
@@ -129,7 +129,7 @@ def _duplicata(s: Solicitacao, outras: list[Solicitacao]) -> Achado | None:
 
 
 def _saida_da_fila(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-21/22/23 (D-50): a observação ou o call center diz que o paciente saiu. Se as fontes dizem
+    """PRE-21/22/23 (D-53): a observação ou o call center diz que o paciente saiu. Se as fontes dizem
     coisas diferentes (ou uma só diz duas), é PRE-25, com as duas evidências lado a lado."""
     sinais: list[tuple[str, Motivo]] = []
     observacao = _chave(s.observacoes)
@@ -170,7 +170,7 @@ def detectar_nao_bloqueantes(solicitacao: Solicitacao, eventos: list[Evento]) ->
 
 
 def _contato_perdido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-10 (D-44): 2 ou mais tentativas sem resposta, ou o número não existe. Não pune."""
+    """PRE-10 (D-47): 2 ou mais tentativas sem resposta, ou o número não existe. Não pune."""
     tentativas = [e for e in _validos(eventos)
                   if e.tipo_evento == "contato_telefonico" and e.resultado == "nao_atendeu"]
     numero_inexistente = bool(_RE_NUMERO_INEXISTENTE.search(_chave(s.observacoes)))
@@ -185,7 +185,7 @@ def _contato_perdido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
 
 
 def _sem_telefone(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-11 (D-44): sem telefone ou contato só via ACS, dito nas observações."""
+    """PRE-11 (D-47): sem telefone ou contato só via ACS, dito nas observações."""
     if not _RE_SEM_TELEFONE.search(_chave(s.observacoes)):
         return None
     return Achado(PRE_SEM_TELEFONE, False, "Contato via ACS",
@@ -194,7 +194,7 @@ def _sem_telefone(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
 
 
 def _cancer_escondido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-12 (D-44): biópsia positiva e CID não oncológico. A classe segue o fluxo de eventos."""
+    """PRE-12 (D-47): biópsia positiva e CID não oncológico. A classe segue o fluxo de eventos."""
     if is_oncologico(s.cid_principal):
         return None
     biopsias = [e for e in eventos
@@ -209,7 +209,7 @@ def _cancer_escondido(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
 
 
 def _diabetes_fora_do_cadastro(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-13 (D-45): sinal de diabetes (texto explícito ou HbA1c >= 6,5%) sem o cadastro. Sem efeito na prioridade."""
+    """PRE-13 (D-48): sinal de diabetes (texto explícito ou HbA1c >= 6,5%) sem o cadastro. Sem efeito na prioridade."""
     if s.flag_diabetico == "sim" or _RE_DIABETES_NO_CADASTRO.search(_chave(s.comorbidades)):
         return None
     evidencias: list[Motivo] = []
@@ -227,7 +227,7 @@ def _diabetes_fora_do_cadastro(s: Solicitacao, eventos: list[Evento]) -> Achado 
 
 
 def _justificativa_sem_conteudo(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-14 (D-46): frase genérica e curta, sem dado clínico para classificar."""
+    """PRE-14 (D-49): frase genérica e curta, sem dado clínico para classificar."""
     texto = (s.justificativa_clinica or "").strip()
     vazia = not texto
     generica = bool(_RE_JUSTIFICATIVA_GENERICA.match(_chave(texto))) and len(texto) < MAX_CARACTERES_GENERICA
@@ -239,7 +239,7 @@ def _justificativa_sem_conteudo(s: Solicitacao, eventos: list[Evento]) -> Achado
 
 
 def _campos_vazios(s: Solicitacao, eventos: list[Evento]) -> Achado | None:
-    """PRE-15 (D-46): campo que o SWALIS usa e veio vazio. O SWALIS segue com o que existe."""
+    """PRE-15 (D-49): campo que o SWALIS usa e veio vazio. O SWALIS segue com o que existe."""
     vazios = [c for c in _CAMPOS_DE_COMPLETUDE
               if getattr(s, c) is None or (isinstance(getattr(s, c), str) and not getattr(s, c).strip())]
     if not vazios:

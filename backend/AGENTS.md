@@ -20,10 +20,11 @@ python -m app.cli bloqueantes          # US-04: recalcula achados bloqueantes e 
 python -m app.cli inconsistencias      # US-05: recalcula alertas e pendências não bloqueantes (sem recarregar)
 python -m app.cli gerar-fila           # US-09/10: gera do banco, verifica e publica (exit 1 se reprovar)
 python -m app.cli gerar-fila-csv       # fila direto do dataset + verificador (provisório, D-26)
+python -m app.cli extrair-sinais       # SWALIS: pré-aquece o cache do LLM e mostra as classes
 pytest -q                              # testes (inclui guarda de arquitetura)
                                        # os de banco usam healthprior_test e pulam se o Postgres estiver fora
 ```
-Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`.
+Variáveis (opcionais): `HP_USE_MOCKS` (padrão `true`), `HP_DB_URL` (padrão: o Postgres do docker-compose), `TEST_DATABASE_URL`, `HP_DATA_DIR`, `HP_OUTPUT_DIR`, `HP_REF_DATE`, `OPENROUTER_API_KEY` (só no `.env` da raiz), `HP_LLM_MODEL` (padrão `typesafe/jev-1.14`), `HP_LLM_ENABLED`, `HP_LLM_CACHE`.
 
 ## Arquitetura (Clean Architecture enxuta)
 
@@ -36,14 +37,16 @@ app/
     ports.py           interfaces (Protocol): repositórios, SwalisScorer, VerificadorFila
     cid.py             normalização e classificação de CID (I-09)
     urgencia.py        sinais de urgência (camada 2)
+    swalis.py          SWALIS por regras: eixos progressão × sintoma (docs/swalis.md)
+    texto.py           busca de termos com negação
     ranking.py         trava da regra de ouro (US-08)
     preprocessing/     regras PRE-xx (US-02..05)
   application/       CASOS DE USO. Orquestram domínio + portas. Um arquivo por caso de uso.
     carga_inicial.py   US-01 (+ normalização na mesma transação, D-20)
     normalizar.py      US-02
     recalcular_flags.py US-03 (PRE-05..08; roda na carga, mesma transação, D-32)
-    detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-55)
-    detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-49)
+    detectar_bloqueantes.py US-04 (PRE-20..25; pendências bloqueantes + suspensão, D-58)
+    detectar_inconsistencias.py US-05 (PRE-10..15; alertas + pendências não bloqueantes, D-52)
     gerar_fila.py      US-08/09/10
     registrar_evento.py US-15
     decidir.py         US-13/14
@@ -52,7 +55,9 @@ app/
     db.py, tables.py   Postgres/SQLModel (tabelas espelham fluxo-sistema.md §8)
     repositories.py    Sql*Repository (Table <-> entidade)
     csv_loader.py      leitura do dataset (CSV -> registros tipados; valores originais)
-    swalis_stub.py     SWALIS provisório (troque pelo real em api/deps.py)
+    swalis_stub.py     SWALIS provisório (não usado mais; referência)
+    swalis_regras.py   SwalisRegras (C-07) + criar_swalis() a partir da config
+    llm_openrouter.py  extrator de sinais por LLM (Jev/OpenRouter) com cache em JSON
     verificador.py     chama src/verificar_fila_priorizada.py
     exportador.py      escreve fila_priorizada.csv
   api/               ENTRADA HTTP. Fina: valida, chama caso de uso, devolve schema.
@@ -83,8 +88,8 @@ tests/               espelha app/ ; test_arquitetura.py protege a regra de depen
 - Carga (US-01): colunas dos CSVs entram com nome e valor originais (vazio vira NULL); normalização vai em colunas novas (US-02). A recarga não toca `classe_status`/`status_fila`. `eventos.solicitacao_id` sem FK (D-17).
 - Transação: repositórios não confirmam; o caso de uso chama `UnidadeDeTrabalho.confirmar()/desfazer()` (carga + normalização entram juntas ou não entram).
 - Flags (US-03): `oncologico` pelo CID (nunca pela flag) e `piora_recalculada` pelos eventos; eventos recebem `duplicado_de`/`historico` (nunca são apagados). As flags originais ficam intactas e cada divergência vai para `correcoes_log` (PRE-05/06).
-- Inconsistências bloqueantes (US-04): cada achado vira pendência bloqueante; enquanto estiver aberta, a solicitação fica `suspensa` com `motivo_status` = PRE-xx e sai da fila. **Oncológico nunca é suspenso** (I-02): fica `ativa` com o alerta `saida_a_confirmar`. A pendência manda: resolvida por pessoa não suspende de novo, e achado que some reativa só a suspensão automática; `removida` nunca é tocada (D-54).
-- Inconsistências não bloqueantes (US-05): o paciente segue `ativa`; o achado vira alerta em `alertas` (PRE-10..15) e, em PRE-10..13, uma pendência aberta (`pendencias`, uma por solicitação e regra). Reprocessar não duplica, encerra a que deixou de valer e nunca reabre a que uma pessoa resolveu (D-48).
+- Inconsistências bloqueantes (US-04): cada achado vira pendência bloqueante; enquanto estiver aberta, a solicitação fica `suspensa` com `motivo_status` = PRE-xx e sai da fila. **Oncológico nunca é suspenso** (I-02): fica `ativa` com o alerta `saida_a_confirmar`. A pendência manda: resolvida por pessoa não suspende de novo, e achado que some reativa só a suspensão automática; `removida` nunca é tocada (D-57).
+- Inconsistências não bloqueantes (US-05): o paciente segue `ativa`; o achado vira alerta em `alertas` (PRE-10..15) e, em PRE-10..13, uma pendência aberta (`pendencias`, uma por solicitação e regra). Reprocessar não duplica, encerra a que deixou de valer e nunca reabre a que uma pessoa resolveu (D-51).
 - Regra nova de pré-processamento: função pura em `domain/preprocessing/` + teste em `tests/domain/`; coluna nova na tabela; log só para mudança de valor visível (D-18).
 - Funções de domínio são **puras e determinísticas** (sem `date.today()`: use `settings.ref_date` passado de fora).
 - Rotas não têm regra de negócio. Se aparecer um `if` de regra numa rota, mova para domain/application.

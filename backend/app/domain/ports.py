@@ -19,6 +19,7 @@ from app.domain.models import (
     ResultadoTabela,
     Solicitacao,
 )
+from app.domain.swalis import SinalTexto
 
 
 class SolicitacaoRepository(Protocol):
@@ -107,11 +108,17 @@ class FilaRepository(Protocol):
 
 
 class SwalisScorer(Protocol):
-    """Contrato do SWALIS (C-07). Implementação real virá do time do SWALIS; até lá, SwalisStub."""
+    """Contrato do SWALIS (C-07). Implementação: SwalisRegras (infrastructure/swalis_regras.py)."""
 
     versao_regras: str
 
     def calcular(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ResultadoScore: ...
+
+
+class ExtratorSinais(Protocol):
+    """Extrai sinais de alarme do texto clínico citando o trecho (ex.: LLM). Nunca decide classe (I-05)."""
+
+    def extrair(self, texto: str, fonte: str) -> list[SinalTexto]: ...
 
 
 class VerificadorFila(Protocol):
