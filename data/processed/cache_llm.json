@@ -1,0 +1,3540 @@
+{
+ "3999e7199e327878546ad49bf8b359a7c4305d0423b7f141c555c80754ba4b83": [],
+ "d4ebac92d7003f69ef629e36478f5d6bd854d8a11f18684b584cc59bb8470890": [],
+ "ed623bb2cf209d36de2d9717ea159d02cb6f8496b6e753cbdda2f9f933618196": [],
+ "e389a3895f7345173fa495ee86e3872951aa585751ad3c104e7ad00a27e48003": [],
+ "3b9b8c5c619bd1eeac7c2d6e47707a0d574836cf5adb3d28eaf69b50af59707f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "NEOPLASIA DE ESTOMAGO"
+  }
+ ],
+ "b390ab3f014b843e7bfc936f0e621c5e8cb7db8c8a91b369bc74b902c0ba0bd0": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "NEOPLASIA DE ESTOMAGO"
+  }
+ ],
+ "6fe304e372dbdc4b097b4d66662545b493fa7fdb9342ae254d812e06fb72a6ae": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Lesao gastrica suspeita a EDA, biopsia com atipias, aguardando nova biopsia"
+  }
+ ],
+ "952740e16dbc29c70d2f13cfdf192b28b19eee256137b81b9df40bccee1d042b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.82",
+   "trecho": "Adenocarcinoma de reto medio, colonoscopia + AP confirmados"
+  }
+ ],
+ "4b68655ae11f90926120f4ac1ce8da114e90ec0dcec682ad6adf06ce01379343": [],
+ "c7e6b6fe10868be399d7aab9b83d89d83981ef4f405dd44bde2cf86fe539cd09": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Disfagia e perda ponderal de 9 kg"
+  }
+ ],
+ "87e240fe203d51b0864fa90978ef5f663d3423028109747099ba467869cd73a8": [],
+ "9f8ee9588fa616e552a133d0e82a238509c221617afd43d112b220faa4dca164": [],
+ "df4117090b61f5c180bb0d205771d65682712847e4347d20d509bb1768c1177d": [],
+ "ef7061051359ed2dddda38e75995e38376ec2a6f280f3687a795283536a8d952": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "NEOPLASIA DE CECO"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.95",
+   "trecho": "LESAO SUBESTENOSANTE"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "PERDA PONDERAL"
+  }
+ ],
+ "2ac633c4b23ab480c8ce3899d8aab798be1fe9024d4f94e482e1de323a989642": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 2,0 CM"
+  }
+ ],
+ "2ffef37a7bf1726ab20c8699acc9176eafc70b2336ff5575086d268d7a507087": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.74",
+   "trecho": "Carcinoma ductal invasivo de mama esquerda, 4,1 cm, AP confirmado"
+  }
+ ],
+ "10be146d6eadf72fdeaf44ede2b4a6fdd0ff92ecae07edc8bfe6815d6efff425": [],
+ "e3db5af1ce6779796c5958fa228d88aa9201c6345edf5d7c0b8a136f34d8eccc": [],
+ "6e4917ca33844bcdb422a67ff1bd86c09adcffe8d7e5b8db1f66c959d44c40d6": [],
+ "483ebb9b9611c09028d8c33548203375c6e42bc5e566913760eaea268f49a3a1": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.74",
+   "trecho": "MENORRAGIA"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.96",
+   "trecho": "Sangramento uterino intenso, Hb 11,0, ja transfundida 2 CH no ultimo mes"
+  }
+ ],
+ "5e806da8cdb3cbe9ad5cb7674416c6d21c881c6bcc2a2e56e7f1ebe5cb900aea": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.80",
+   "trecho": "Hiperplasia prostatica, prostata 58 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "edd0c66f8fae57541c7d5a12a7f5226a760c6879f48887d17946e70a225130f5": [],
+ "0dfcbde823af0b5b33f346a3a855515a27a377c2901ed649debbb07d84118855": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.78",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.93",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "e74ea145905bded5d06c540670bac550ac038699e1acaeaa1e5a51dafaaac424": [],
+ "7b87bb74b00fefa4e7c9ee3dae1d495c6b7117a623aaab84d26d4c3937c15540": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Nodulo de mama direita BI-RADS 4A, core biopsy com carcinoma ductal in situ"
+  }
+ ],
+ "419525bbe645af13194574248670dbb30c99360c642b66ed9f11aa34a106fe6b": [],
+ "fe8c9c194267557453d61f2c218ef52ecd4be7f9a2fd42a1506029381e68c372": [],
+ "c9b7796b2bd66dca7be59a00aab1a6cb9e7d2308ef95a3286ca8eeffe55d7a28": [],
+ "22184bf55cd2d29bab02c3452150435e66b2a3ebd596a380663b8d03c0272f78": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.93",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Disfagia e perda ponderal de 14 kg"
+  }
+ ],
+ "2897df9f7a5422433cf874cebb09cccabb1a6b1c80a89e214e6239f3868d4957": [],
+ "067a10e5ae11cfae2dc3e01aab146e871584ba8db938b3f8b85df8bc79717006": [],
+ "16fde2f87879f6145d2299fbebd351dafd22b5217017c36a4cede4113eb2732f": [],
+ "edfbb2f73eadbd88d354c5fd0da46449ea746b820cb550792e06fbf2f3dd10ec": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.88",
+   "trecho": "LIMITACAO IMPORTANTE DA MARCHA"
+  }
+ ],
+ "fc383eb218ae3e1e773dd8fa027abd2903e7d9b1d215d775481519f2d3724acb": [],
+ "7e0523800b609a45681bff27fa471dff136247059702053fec3cfb63a75e7ccb": [],
+ "5865f3dfa394e8bb744ea5a0f3bbbc85a22093d6697c9ce6d6f76791c0f01abd": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Retencao urinaria aguda de repeticao, sonda vesical de demora, ITU de repeticao com sepse urinaria ha 1 mes"
+  }
+ ],
+ "b6b66e7eb29559bb2893fb513ed63ad18b18124342827cda17829e8d6be7001e": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.95",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "338c0b3bf9c1493a86fa08d68f8f72f2d3ec9979a322daed598cb30cc509297c": [],
+ "59bb8ede1ce8b0bdb105472d06afbf24065f1ad989a9eeb36e954493319c7739": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.87",
+   "trecho": "Gonartrose bilateral tricompartimental, deformidade em varo, dor incapacitante, nao sobe escadas"
+  }
+ ],
+ "7c753fe1edc2c549a51521df17dc634988405da120227cbdee48dd08cf259d8f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "ADENOCARCINOMA DE SIGMOIDE ESTADIO CLINICO IIIB"
+  }
+ ],
+ "e4b1b86b98d707c73c10117016fa614d6995a8ad63f1a9a1353f9a575747fdd5": [],
+ "bb23050e26519a1b369c7ec6598fa04632f83c8f6bc9407a4a459cfbbd2f2a15": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Apneia grave com hipoventilacao e retencao de CO2"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "Internacao por insuficiencia respiratoria ha 2 meses"
+  }
+ ],
+ "5987a86b3528b0232ddf56f7c43753da05942932969e033300c2942a6a9f63d7": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.79",
+   "trecho": "HEMORROIDAS GRAU III COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "8eb51e9d7bf63bd9208edb7e8e06a1aed8b49815105674d6bb0a0bbcb08c122d": [],
+ "4cff8b68ff3056c17b61c17f28b309e4d549b14f6ef637747c09c526d73092fb": [],
+ "9fc63232044a21a4ee2ac2a1050f96e1ac4cfc3a8c1e7c8cf939cda1de7c2f40": [],
+ "2fc76f75fafd3727765deae78608b712893aab3f1e098f6a3ffd5489c3ed467e": [],
+ "4bb446591b16e9ed19daea6352f1b31aef79b224bab7c305382ffbc08b66ea41": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.95",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "0fa2faa6ac0911ec8fe16ef8568c1e347049c77073947fa0f51bb72960f3f982": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Polipo de colon colon ascendente nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "76fcb4c046ac626df77bacd85d3e2805cc210863c14cbadeeecd517245541d05": [],
+ "a86a6fa7b0e9e2a0547feeda98f4e7b6bd52e0b2102dd96151ec0370751914cb": [],
+ "e09bf26ff5eac654d1f0e89dbcc5b648a793e6bdccc201cbdeb1062923075597": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.77",
+   "trecho": "Hiperplasia prostatica, prostata 70 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "8de46c14886917db064e8a1c7def9c3c8b64b3b773cca066e20bf955379c65e6": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "ee029c7b914369947579efef517991e103d9bb018da6e0794ec38ee0fa6ad36f": [],
+ "cadaac35c8396695de3260c7a540ee770f242254a725aedd4d9873dda6c7a42e": [],
+ "bfa2790ef38e3600556c9afb58258c111854b7d898ad41c59e9952ac4c41c953": [],
+ "949bd31cdab3758a5e9307427277b52d0631f118ef79e6cfd5db1d986727e54f": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.92",
+   "trecho": "Ulcera venosa infectada com celulite recorrente, 2 ciclos de antibiotico em 3 meses"
+  }
+ ],
+ "e8907c5c7a556ace4a5d12c37609150a47a39e92753aeb22131a0a0209e544a4": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.70",
+   "trecho": "HEMORROIDAS GRAU II COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "e7fe74f2ee8e79dfde0e468248a520a0ad3d6e020d7b6d68d140a3d629d63e9c": [],
+ "05ff370ee951efb39ff889367c183707f18e5d5989f4f0254003cda050fc54cd": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Tumor de sigmoide, AP adenocarcinoma moderadamente diferenciado, CEA 45,1"
+  }
+ ],
+ "c2999449a5db04486074c0c30a589f9bc7d20f51592605bb67e637a867a614dc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "75de8a8b6eef430feb840b3de83f820b222d0cf7f070984ae7b41308411ff14e": [],
+ "192b8271b6672be843a880d6b95f22a10d225602fe31ef558879b0aa76fa39ca": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 1,2 CM"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Rouquidao progressiva e nodulo endurecido, crescimento rapido em 2 meses"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Suspeita de carcinoma"
+  }
+ ],
+ "d5230838675650e63ea47ac49c51a5eff0a4e0ccd5dcec7d04768e7dcdfd6225": [],
+ "b0777081406bb65e7bd8e0f5fc0e8e002e96fb1ee828f24d8f4a82e6f58564ff": [],
+ "f6e6cc0d65e1d3b5f88a7e8d0ae6038f35c81e566f0ece6a433427783a2152ba": [],
+ "711b8d8e97ad8e99fe2e0889c9e1b69b9e9347ba8c16bcdf432ce0efdb138480": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal bilateral de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "ec5839b691056a856754067ab95890ef69da35b4b391fbe6c4db3f43af1e4754": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "Adenocarcinoma de prostata Gleason 4+5, PSA 6,8"
+  }
+ ],
+ "e0b0748f6047a8d8250e7f4b7d72141dceeb3bbb8320800a0ca900195ead1bbe": [],
+ "f138f193584d4c2fe914cea17f41f807da0f8e13d29cb0874bd192f1057b482c": [],
+ "1dcdb3c22a888601f6fc4ebfe77a0b0df4b21582e7aec4c9e3c152f41808b77f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 10,8, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "47de64eb823fb41df5141c9ab7a83d63628529e98be8df83b2af563b96ab30ae": [],
+ "a796ccb3decee3680e2360d8112807ba64927db93b10631a9a28ca56dbc3284b": [],
+ "e38704e014c057911a40ef4bbbc7cf14e9746cc0b168eb10585985130ad03064": [],
+ "d27263ad498db35e3f85a54f2f13c504a1ab847a63310b25b1823ba1e10a20e3": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.94",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "840a91d8f14f324b9cec9f18ee9a80ff91676804078c79ec0b727b38c0f5cc74": [],
+ "b27ac8eec1204c48429f064b801b62ab75f44770e4b3be9cba09d75b250248cf": [],
+ "bc41d2c49425de617f32d037f54a7a3faaf4f8c7957d4e2ef679a080afab241d": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4C, core biopsy com carcinoma lobular"
+  }
+ ],
+ "168f1c0786a94e0c52bf25c1fb29193c45818ed93e7444cfdb7b78a21e1459e0": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.88",
+   "trecho": "Polipo de colon colon descendente nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Perda ponderal de 5 kg em 2 meses e massa palpavel em FIE"
+  }
+ ],
+ "97c855acab8b5ddda046e4785f60f26d385ed1f958adaae5737cc17da69c63d4": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.89",
+   "trecho": "Coxartrose direita avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "20a3dde01f7f6a4244dea65f50821199a81812d86b26092a5b13c366433a23a6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av 20/400, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "c5664ed45f2eeaa4badb9f051b3e0f1aebe40caa54c16c495f5f28d0094f634f": [],
+ "06180fc7c3c385b825406e243c615110dddc9c777cc942002c9d72e725a46dea": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Nodulo de mama direita BI-RADS 4C, core biopsy com carcinoma ductal invasivo"
+  }
+ ],
+ "ff9eced18b60b94811739a81a70bc0fc1983a5b2c01c4cc7c1eb1b49f02ab05b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "ADENOCARCINOMA DE CECO ESTADIO CLINICO IIIA"
+  }
+ ],
+ "9c0a166c5416d52ccec0bb96744000343179c94c99b2b4d8d51cde2b68b24c15": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.81",
+   "trecho": "Adenocarcinoma de juncao retossigmoide, colonoscopia + AP confirmados"
+  }
+ ],
+ "b69eb3caddfcbeb9c1ff52d3148e54bef9357e33bc27cadc0e75fadab7bb0c98": [],
+ "4f59397ec5ded734d705cb09c7604025eaa42017aac0529da2f41440987bbd41": [],
+ "9d01e87ba108721b4a6e8532090f0fbce3520cfdc97fa0ef5b3b6b672d953d07": [],
+ "4f7778cecfbb20188c7b3dbfc8744606556f913e733a3ec9ab0f61571c125145": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "CATE: TRONCO 50%"
+  }
+ ],
+ "f2215e8fa4245cbcac23ce49154e7cbde7ee10a68d5d2ac97428e97dc9529ee0": [],
+ "2eae48f4a71d71e513a02bb57149c90f560534b6b5d7308e8bddeb8d8da54f3c": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "LIMITACAO IMPORTANTE DA MARCHA"
+  }
+ ],
+ "db40782be69c734d0e6141430bee55b5c8bdc52c3c9701b82969e49cc74e9b65": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Ictericia intermitente e coluria"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.92",
+   "trecho": "Suspeita de coledocolitiase"
+  }
+ ],
+ "8ca6d5cabdcd6a52a3b16dd207ff6cd0dea5aefb05d1880abe893d4c4f2e46be": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CALCULO URETERAL DIREITO 10 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "c40faf346d5106a517a737cbe4564cd194e39685311a173df0663675b90abd4e": [],
+ "ed2d5a8cd0e50491978714d2f99c3a7de9d1acf7b4639df01fdc9a6c3630009d": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "2688f7e129e37cea7023da6acebdc6f436b810b4dbcf97fa1b40911f7f0ca65c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Disfagia e perda ponderal de 10 kg"
+  }
+ ],
+ "1e155db7321ddbc455887a892f21ffd530b1b62c74d8fd6b97db22295d5a9b3a": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "CBC nodular em orelha, 1,5 cm, biopsia incisional confirmando"
+  }
+ ],
+ "371ededc07a81411190f196f0b308ea903bdca9d886ef4f521f1fa9c3c1ce2df": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av CD 1m, mora sozinho, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "a63e7c6d550b9e5512a5a7dd29345470e0609b94c8f47be5bbc0b21cd89080d6": [],
+ "c58f38c6a7fe1e2cbff2ff28803c9217353b5cf3c7db50026c115bab82a8de8a": [],
+ "b7c0ea197de9f1c4ff41aa1e930185aa007b0ec5e006f7f53f3fb492ff1a7dab": [],
+ "ca07e70d929210aa7f966d48a58776151739104139a88cd76684183888a3c8cc": [],
+ "94648b27a4c6ee086677461c69aa2224564c86bb7120d5c4d49e57344af85b02": [],
+ "5269ad2b4c8dbadb89a4fa24c924306dd459fca4cb6d85efa005a4684ee78497": [],
+ "5cd532d1da8011e52c553b9a7ee01b9c408db1017b4ece0b50b5cd3323a63763": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.77",
+   "trecho": "Carcinoma basocelular em orelha, 2,8 cm, AP confirmado"
+  }
+ ],
+ "b0ff7267425120fb4c964b8886e3d21634cbde04afee7be53c9830852393c9f0": [],
+ "153fa0bf6f0d98a02b6d123cb7a3040dc0f29ce838f8ad9dba94e7d535121a98": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.89",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "50836337f6200851aed7c51e859ae98dd35b1438d562d60499367bdaa666307d": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "Gonartrose direita tricompartimental, deformidade em varo, dor incapacitante, nao sobe escadas"
+  }
+ ],
+ "88616b8f451e1ead08b97b724c8d8742ea69d39c1d38fbdef42c50851f4c226a": [],
+ "4a20197b00457166394ae7e1bc37ffc3ec079204615505e4d465d4af1956490a": [],
+ "dc2211401238ad25382fb141416b28f7999299c05182e5228bc32d3fe84afa1e": [],
+ "6396cb820ba05e45c811c5d5e2bdc70b080ff369def8ccbc94e2fecb90475db3": [],
+ "62552d40cac4931a071be5cdbc97fdf273412e261b4dc906e2b52ae1581a9314": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Nodulo pulmonar direito de 3,5 cm, PET-CT com captacao, biopsia transtoracica: adenocarcinoma"
+  }
+ ],
+ "c7f34c5e4c4b54c0331f0f86fff49e5850b6a8ce67c75b3b19fb38b64f456815": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Apneia grave com hipoventilacao e retencao de CO2"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.97",
+   "trecho": "Internacao por insuficiencia respiratoria ha 2 meses"
+  }
+ ],
+ "08a5a4212d85eb2b29a58a182cabe5c82dca3d6c925204f7c307c10b802c50ee": [],
+ "789081a622817b1c1c02e5dfe9dc08d6688a18eb80c4a5471107ab6bbca66e2c": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "Coxartrose bilateral avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "78c8a8c37f8854c863cd0885e37c72a54638624d1e3f149dc446d4f6bbc03d52": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "HEMORROIDAS GRAU III COM SANGRAMENTO FREQUENTE"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.78",
+   "trecho": "HB 7,8"
+  }
+ ],
+ "ffbf08ad364eb2de140498660f1cb34c2e97208f63ef428e9d50088a7d619d10": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4C, core biopsy com atipia ductal"
+  }
+ ],
+ "a41da382f8d1d60529ad3e4924f55579d2665b220c4643f6abc39f053e42acd3": [],
+ "01cc1f63f8b90ae5d853c89d7e238e48b23ec1795c0a44eefc3a275479543fce": [],
+ "ca05fa2b41b07e7d2ace1c5220af36c57a21d5947b66cc3eb118173d14613206": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "CBC nodular em dorso, 4,1 cm, biopsia incisional confirmando"
+  }
+ ],
+ "4cb0071c68cb980a8c9ee94564f8e19ec9cddbddfdd7aa1902d4694277404c5f": [],
+ "081d5b779e51f5c5ffce9e0c584a06301b05098d7a09fd5165deeda6badd101a": [],
+ "e100a77a28ac3291139b90c3c1cf3d9806b842555abc07746c07e5c245ff8404": [],
+ "2433872efdbb2c9458e0082c820830229cd5a8e7b6322dc5de9161e1dc186a14": [],
+ "1c7adef15666161318d434553d5e50f8a87c9df8ca320b4cb687c06abf58d2eb": [],
+ "105f4c619aa88cc2e7dc2d57dd8685287b12379bae8a12bb519c13a909eca04c": [],
+ "2711c8359682cbd50500eea081601a253abc24f752caefc6cc281005b43e98e9": [],
+ "d5de24ce1647fd30e5862df91fd2ddccdd7bc48c45b4c7eeb1e56b3279612855": [],
+ "7f98817de17831886c61d463867a1c71080782e5affeb3953012818b99f029a6": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "bc4c435ee4f89cb9a622a0c4ded53d50e840fd06b4e8fb8badbd7cf9666c0824": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 12,4, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "c46ecee2efdab5acaea86cf9df154d2b095aee37a071aa100f310a08d31b96d7": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "f4b461cab2365e1fb09bfa7a58a72431415e1cabb5a710999522cffb29d2cde4": [],
+ "f36eb668f6c55f2a455d2837d4b746042610e9564b417b5a5783c64ce6bfb944": [],
+ "fde7d60e59594e8b156c0cbc66be1c8d117399b1b0543a9122d0ec0489fab180": [],
+ "b5b2ccde3bc3fa1f7a074b5e2e76a2b99f15614175d677caa1655d727d4d4c46": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.82",
+   "trecho": "Bocio uninodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "7fcff270faf741760ac4a2858cc7ded5bf88d8f61311ee66c9e903f209675e52": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Ictericia intermitente e coluria"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.86",
+   "trecho": "Suspeita de coledocolitiase"
+  }
+ ],
+ "d9b3e4c2221cbdf2bdd26273bd4bd2151c9b082252e8b9ed3e8b358f24cbc847": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "45ef9034069c2877576b558556bf227a21f84c71f94a620b43fdec657a80e78e": [],
+ "c721a2624890300de50d3c3686fd57e76b1dda12a8c37b61fc944a720161ea38": [],
+ "58caaed89beba70adc1b7def15071ac0a85b47ff5fc34087f4aa373b56620ed8": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.84",
+   "trecho": "Necrose asseptica de cabeca femoral direita, dor intensa, deambula com dificuldade"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Paciente acamado ha 3 meses pela dor, ja apresenta ulcera de pressao sacral inicial"
+  }
+ ],
+ "82edfc8d470da306f861a20e9afd10c7bac73f57b2ea39ea5d255d01a9a2ea11": [],
+ "6bd7d1437cd1dc40de62353f9f054e56b725e2cfaeb02bdab34e19e5d83d6318": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Bocio uninodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "f4586f02974f1a5724b6120fbd3a20554e9f2b783ece5343d93b6f1629b76eba": [],
+ "65792e02808d949b663164cb6b0cca63792ef4940ef30066af374bbecce82cd9": [],
+ "627f12ee7f1c9566a23ec99acdd25423e9f2aa8446728b64cb91dc339647a784": [],
+ "637454029c70d0966f748f6d07762c8001a01efaf15bf1e1dab58f79e79f0da4": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.85",
+   "trecho": "LIMITACAO IMPORTANTE DA MARCHA"
+  }
+ ],
+ "7052dbe756ce181345030cfe1a792db9ef922f42d93fb32acdd9adfd8b672878": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.75",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.94",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "f890689add92189ce7d7be345a8acfb4dd338a57e4230cbcffb5061b4e308848": [],
+ "9c2db4b88bc0b8bfb9a2e801b677d32aaf6f65ab97382351a13ced1807390ca6": [],
+ "267e22ecfd9aba64798b93cbabd0b4b2a14e12bad6cbc7edfe54aed054ada58a": [],
+ "9a32c17b53d29ccfe78a092d79e260357dac143109844d38ea32481a85d29fec": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "CA DE PROSTATA GLEASON 4+4 (ISUP 4), PSA 9,4"
+  }
+ ],
+ "dc58c887b58f7a609565964b37639f9c7c70998cc85d5b7e7931387cdcccb475": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Hiperplasia prostatica, prostata 114 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "397a3809e09881d7c85e8fd7ab7d67ae258a808f283abdf307265fff9961eb1b": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "eae85938278240f57523b9462c11e36d5f3ed3adf937e0ce3fd315172a20dde7": [],
+ "67087508f82d833d48a7f9c440bb0e5ecda83f586b990b812427761dc2897ef1": [],
+ "0f1edcbd5e30127eb5d5eeb810ab7c871bad77eee71c62948b74154cab28375b": [],
+ "99bbf6c36b999100051f9e4a4db334dda8743edbe5d0a817b9ba97ed749b8f27": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Hiperplasia prostatica, prostata 108 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "d6695411f4fa52bb91bf6fd6638a08eae1e9f0d821564031f32504f55b5ea688": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.79",
+   "trecho": "Hiperplasia prostatica, prostata 83 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "7286215d41b375a1cac7c134812f3f82fdef9cb5ffae7fd7df5fa7fd3439ceee": [],
+ "911d8affc68f6e83d46363b124d5ad59a9a958242b8a2836a900a7d98296e8f6": [],
+ "d20e2112a4fc89ed642b3e25142ba66b03da634a61cc42334d0fc884e52609f6": [],
+ "d01688ff0553527511c5295c8e512ac85cf48e5eab3efe2138b27983bf20dcdc": [],
+ "17c8bf90d92065261365d41bc909d572fa238a3397f62165ea27ab31a4f39c26": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Angina instavel, internacao recente, lesao de tronco de coronaria esquerda"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.75",
+   "trecho": "Cirurgia com prioridade"
+  }
+ ],
+ "d5f7c729eb86948ac3c8f490b8a2836dd3478d520caf9c8ffcbca2b4631c5aa8": [],
+ "e70736b8f1e0ec940db30968697a1538c37852f60aae0635c19c00701e2cb8aa": [],
+ "f236a5011338ac2c03ff8ce95609db1b5e80e870841a537f297b9f9628f25416": [],
+ "6854912481245d2ff906341e19adada431a77022b49c09969830a0ed96003ff1": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia encarcerada com reducao manual no PS, risco de estrangulamento"
+  }
+ ],
+ "b665bb2db6f21b4f7bc821dbe50bbb1a73a309a016f69b5dd77b724659a71cb8": [],
+ "8a33d2e13790702ca7f613ba355ac947fd6079b79aa845a953ddfde4aa10b796": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal direita de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "d3d93b647a0373857c23a8ab18999b8cfe695e2d079c31e7a9ee7f5ec05ed30d": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "CA DE MAMA DIREITA, BIOPSIA: CARCINOMA DUCTAL INVASIVO"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "LINFONODO AXILAR PALPAVEL"
+  }
+ ],
+ "fea35194d1acfd51b449a1bfdaad943018e0a05edf7b23e2927678d5af265319": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.93",
+   "trecho": "Nodulo tireoidiano 4,1 cm, PAAF Bethesda V"
+  }
+ ],
+ "8d07a798b4d9014d733dc2eead00418651097d3bda3bddef6c1b9a48cfc93b6e": [],
+ "15695a2eab8ae7974ba3cd2d078d689c979a769be2ef1c06648481de740650a5": [],
+ "ce21435bec6c6e3fbc3328c8c8e6fb9d68e2ab691bf49e2141fd4153b4a57636": [],
+ "c568209bea73b269da2488be81532cf6c29bda235535a3199c29da75da8a4e78": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.72",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "ea0c2fef37d41be3f92b115b8bc28852b6e6cefda6c19c61310b8954fab8fc5e": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia irredutivel nas ultimas semanas, dor em piora"
+  }
+ ],
+ "983c51c6d8cff9f942a488867ed763047de04849913ca05350ff8bc44fdae070": [],
+ "20acaa0dd1e7f12488acab4cdce1b97c37a4c8d71f7dfecba94ac540fe4d8706": [],
+ "38d2b61706ecad0d8c077c116b5f64255b44fa35982d925a1800568601884e61": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Disfagia e perda ponderal de 5 kg"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Melena recorrente, Hb 9,1, ja transfundida 2 CH"
+  }
+ ],
+ "410de8d5a105249d54114b9545e34440b1f5687a5c44af732128c280e5e16d57": [],
+ "c2af71e76552f842a9d677917a68ca4124997774a89cd1cd418e3637df10b245": [],
+ "b8b6ae0caa59792b7e8a053bf1b2be4fd619782653d204a3fe6792e571b8e446": [],
+ "4551ca42116a885a2732c1a915a79d768bf5768f91cefe2a8e30a03ce110e152": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "CALCULO URETERAL BILATERAL 15 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "ad8203af286dc0959b248389cde50c7c25b7cca4c55640ef209359cb8d626236": [],
+ "c05cce38ceec5559036605b6f3034cc90fb2ceb3d59e6d03bfe389cddc9a6cab": [],
+ "d32ed21d642650ef3509b1ce420910431d4dcfa02859980b6653358a1bdb393e": [],
+ "e9d70b73ea12386a4c7522d57d83142e92c50b44dc873ac08c447414578201d6": [],
+ "8476f2211c5b675a42fd69eb4eedf63c07b9d3e3201197c9757d7c7225934635": [],
+ "3111749c5432f38c31819a66b52ff1b99b78f6ec3474a32a709d8c2779f44b20": [],
+ "5112102ccea9b61266146c7e64745ca1f6e93ff5506a59dba8eaeade76e6f16c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "Nodulo de mama direita BI-RADS 5, core biopsy com carcinoma ductal in situ"
+  }
+ ],
+ "60f88a71837de4861a0b9301ba03debfa4b942cb33531022f27c9f4d24b20218": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.89",
+   "trecho": "SINDROME DO TUNEL DO CARPO BILATERAL, ENMG GRAU GRAVE, ATROFIA TENAR"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Atrofia tenar importante com perda de funcao da mao dominante, risco de dano neurologico definitivo"
+  }
+ ],
+ "b191012ea5e08fe49725005f10996a19351d520203c7641593ceb03436efa1ea": [],
+ "6678293d49e47c935fc3f4312b9ea7118b3c5c35df9461fdcda5a7e3868618af": [],
+ "51a1b7d7df862ea2a4aeb0661c83a7b000eee12c8e6055d4cb64e212de4f2f89": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Episodio de colangite ha 3 semanas, bilirrubinas elevadas"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Risco de novo episodio"
+  }
+ ],
+ "e5979b3f909cb390d689f636fab1dc00f51eca3894af2bac093676be1d9f2a40": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia irredutivel nas ultimas semanas, dor em piora"
+  }
+ ],
+ "1f09e98fa851e6932302205c4a8b7a0f5d18f1ee0fdeeae28a3e211177d042db": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.76",
+   "trecho": "ADENOCARCINOMA DE COLON ASCENDENTE ESTADIO CLINICO I"
+  }
+ ],
+ "2521dc44721bec4d4a6d9559ed79b6031a304cd8cd55d380d34e10e57a27ca6f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "CA DE MAMA ESQUERDA, BIOPSIA: CARCINOMA DUCTAL INVASIVO"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "LINFONODO AXILAR PALPAVEL"
+  }
+ ],
+ "a578f172b9f531b83d6132ac5e83d1fd17d9bddf33b562208e1973dca1fc8d56": [],
+ "b47dd9365c3b0d3cf19fcc1467095ea20bda2351469a5c91c8927eb9987acf8e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.83",
+   "trecho": "Polipo de colon colon ascendente nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "7a734a3c57071f79d471af49128d6a5e1ed5e69ec491e8d9ab55761c9457ccb4": [],
+ "9783d7bfe4a794ab296af05cfac02cd0531851954901cdaffb4bc82a788fef78": [],
+ "02f7bf59af12a85112f2803bf16cfa06adcd7f7b93fb35796294002d34a8b313": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "651817bc083b6d429ede4c4751f4636ca146db79fdf314211663ed1072b4bb23": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "NEOPLASIA DE ESTOMAGO"
+  }
+ ],
+ "2856bc2c8e054642c65f89f7395775547c29f910ee565c4458b87953fe2dbd97": [],
+ "6725f5b344c06cd8295744ff2a55c11e0015b76d6f2b6ba98434f4f57a198380": [],
+ "2b232f9b42acf92203a11399722e2b0693b48af2b28909e12a22051d1d1ae54b": [],
+ "c18bebf0c47a499bf8ba5eb4736c3f89b9a8a9894e14ce71f1d97ebd6a152877": [],
+ "c9c2f3ab25379a74b9cd8874f1b0c6e862a135a44201e79c002ac2df6480816c": [],
+ "4cd18dedf58ceb3a513d2f9071e3043d0bd281cdcea8cf0de66a64e20d113cbe": [],
+ "a6e5c73ff3b60d7412cc9d4ea8428b9584ca964a5d542aca3675aa87bbb271e4": [],
+ "88b19d3e7fc35c635973520faaa74856d1d7fa2969c01b77f9e59d8e3b298549": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.95",
+   "trecho": "Necrose asseptica de cabeca femoral bilateral, dor intensa, deambula com dificuldade"
+  }
+ ],
+ "0e2524baa8147816aad0d20bad09458e1e9a8bde029283b9aae3ade406a2b60e": [],
+ "462cb10144496367cb21cde5460ed548ebb6523bb5134c63b5ddbbed8b8b9cc0": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.70",
+   "trecho": "Neoplasia de mama direita, 2,0 cm, RE+, apos quimioterapia neoadjuvante"
+  }
+ ],
+ "7183a1d3e70b4960186ce6abe1c8c0c9496b71b5264cad67648a55bef7337dd9": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.81",
+   "trecho": "Hiperplasia prostatica, prostata 84 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "2ed8d1c6be40afbb0485a1e78bac16cc936743a6503ff0c04f8628c258e49ef6": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CATE: TRONCO 80%"
+  }
+ ],
+ "3f3f600d76887237e3eeeb3f8f9e996a9f7ba1b8361c3fc9426ed0c7637cde10": [],
+ "b538851a2d52e86fa196d64cc4331bc52182811aa3587f6cf7dc44d6fdffa5c1": [],
+ "103b1f47f35d932d040053bcb2a54cc3127f913612d7e16e0f705c9bb8367adb": [],
+ "5c8b86475a5dba43deb43879eb755d5be9c0317671c8f19c686bd7269095576e": [],
+ "b9427cc4eff8c851e1493c037a6638364a028a8eac14b3cbba6b0ef5d7bb0e4f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Nodulo de mama esquerda BI-RADS 5, core biopsy com atipia ductal"
+  }
+ ],
+ "72a87d8a993bc66db64767f46860ca4d234a2f63aac046eba8028de5733b67d0": [],
+ "fb8ebac31e6b24e784ea3cec9df20b65b67906d1ba1b7f9bb23a6bb8c43af24a": [],
+ "91eefd19faa52258d892957296afc5979c033b504053a3b36d8d3a4d7388d79d": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CALCULO URETERAL ESQUERDO 15 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "1dec9472648801ab4bbdd49b49c5149e1c2403ebedccde9e7f2cdf88b4a0b744": [],
+ "ead61cb837efce4890424efe151903cdf71de6cb374fc48324ab99aba3481f46": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.81",
+   "trecho": "Ruptura de LCA bilateral pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "2c38b740b40249c913914de84871ad376217ad625f9a50b901dacc6fa7165d3e": [],
+ "dcd24c703a6431f3b098b9ce776825eb9c5f1b3be282c5cc7a832bdb1419e821": [],
+ "a320fa44d8801b2663308b02d90d62c71d53c5d62318ac70ecce8841c80034eb": [],
+ "9e667d376736cc38bb1b52f4bc06f257189e4b80d2c563c1daf1fe1462ab4b96": [],
+ "2dd98befdbc6fe3d4c4632da8abe59a98a369baf3c5364c4c901897b7ac12a91": [],
+ "a7ebb81c9b3732d8388b3bcb473b8eb9424d146de4bca4bc9acfe9a3f79eb9c6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av 20/200, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "8d59068483b524513f5d29361051d0a6a0af00d7d6f4217a4960536775f8e6b3": [],
+ "3584289fe91678be495f0e72bada28c49057d459754ae6691d99797501024216": [],
+ "cc0a0824c0b5252a438e601b78f90ed66e8b63552ecc0ec8be70e82d74e87ef0": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "HERNIA UMBILICAL COM EPISODIOS DE ENCARCERAMENTO PARCIAL, REDUCAO MANUAL EM PS"
+  }
+ ],
+ "bd8fd3c2818ade0dcdada1715625ede485c7ccbfd2810543c20faba849621ca6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata bilateral, av 20/200, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "962a17c963fb441743aa3ea39df8e8be711e9049b75ba8f0fc1ecd7a94d08cf8": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Adenocarcinoma de prostata Gleason 4+3, PSA 5,1"
+  }
+ ],
+ "bf6dc0ddcf84d49b2c8d3319df69786b68fa4d96394e1bf383adb23dbd485419": [],
+ "18934769114d70f6afb96baa49a4cddb09ca34dccb2e21472ba333cba6a7b2ab": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4A, core biopsy com atipia ductal"
+  }
+ ],
+ "01954b2f3f21fefaa05d96dc493d8de7ee79d16f363324f4e1ae322b1b78c251": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "Polipo de colon colon ascendente nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "e547f2550727e486ba663b44bc3db66dee9f9e4fdc28c0bf0b44e96353932640": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CALCULO URETERAL BILATERAL 10 MM COM HIDRONEFROSE MODERADA"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hidronefrose importante com perda de funcao renal em cintilografia (DMSA 28%)"
+  }
+ ],
+ "f43206df89fd4295c20b174db61313a4cd4955a748080854db4291b872d9fbf4": [],
+ "f92c1ac3511f0935b1539297007ff0ac189ebe50cc4c976cc79bdc61c6a15abd": [],
+ "20293bb9c5ba024fae1172dcc70624ac6cf55714a57c7b4131855d8b32ca832b": [],
+ "f4cdcaa3b616998eb6a4d6d62adf0e91b2cfe107843f7717f4d8f2860ffc540e": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.95",
+   "trecho": "Sangramento diario com anemia grave Hb 9,1, ja transfundido"
+  }
+ ],
+ "0afc7313eaa79387e37bf4b4043a3ece4925f25fdfd62c011dd92ad1a6c3caf9": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "HERNIA UMBILICAL COM EPISODIOS DE ENCARCERAMENTO PARCIAL, REDUCAO MANUAL EM PS"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia encarcerada com reducao manual no PS, risco de estrangulamento"
+  }
+ ],
+ "dba2b9e4d9a009b7367316b72ea98d690dab59e07b55f81999936f10297f1e83": [],
+ "9ef800018ea29151df56d9a2f532e5f038bdf466f74212fb900f82cb4257078e": [],
+ "c51ec312096d4e2ed8051d2bc56aa19f236a3e931de73122da8dda0993d1decb": [],
+ "2d19dd029db03242962336acdff62bee64bd9c054ab0e4bce92abdb89f8dbb72": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.82",
+   "trecho": "CA DE PULMAO ESQUERDO, ESTADIO IIA, CANDIDATO A LOBECTOMIA"
+  }
+ ],
+ "5a8f2eef1e9ddbe73d893082f0d30e636e2472b9ae61a4dabd000af8754acc8e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Rouquidao progressiva e nodulo endurecido, crescimento rapido em 2 meses"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Suspeita de carcinoma"
+  }
+ ],
+ "10995ab7679b66d2fd97214157606d829696afb4b741016fa232667a0fc05109": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "d9d16ffffb97cf4560a10ddd76120a3dd71416f991757c05c29c553b7fae2ef6": [],
+ "d063872254e139eb54bc86affd96a21443d3fe4535b89a4978f0a84f5540ac61": [],
+ "2926d22db2c42c7b2154f370e514e50cfc75cd25e300ac2082687eacd218743a": [],
+ "2878a6756a2d25540bf4f25519c8ed1681c1556b8883f728f4cf8d2b3000f0d1": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "CA DE PROSTATA GLEASON 4+5 (ISUP 5), PSA 22,0"
+  }
+ ],
+ "058e5dbf11758d2f15be77e35c80e8c7fe0c983782db7b2ab29d0b7b7216c503": [],
+ "46a6acda0a05c9b99366ca13bad003f584cfecf5fd5408d6303f4930667aad29": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "CA DE PROSTATA GLEASON 4+4 (ISUP 4), PSA 14,2"
+  }
+ ],
+ "d7970254a3a662bdc27f663f64ee1c8da77689b6a26d4f37d1b86011268a5fac": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "CA DE PROSTATA GLEASON 3+3 (ISUP 1), PSA 14,2"
+  }
+ ],
+ "1036f409e85dd178c55ca1cd5a73b2318cf49a96c71bdd701fda5120cf749a72": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "Gonartrose direita tricompartimental, deformidade em varo, dor incapacitante, nao sobe escadas"
+  }
+ ],
+ "f59bf868c1fd87ec3de1aad0d3f264ff9b2dee7005140b0c4b4465a5f6e55b4c": [],
+ "f3bf855d0fc834f0f720c249c135e7d840a45e34ed4a82f490e8bfc16dbd0bbd": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.94",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "4ecdeaf0c5575968f0d3789417e2b28734c203fbf549abcf0a44d398a8515527": [],
+ "864ea26988760176d9b963644b039342d27e63662f6d8937a0ad82eece95e231": [],
+ "e6eb292507a104011eb92c2757c911a3f9b64f5e28a3c5739aa924d2c2c67287": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "401b74856c8226a755fa226729fb68a3a671d60f171d6ac9f3ce3b9f33724eb2": [],
+ "ee1b8c8636522c3c5c46b7510142fd89f33dd78ced30e2bd9611259b9bd87fb2": [],
+ "c27822574e79d3fdcf218c4eb36f5545077a416bee0c9aa11a9b1be711b38cf5": [],
+ "4a3a7bacb1ba52f0efdb052ca5295628797fec0c9da8f5e4edbe47999a46c995": [],
+ "946f37cf706333fa1cdba48c1f039eec60bb98305040ec9b7aac1704b7e59a89": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.89",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "b49f6385a16c230b1a6bf7f1590387760ebce22465aea572b302e8de57af1b06": [],
+ "f98692421be65f2b06daef2ab2274415e83eb05125f25e52bfd26708adc275d2": [],
+ "deaeadfd5865aa77843b66d34bbc6647f58c6e629f830e8afaa0ac4d88f32804": [],
+ "31cb1675b98daaeb71bdf5701716cd657673b2cd9139e06ed5adbab402fbbe95": [],
+ "5281d5fe7b9f887c9446c35ef67b95c1b08c99dcd48638dfaa1f9cf800f59dfa": [],
+ "b505d9c4870003cd5e3cd3eddab65ba5c0377a216a1bee7ca2dadae42f833288": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Lesao em colon ascendente com AP inconclusivo (displasia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.75",
+   "trecho": "), aguardando revisao de laminas"
+  }
+ ],
+ "a8861590eff89c81275d21486b3b9b11128c4371f05084c88d28eb5c9d178af6": [],
+ "2f56ba771959a73dd21087946c0af75d692a7117f66ffff4a744ca272d057dcd": [],
+ "97897d72861b31372da107709d9186c2bf74716a305bcb06744eaf5543eb15e7": [],
+ "4d25d24b9adfa1353eaf8c6b53afe98061a56dd97b40d2f90605c0719b3ad8ec": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Bocio uninodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "5d44078c54b64ab15433f5462d3218f37f75d7d2a99ae2b7ffbfcc08434ecb37": [],
+ "4305e85ab690160546a35d9a5cc8465c15045abf782acb116b0675d3aa22e26e": [],
+ "436184ac54e55562f13a3f5fab545aa0ff265875adfa2b6c52456b547bf3c8dd": [],
+ "34ee2a2dc023b56d3f5df5efa9d8b1048bdf24d5325f004af8c597099575eaf8": [],
+ "708e1d8d59a1a3f61debcb2cab12f32d194fb1935f073856d126e9789a6bc3fa": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.93",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "0949703ca724a9e31557e5e91955d6548b9a942d0fff7ed7a8e4e72b2aa5f005": [],
+ "2344d5a482621a7c3aa8c75467aababa8071d177f15f9f4b12973ed03fdf0315": [],
+ "368b5189199f8c564f2b68c5b0d066d38c5dc89b0c264afff26b10abbeb8720d": [],
+ "2971fe62048baf316c557a1d1ee7a9212fb40ef646f48fefe76c7207c8794c6b": [],
+ "7072336606e56549f78f385cc1a83e222776babfb2bf35112d1e474d19a069a9": [],
+ "5467be894dc9bb1e3f211a2ae8fa8e2201995e4671d61dd70d8b31d8fcc04bc4": [],
+ "e93b4d90570a4cc6c9a0be43f126197f079168967fdb262dd7ec9b021b2a3a4e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "4b1fa9ef19a988629492656aed1d116639ad6272cd927003b892561ef54d7ee7": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Estadiamento clinico IIIA"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Sangramento uterino intenso, Hb 9,1, ja transfundida 2 CH no ultimo mes"
+  }
+ ],
+ "79ce1e53754a4f8d09c2f54e2b5bc4add37b95e37208cb7334394b6e6b07c4ab": [],
+ "9f9becc57585b285674b36d2174cc680d1b0cc6c6ee04e78d3d4593047c87e2a": [],
+ "064100525d2033bb4ce33d6c4cedbde9398804088a9e35b39f69128cf14179f4": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4C, core biopsy com carcinoma lobular"
+  }
+ ],
+ "77163a0fc9a2179187107fcbdca3a24337cc3a9486d686610b054aad943784b6": [],
+ "f2c9b2c75920bbdc1d49404cc4532c8a49707e0455af6492ae3c8953e2cb2c17": [],
+ "67ea7b0b86362f7ae19478b3ff15cd832b587cb70181ee5ec8c6e22785c3cce9": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CATE: TRONCO 80%"
+  }
+ ],
+ "b04d7ca9a3a31ee4bffe7dc0a28c148e00cac26dd1edf4fc66284128ff6f141c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Carcinoma espinocelular em regiao malar, 2,8 cm, AP confirmado"
+  }
+ ],
+ "e0f060f6b00a1e236118654414af59af46560df573c77eec4b5144e2863c3c4f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Nodulo tireoidiano Bethesda III (indeterminado), 1,5 cm, crescimento no ultimo US"
+  }
+ ],
+ "d8435233857a7ad38d2eb1280c5169b1c23c5188501e54639e6dbf61b2487fb7": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia encarcerada com reducao manual no PS, risco de estrangulamento"
+  }
+ ],
+ "d3cb674d43dd223a4eca1963e865352cfa48ac907248e9b51d9c0ddccec8e91a": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Paciente acamado ha 3 meses pela dor, ja apresenta ulcera de pressao sacral inicial"
+  }
+ ],
+ "5ce60655005465b243844c4a5aa42869a03423793ba525d751584ae50dcf567a": [],
+ "d51657b0e7036b1a52dcac61a4ca8f5881a72be9e8546e2b3a24393997d9b4db": [],
+ "53a9237132e11fea144ef166db51cf27836c55d45fcb4e3e87393a47297134b4": [],
+ "5dfc021f6b2df4646815309612e1ae3b656da08082c5af5b76fde34d58bdf2cc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "76e410c9a4d4d6700381f0499ce6f93734849427d285ceed373824ab3cd9203f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 1,2 CM"
+  }
+ ],
+ "992a691c8471fa9698b6e0a8322f3a5ccfe27fcaf474017429cbce002288144d": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.88",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 4,1 CM"
+  }
+ ],
+ "26a1efc5e271b207187c1a4e6eef43354af0d178c7927e8627f91e659510a1b6": [],
+ "8964ddb3ac4a97d86917d47b4e74350545b7f4ee23c291196831d29b5110d438": [],
+ "1b2f57cbd104eac1840cb9381974728933297c91028e5d705cbee0f564150402": [],
+ "379d2143f15a7979ad12a3c6ff5e1f959e84e88dd789f679c5ff84644572f27b": [],
+ "3c4d8b1120ae1accb4d3f9106e948429580594a73cf4c1a6d3a287c1fbdd1d65": [],
+ "fc103ab746e0a8457fb6273491b954a4178f3080156791714eb034b07acba3fd": [],
+ "072b7aa1713a61f788fcb43d9555eb6a41a67f981db12eacaf11aa194cebd446": [],
+ "09f36c09f2615aa1908ee5ca1dc1852e039056b5ee12dddb9da723390a4791dc": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Quedas de repeticao (3 em 2 meses) por instabilidade do joelho"
+  }
+ ],
+ "d015089e2d3f8aabfbfcd41b980e279eccf467ce2a2586c709bf0d7cd6563e6c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4B, core biopsy com carcinoma lobular"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao ulcerada de mama com secrecao, crescimento rapido, linfonodo axilar fixo"
+  }
+ ],
+ "5f0f7238e8f6d217cbc0a244ed6e1de289962f8f3767e2e8775e0b7a1aba7c10": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Nodulo de mama direita BI-RADS 5, core biopsy com carcinoma ductal invasivo"
+  }
+ ],
+ "95486bdf6ae1ec47278a9032dcdb8a2622de54db6330319a4e48959845303b1e": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.75",
+   "trecho": "Ruptura de LCA direito pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "894120e65a4eb7d424f7997a5f89f5043622f507cd188b044e2549bae7ebbc51": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.80",
+   "trecho": "Hiperplasia prostatica, prostata 105 g, residuo pos-miccional elevado, ITU de repeticao"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Retencao urinaria aguda de repeticao, sonda vesical de demora, ITU de repeticao com sepse urinaria ha 1 mes"
+  }
+ ],
+ "c649c71a920507396f42af26ee5953f7a0d237bfbd898f664ba7732bdb62347a": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.80",
+   "trecho": "Ruptura de LCA esquerdo pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "9dd5edb841e33e8774f57c76b10a2fce76e15c10b6c5e26615788d8a669f308e": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.86",
+   "trecho": "Ulcera venosa infectada com celulite recorrente, 2 ciclos de antibiotico em 3 meses"
+  }
+ ],
+ "baf7f5999bba20df70459cca202a2e3dd3f7fe41d600638cad9111e847602f9e": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av 20/200, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "15645b8523bbe535d209b596d2cf8764528bf277f7ba76f89e44a51c95711563": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.84",
+   "trecho": "ADENOCARCINOMA DE RETO MEDIO ESTADIO CLINICO IIB"
+  }
+ ],
+ "98d77077eb4a8434d21e556230ef1937577d4d8092177970b107fde6dcf8b891": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.93",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Disfagia e perda ponderal de 8 kg"
+  }
+ ],
+ "e6e77bc556fe61f429e57e8ab8ccec95dc85f069d5ba18717b2f6c9f39469087": [],
+ "263ef58ff69f13b1ef320a444598d70025161743ab299143b3b4f77889866d72": [],
+ "3050c3a038e5a9a886fe605b84979e24d159db0677ad1d6c55c22d2286a37c2c": [],
+ "f33d265e5187b9ea8ad355bed3d741276df02026d38f8abf5eb771c9eb784a46": [],
+ "6f887bdc0445e4bdd53597a0aab378606d090f4867f006b37e3f401f0bcda5e2": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.78",
+   "trecho": "Hiperplasia prostatica, prostata 117 g, residuo pos-miccional elevado, ITU de repeticao"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Retencao urinaria aguda de repeticao, sonda vesical de demora, ITU de repeticao com sepse urinaria ha 1 mes"
+  }
+ ],
+ "b0fb3bd3a9df9f294c3d7ff5a160a5a4ecb5f4f3835d5047b76ff80b0b34fcf5": [],
+ "3e41d68c41d41a2bbd4089d9d1581080c1ca5ca0ef1d0857614225701560987b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Adenocarcinoma de prostata Gleason 3+4, PSA 5,1"
+  }
+ ],
+ "6b8609640ea6a26438371ba68f7000c680720eb92437f65604ef27abdc348e4e": [],
+ "d654e19b849db42214a4c2e36d1fe8681fd3c66aae70d8f802b55cd4a102be24": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "ADENOCARCINOMA DE SIGMOIDE ESTADIO CLINICO I"
+  }
+ ],
+ "b4d1595379a4e95c60189dbb8954f4b9cf960c0272b6a3ea0741894c99945639": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Melanoma antebraco, Breslow 0,8 mm, AP confirmado"
+  }
+ ],
+ "ca6b2a921c52e538ea02cbf3e193a8701da45d1e12915e5a73e5828faa556cfe": [],
+ "34c0bdc418e07cebfef5bec5b4ce8ce3f917592fec56d90a41834907f7927c8a": [],
+ "85898a122fd08160442012e191d6e048a17e33de700a2290aba7f9cf340ab4a4": [],
+ "5fb2ce3541e8601a04ea41aab508a9b7df707b2fbcdac4e2ceb7227d2ef94529": [],
+ "d5e88ae11c5c9c4d57b34a536c9ba5e254d6497705cb3d9aac2bd295b665155a": [],
+ "3dd727742ba1b97fa9ed2b2180ac7d51ebbae912446b37da0c4e064ce56772d7": [],
+ "926e418aad6d5f715e48a857ad4faed44bb78f91b81bd45920898013d7494c5d": [],
+ "2a3506488d8333dc32e6fb03d1cb050e5874d8bc6766d73fc9883ec9e7f24cc6": [],
+ "066dd03880163f55e1ab9c1879000930e076d675c8877b3597d3f61c02926739": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Nodulo de mama direita BI-RADS 4B, core biopsy com carcinoma lobular"
+  }
+ ],
+ "41c01c076d750996d5d503b049a437f85273b393ce641e6ce7fd226825bba659": [],
+ "444dba0f901ddd1d066d4d6099757d56777f4d4e0e20ae01c885f8e17f37df7c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "Carcinoma espinocelular em antebraco, 4,1 cm, AP confirmado"
+  }
+ ],
+ "80f98ea17946aeef829da57b7388a6ac56470690e3dc1c69b39d07bd88dfdd85": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.93",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "1f125581c8d76b0fced21f6e5e0ac84fdf567122ef0492dcd972467c308421b6": [],
+ "d3aebf458e4872e61cdf977649ed33fb66fd9ca936b8bd058d2ded00f7cd8d48": [],
+ "0ec12239ca275a53df0e1631ee2cc94050fbdaea58e084a7b16925fa5c00ac84": [],
+ "0ad87909a01501ca5d0d1ad3dc0c4dacd81b8fc3acc9a113a1b2b0507ab30f66": [],
+ "04d88672a711cf39b3c8c6e7c34b4fe9e266259b53722c0f87b36a5817fef2f6": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.88",
+   "trecho": "Adenocarcinoma de colon ascendente, colonoscopia + AP confirmados"
+  }
+ ],
+ "a07ceaf9a695389146ce725f2eb10740c8bb38c3916ab3e0a874aae1ad21ea88": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.93",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 14,2, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "543e90b0400313df653c1b733792676a8e22dca94967f3fc57e02f0fa2796950": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "Gonartrose direita tricompartimental, deformidade em varo, dor incapacitante, nao sobe escadas"
+  }
+ ],
+ "1d3926e1f5cb815a81013813d7a0da98a986c77762f87e451963aa1a21b021cf": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "Nodulo tireoidiano 1,2 cm, PAAF Bethesda VI"
+  }
+ ],
+ "a87b2420814c8119cf27e98f1cd6db41983306e72ff308e11b9094c300ef27df": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Episodio de colangite ha 3 semanas, bilirrubinas elevadas"
+  }
+ ],
+ "f0f38deed617ea44165c11884e40b007ea87b36582b23948ee31d6800e5ea832": [],
+ "63f2f9cbce6ae553d5925053701aaaf6bbbc0b2433b3d199d5f9809c79153238": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Nodulo tireoidiano Bethesda III (indeterminado), 2,0 cm, crescimento no ultimo US"
+  }
+ ],
+ "81faff39555f890c02da8c5a6b54b232fdce9236659c31d64f489f0b5c7b103b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Lesao em ceco com AP inconclusivo (displasia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.79",
+   "trecho": "), aguardando revisao de laminas"
+  }
+ ],
+ "735068f127a44accfbd7f7f2172d5ab11704f2e6c33fc23f7fae47641e499147": [],
+ "acdaedf1978dd71eec63e22534fdab0a0368542c7de95938b37a11f75a61eda4": [],
+ "7fc4488172b9c1c27bcc96b02554da54d2a63c541aba7195efacf92fee9a8d89": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "Hiperplasia prostatica, prostata 80 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "4d1dced3ff91587958daef06e5c0bd275cb58e5d5b0564ff4f9cb5adb2186856": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "Coxartrose direita avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "77e0c958b2da0d204266406702ac7a1b9aff2433adf222e3ccfca3661c5985ab": [],
+ "be0b63332170f09e4bbf6163d414229be52b7a1f909c83cbfc2df21d006ca0b1": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Perda ponderal de 10 kg em 2 meses e massa palpavel em FIE"
+  }
+ ],
+ "9bfd8df69439d5005a4258655950b51fc0e080b25b8a3f15ca34d5059d4dab12": [],
+ "d4b558562fc14973a332e1c5f5905a29858516e5997e032453c0616eac8ab041": [],
+ "d139c08b8ac59cd1c1bcf894a295c09edd86ef9a292175cc04a8364d4c69489b": [],
+ "eb5c4510d427a9e58df24d2a510a7565d14ff6a8610c58addf505a0d3aeee3ed": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Atrofia tenar importante com perda de funcao da mao dominante, risco de dano neurologico definitivo"
+  }
+ ],
+ "3dd3dc21fc4cacb3e86e1faf81ffc2a2934d2ae6eb8bc845e25c1fdc3728ac18": [],
+ "90d956ded5de38a3cb877bdf56b95498177e2f24239963ca7c77e563465a29e5": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "CBC nodular em couro cabeludo, 2,8 cm, biopsia incisional confirmando"
+  }
+ ],
+ "615b3ff378ba475bdc8a725baee2269aa0adb2f5439858828b00d7ea655add8b": [],
+ "3795208ae5253499378e6bbf28d23b9145fd58778d9a2c40351b451a849b7900": [],
+ "9e4a66df1ad21c0f16cadce463cb040d08d13fee03feabaa7acc5dad001f2a81": [],
+ "66dca754a2201286326ae6ef88a6a8e666446abbd23a3dcb7dea9c3cbb93f797": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "Neoplasia de mama direita, 2,0 cm, RE+, apos quimioterapia neoadjuvante"
+  }
+ ],
+ "4b5c8c1f71ff08ea853be6929311a35221e8dffb042b2457d060d5e2aec3a831": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.73",
+   "trecho": "Litiase renal bilateral de 10 mm em pelve, ITU de repeticao"
+  }
+ ],
+ "33bc7ac079fb10533c239509cae3caf7589603ea113b007de7aa065f4836de4d": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.83",
+   "trecho": "ADENOCARCINOMA DE RETO MEDIO ESTADIO CLINICO IIIA"
+  }
+ ],
+ "674542b9de70b76d2e5eb29712e2d1cf937fa424424c395ba78f55327ec3718d": [],
+ "4001002788f6e56b776271ae554eb3d2887460e44d3fd4b0403681e922d09818": [],
+ "ca1c4e875c553aa0d91851e6b5b1b13120239de5fac90c9824f6bb524cac1fc6": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "NEOPLASIA DE SIGMOIDE"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.96",
+   "trecho": "LESAO SUBESTENOSANTE"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "PERDA PONDERAL"
+  }
+ ],
+ "c58cabf26f5daa01c2f0dc4c1b2a910d23bb8354dd406cadcbf97ba6069b3839": [],
+ "20c28796710e6ff9737e8494ae83f42b6582cd3088cc0ffa62c1d95e7ede7e14": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "CA DE MAMA DIREITA, BIOPSIA: CARCINOMA DUCTAL INVASIVO"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "LINFONODO AXILAR PALPAVEL"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "ENCAMINHADA PARA MASTECTOMIA"
+  }
+ ],
+ "38489a4fa3108eb9bccec3720ff9664e200e8d2c9dfa6520899f5b0028644b52": [],
+ "1f28e85457fafd798a9513f9c5fabc21b1ec5d008eec78edb3273c74044a2b36": [],
+ "40bf15471fb1f9e780c9e82ec0862a6037a6c5cc3e7eb7598ed4bb5db12c6bae": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.85",
+   "trecho": "Hiperplasia prostatica, prostata 139 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "5a8c9cfd8234aec12914131d7366c0efa7c7769b9b0931bb4a18e657cab6f85d": [],
+ "f51ea1dddb4366c9450efc24b8dc21a0da809eebbe7bac61e3585eb3743d3cda": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Retencao urinaria aguda de repeticao, sonda vesical de demora, ITU de repeticao com sepse urinaria ha 1 mes"
+  }
+ ],
+ "da7687c426988d8ccb4b60b396118b6f42b2e32ada667943448c93e065f7444d": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Apneia obstrutiva grave associada, dessaturacao noturna ate 78%"
+  }
+ ],
+ "66f185296123ad3f3da0be6d3237762002f29240d58c3a3fab97e6b16f2151b6": [],
+ "9221b5d48a7b6aaae3d061b07227b76061cd2814ace871e16482e24c6df014a8": [],
+ "19e97e544c2cc8a2086b45ecd7c594ef30e518ac58d05905ab179534d8040249": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.76",
+   "trecho": "CA DE PULMAO ESQUERDO, ESTADIO IIB, CANDIDATA A LOBECTOMIA"
+  }
+ ],
+ "e7d7284de8a11592268999596272f7727c47e1d68019cca2469eb8d4be8a4807": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Episodio de colangite ha 3 semanas, bilirrubinas elevadas"
+  }
+ ],
+ "7f3d363c22ce624e8c6c7e1cfd545535426e3ef4cca7d938725fdbe4d83c27bf": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  }
+ ],
+ "22595d1ca0a34cb1ed821c80c5effcea2eaf71ffa15afa2f9a9b241b55c33d7a": [],
+ "d65d37e87a2cf3da710be64a0b5e4f63a7f16023441c11dc5b43d68d31ab253f": [],
+ "72d9fce9d84236789885e8e648837cc3834c44034929a0596bd24459d5276c7c": [],
+ "1bcaa0bcd0c86faa1e4879ee14096d44cd05e68d2e73e90d68b92da32c7f8dc3": [],
+ "895baef3f3d698e664f8dac08deb71aaaf3dfd14fd227847851229c573b0d29a": [],
+ "8a6f53c51d7c96b2f8632384a4976d238a7d47d41fdd774a6d5acfdc2c518d58": [],
+ "2816b91f51c0b9cc438e7f9099c0b74581fb2575262203cba3d4607a892b2b9f": [],
+ "2008c2088563da7915af024d3a3e202d028b5a36ae9be8b1bee0de532cf0d269": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.83",
+   "trecho": "Polipo de colon colon ascendente nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "61f11ffbdc9e98102bbd6eb82ae0e56094cb79748827f31469d1dc133f68363e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.70",
+   "trecho": "CBC EM ANTEBRACO 1,5 CM, LESAO ULCERADA, CRESCIMENTO LENTO"
+  }
+ ],
+ "594b20fbcafeeaaed1aeaf63fbb6af364fc7d1ba5c04d8963df3a7af722f3641": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Nodulo de mama esquerda BI-RADS 5, core biopsy com carcinoma ductal in situ"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao ulcerada de mama com secrecao, crescimento rapido, linfonodo axilar fixo"
+  }
+ ],
+ "8f23f2b8437df017f6d388820f2ba58586167c58ac10052c956f0dfe8683316c": [],
+ "dc2d75495dd9dbdb5833eabec972deb2f48dd530305813d401b09dda7e148693": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.93",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "510bd4b0e33bebda92ce4f76ba92fcfdbc7fde38e8056c886457f81aff3efe1a": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.81",
+   "trecho": "Hiperplasia prostatica, prostata 139 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "63f56e760ea79b46d684a8c45b6891f81dedbfde60e2718c301eff9142c6d76a": [],
+ "decf91342629d73ecfd1e6cd4ba6edf64181364f2ff1715023da9bd2880e2a89": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.93",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Sincope ao esforco"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao de tronco 80%"
+  }
+ ],
+ "510627e5e48c659108affd18b6f34c4698caf73ae3904584d1a46850b232da0a": [],
+ "5e7efed2c45ce8b158a72a78cacbe82760d265ffa07d97ac77c5a801ef4e3a20": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "Nodulo de mama direita BI-RADS 4B, core biopsy com carcinoma ductal invasivo"
+  }
+ ],
+ "d5a043b692dd2671e248401031bde945c0f9ba34f84abff6a8eb8446efa3bc05": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "Pct com coxartrose, dor progressiva ha 2 anos, atualmente restrito ao domicilio"
+  }
+ ],
+ "84e62ecfbbe46370a39211750dbdd73057a83543d38ab6ad0aa3a5a2f1fa5900": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.83",
+   "trecho": "Ictericia intermitente e coluria"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.91",
+   "trecho": "Suspeita de coledocolitiase"
+  }
+ ],
+ "366897aa02d2cf9e7a07f0ef02621038b8f118d4ff8daac78a7dbc82b6d25d9b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "CA DE PULMAO ESQUERDO, ESTADIO IIB, CANDIDATO A LOBECTOMIA"
+  }
+ ],
+ "b33815b9ba57aa9efbd754bb46688453859a7538541fe6ddb761af9f3baaa037": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Nodulo de mama esquerda BI-RADS 5, core biopsy com carcinoma ductal in situ"
+  }
+ ],
+ "fb57d8963c2488dfb8dc083c37896931a587bd2737be07504bb4923fe37fae65": [],
+ "cc4f727bd2c56df75489618d7860257476b999c32f78bd022b7870286eac441b": [],
+ "b706a21871543c4efe147d142a450f36f6ac5d0818eda3f744f681cd78ca68b6": [],
+ "81be102e3df575297c4826904ee2a681cf2d35be0aed72d318c1ec9350f1ca9c": [],
+ "14c8e2e0712cf752f3640c3d0a8a0312add681634dd55fbc5c6e287182e60dbc": [],
+ "214a662c6681b0d07eb4e16c1584fb8e8c8433ab17324cb164feb169358c93b7": [],
+ "7a179287ab16c370f51e1035712c61efbc7c4158854ea0c0a933c77d50d6ef6d": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata bilateral, av 20/400, mora sozinho, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "31d0f687cd9b975eee6b5c479b1a75b01296accb09ad3f54d8f6ec0e1fecdaa5": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia encarcerada com reducao manual no PS, risco de estrangulamento"
+  }
+ ],
+ "284c2b72b634dccbd310be2d295958995070af092f04a336cdc1cbe2bf8737c8": [],
+ "f70e925854abb35ce181eaac893bb5de6ef02f331300c36fd21ac47c80070f2c": [],
+ "56940fe77ae49d55a2c896e8fe964d6bbdc43b0f6d0b9110a2d6c3f80648c76d": [],
+ "beb239f1b0500a86346301502212d8e6abdb6d0139ec05545f9cedf60f328a1c": [],
+ "bf6247082a79126b5b0b7f72e8cfe93a97083931b9d352a42f7a2f8c5845c38f": [],
+ "30f82b292a9109c8aa2dc3b45b2a31d0f56cd237b24a755bd2060beac737bc17": [],
+ "0480582259c6af51f79cbae369eed10b88fa36da2330a019423158441e842df7": [],
+ "abf46a5426d2977a8b1847b1d5dda29b57aa964de91dbc4b76c1f612d8e3772e": [],
+ "8ad6d0a41adf9276078ef410647a871f7359286c2ada566afea47bc801a59b45": [],
+ "b87c987801f57125daef15400eaea3b39e87aeb7750853cd8856ad7615a9df4f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Tumor de sigmoide, AP adenocarcinoma moderadamente diferenciado, CEA 7,8"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Enterorragia recorrente com queda de Hb para 8,9"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Suboclusao intestinal no ultimo mes"
+  }
+ ],
+ "5ef131b1645c548eab458b2420e9b778997431cf85d978807a703288e1118cec": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.72",
+   "trecho": "Nodulo tireoidiano 1,5 cm, PAAF Bethesda III"
+  }
+ ],
+ "974a2bee092cc0d6c5c9cd7e7428e4e2a4aac5ffbf7f909a826730e985789427": [],
+ "84b7e8291d798c9c58b7eaf2462430e51d76b6653174fd9529f772339a00f43b": [],
+ "58fe11ed4590bedb7b55aa61f2dd2abd56737749276c00406839ec10260a924b": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.88",
+   "trecho": "Gonartrose esquerda tricompartimental, deformidade em varo, dor incapacitante, nao sobe escadas"
+  }
+ ],
+ "138108b2df52b0833e17a0483a31593835fb0280dfc490ff84128361359d0d3b": [],
+ "526542848a1681a11cdc49cef73c0653b3032044e0bb69aa2cb7c0b2619306fa": [],
+ "551d6e8f806a7b3ede978ae8b02057ab73d495744c5e63924507918d6eb2efdf": [],
+ "479bd1bc6890b86f81b3288dd0a2ed5c7e0b68ae2a64111f777b5b2ce7d8a3af": [],
+ "02e159209b32692cc1d44a9e58d3de88420136b44813cacef89b3d5b8fd57e85": [],
+ "164d17944acaa59f47a6b7f6ee89ce9702bb14e8e62f225daf6a0f49b43e5b6c": [],
+ "c4666d715007c2dc2692a24f81b1bd298f65ed960edb9add77362dbe4710bb86": [],
+ "3415d4ba0d36daa17a3c0dae00d397f8da3dddf171a67b9b90abd001b44f531e": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "e0b19be3b9d4093d49aae5415421a3802f15c5f79160424a7fcafff4aec2d4bc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.83",
+   "trecho": "Neoplasia de colo uterino IIA, AP carcinoma epidermoide"
+  }
+ ],
+ "24ab79ff5a2d3c67bd0ca5fbb8f14c45648d8ac8d43fe015d537fa7212b879d5": [],
+ "b30c3b2922808c040c83c486c976090b0818ffd649cce2d58c94ef3d6fb34024": [],
+ "7bdce559b252b9f4aedbe74de03887230f0e27d8fbeaf4ba034420964715caab": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.81",
+   "trecho": "Polipo de colon sigmoide nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "22e33771fb63e5d8e31fa2e84e4021326908fa335ec58254a237a55d069bab2c": [],
+ "233e5e4cdd7f0850d46ea9a83994a5fdf09cda6732760661b255ed29ac61b1da": [],
+ "8f1909b81065cf6ac87f5ab7cdce7fe2800556bf1fb6160e8cd7a78358f9e7cd": [],
+ "1fa4435c7f460e7d3088b9b1a24462ffd210cc216bfe505c5fb752f21f30116b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Pct relata piora importante, perda de peso e dor"
+  }
+ ],
+ "76639838d3c9c2240e49cf934b549b1bbd683ce3421c79a0ed0b5527a43f44ef": [],
+ "ee14930d580a259ba0dbc8386f8672b10bc3d3066df3cde00b0164d5ab1a80c6": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "CA DE PULMAO DIREITO, ESTADIO I, CANDIDATO A LOBECTOMIA"
+  }
+ ],
+ "ac2f6b5fa54b39e4a73c849663c17a5d93d7375a2f0883ac7daf8490d5d2d43b": [],
+ "44f00ce3d85f3fec27176cf881b925617b2a951d72d4a7882ba9e5d9a4fa7e7e": [],
+ "a4a5b44a227489972b2e047ee497478ff31eb899dfe4fc7ca3cb6c20d9670009": [],
+ "f4f1e0c54ba883cd4ad2008d99c5d5130ef1a6ba8fe7080d500887b1cf7b02ea": [],
+ "1fdc0a52914e8e509ff4e551f7a88b43e249a49c05776aa7cb2f7130ad2464cb": [],
+ "8217f18bd7d26bffa7c4171bfaceecdbc478d92873a6dc697e8fc90522545301": [],
+ "402c72c8e746d466f526388e63959a81920603fe5335faf5790ecf3e529037dc": [],
+ "365eebf5f978829a5c15f6b25029922d4341a447dda004ed35da4d44b3f2e9e1": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 14,2, biopsia 4/12 fragmentos positivos"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.97",
+   "trecho": "PSA em elevacao rapida (de 8 para 21 em 4 meses), dor ossea lombar em investigacao"
+  }
+ ],
+ "7c15ab812e9fad1fa1f1dd83139ad6dc800b7e29c12411409561d74514d10616": [],
+ "8e221b454bafa9beccc025bb5c9fc3ffabd00bab872d330023e5b2bc81beebbc": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.76",
+   "trecho": "Necessita TFD para deslocamento"
+  }
+ ],
+ "6941b932deb60e6d4a003ed3a98d78e6bc3ea9e53318ace87900f87debb1aca6": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "f6c1ef48a43d386b5692df16c4510aa002be9fc0fddfafdc9e1bed22fa680d0c": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.83",
+   "trecho": "Hiperplasia prostatica, prostata 80 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "ae98d3b083afdc286438e6504bc28f5c6cec6cf04a773a77f4a0b37b161ca31e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Melanoma nariz, Breslow 3,5 mm, AP confirmado"
+  }
+ ],
+ "14d7c73dc32ac998a860e0598594fd2ed944ffa3897f92b106a21414a9695117": [],
+ "74fbaa897aeecf1f5167b2218e5fc28b3d536aa23d3955cceacc581991939b02": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.82",
+   "trecho": "Hiperplasia prostatica, prostata 128 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "48982ea68a2efe71d52dbdeff5a048f7723be028ba2338d34314aab47e4ef220": [],
+ "ee44a629d8eaa62373f5e9390d82688ef86596cf08dcdfc6c6c9b15732eaf2f1": [],
+ "bc7ba406f4d31dcb1e54678a7fc56a6fb6d99d4759cb0ab9c1c0ce07a7aa19e0": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.82",
+   "trecho": "Hiperplasia prostatica, prostata 68 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "6b5b6d7f2b6123244d1c61a371549ca4af07276108b64d643f9fbafea2fe9d3a": [],
+ "a45cc9b5d44c10a8298bbd0738842e28b5868f821a6f80f3228c2d292f60582b": [],
+ "bb43b69d71220b434c10825355ee9f0435d97b04195f7450809b36e62045e0a8": [],
+ "8761583bc33680b9983a46481d445ef4b448c1f6efb8610a1c6cea777c82e067": [],
+ "04c4e3da398cea42f3855a2895ad8b3239b22b8c6dc6a30cfb9cf4efca51b28e": [],
+ "a4e29b7181aa900ba7f05a466a44ed70489a40406aa07b2edc59baaa08933ad9": [],
+ "1b9da626c94eb86c2c4253ce126b8c8ef4ad9a200135a2681fc973de70eb00bf": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.90",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "46d1fd09ca0ff702d3d3001502274bfa89317bcaa48fbad11e280d8b725e2d76": [],
+ "353e9438386c4e5c0baf243d5d3575fccb907b40f59db5143ce306536dd29a6f": [],
+ "9cc7e6448e0b1599303a10e575d57a05d9f4b9c068f96c656ac5b4cf80803f8c": [],
+ "247548409560adf3bb6f0ed8398462ba930d0d2175d7e7f1de1c4df679342eea": [],
+ "615ecd75fa21991f82d74d4ff0f9820591a51c467e11fb172731c52250673391": [],
+ "5582c21c57a04965cae68fd4cfc1bb90831d349a0d4b17b9b9d9b8b6fecf36a3": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.72",
+   "trecho": "Estadiamento clinico IIIA"
+  }
+ ],
+ "a4af186fa2be40b21e01acec14816b4f287e61104d821dd087244f054e1d5371": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Angina instavel, internacao recente, lesao de tronco de coronaria esquerda"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.92",
+   "trecho": "Sincope ao esforco"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao de tronco 80%"
+  }
+ ],
+ "cd6fc08ffea9dee874aa0403911e6368b61d653cd50b9019edb9984f962544cb": [],
+ "1e51912c6de379f15dc40c85f692e35590c3101a84cbce22e4026a2a37ed7773": [],
+ "f602425cfcf26750de35ade11518e43da837beb06eae128191fd72c19ec44290": [],
+ "ce2b43f5540d344b6d242a898c15b6233f51ef4e5f7f4a64461312ae26c57d61": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.77",
+   "trecho": "HEMORROIDAS GRAU II COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "b077e7e1ba3f935d32f1023feb86a8365bea2b67f9e8c6d11dc2365024a781d8": [],
+ "e2b584937b4d43f2e1dd039b5ced234a29c93df41888b911dbc45fd6cad5031c": [],
+ "757af6cf039c3c818710b608b49ad7821fe9bd9e4bc8d00f7647b7911d08a329": [],
+ "a0158de3d32e5cf96467ba7b992525e24539b7a15c8b9e1cf9be3c9d698b5ee6": [],
+ "7bb9890a49d20cd366b8817b023aa5274aed08ed1ff61a66d88229dab6f829ed": [],
+ "f47e75b9fa7881bf764157bbcb7347bc28dc1caa510a21189b628d262ce55ac8": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.94",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "db12b803838308d685d9edc1e4f0a86e81ed5ce5de2afdba573333c2564b4e14": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "Adenocarcinoma de colon ascendente, colonoscopia + AP confirmados"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Enterorragia recorrente com queda de Hb para 8,9"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Suboclusao intestinal no ultimo mes"
+  }
+ ],
+ "f18086b34bbd5b01a837fab4e3b5bc1ece49327e63ebb5199a053f831a2fcc37": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "CBC nodular em antebraco, 2,0 cm, biopsia incisional confirmando"
+  }
+ ],
+ "3d543722b08d2442ba72653b26a2c731abf924289fb8ab7664fd2e392b726f02": [],
+ "de8b5813859e34b5ee0e649d2bc6d31183b2e21b90605b49c980dae03546fe2b": [],
+ "559606a6b1ee3c5c43b9552a2c4d924a002c4461a91088368a23ee0d5bf29ffc": [],
+ "de2716a2d90b926136e7a20b7d0a37b50406982c680d605f00170f2aaa911ea0": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Hiperplasia prostatica, prostata 121 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "10fb0af51cc87df6781f02adecd3ff803e60bc8b01df5110c0cbec3b134a53df": [],
+ "d7c2c1f64eb43572f8c5f5e303fdfb80acb971da2544d736046ab6abdaa2186f": [],
+ "925977f7e7965530a320ab5fde582d4c40150a65537e11225c5d06de8ba36625": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.97",
+   "trecho": "Endometriose profunda com dor pelvica cronica incapacitante, dismenorreia intensa"
+  }
+ ],
+ "4ad2a88b06e36815d2367da42ed6358e69b2283f5ee69aece34d719122c798ba": [],
+ "50465bcb2b243f5c02f792e3e95f4f2416fca5b92166bd939a9612a8de8016c6": [],
+ "7f67e9c132b584d549c88633836a09a42595ffec606528e9160580a7f21dc0bb": [],
+ "02b86f69837b9f6b43bdadc658db1ade6772fcb544d0632fff941ab62fec6e3e": [],
+ "27973efd4c5835e7b1df3df98b78f2b490266c7242d2b978b5ad803e4b1273da": [],
+ "de1fa2e52820f698c92b541d82a44353fc7300c326de9db8fab85e6b83de6ea7": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.74",
+   "trecho": "Estadiamento clinico IIIA"
+  }
+ ],
+ "1a86b10e4ee0b13de90eb3aa146efedbee2d19315c2f44bc1be9d6401910dfbd": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Nodulo tireoidiano 2,8 cm, PAAF Bethesda IV"
+  }
+ ],
+ "c12e0aa715ba59004c3a9ee29d0edf23135e4aee7ad5b548dc015dec5d658ac3": [],
+ "f982fb5e51e8039cdfcd14116e0df2cad57fd36780c1b5dc5a18f15f74c3361c": [],
+ "4e2e49725dfcdb68a1b0ad735979f58afbf51e2da6a8f190ba6e790a4420c175": [],
+ "2fa23889bd7e9fcd1e71bc6732b99e08be190627908e77a7550f19f28b18f83a": [],
+ "f8999465842fc58cefb23a2a7fea198ca2936efb56015920f0bd52d91b100ac0": [],
+ "80de25b86e6959a68c8da286395eca8cdcdf10aeab5d2707040132b953264a0d": [],
+ "d956496fa7d62e00455173705ea8069c5b8e107b8bc10ec2770fcdc1e6166733": [],
+ "08fd19cf2bd5b0ff1f8b509d420e9de014fa349bf9055e931914b7c2293e858d": [],
+ "ea874c3bd4bcca40ff7c51e173fdd924b5db8b1afbc2c4e370c4161699b695de": [],
+ "2ec026a8cf7f3781f2f5c87e41e0fc0de052408386276d11686c8d13c2f73e88": [],
+ "da5068fc2f6f9e3f468d3200e1823226a608d63db2debe885c8a016c2903e4ce": [],
+ "336724c74263dab2a68387d912d860440dbef6302e9bf90e69b37f7b3c727389": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Hernia inguino-escrotal bilateral de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "e099a3dc127f6dee213cab097ec9814486afc245d09bac5a5d7f8dc2b704fcff": [],
+ "8dd98375f3d12dedaf44552d5509bee70ab503e080de1b0735f3c2c05228af37": [],
+ "667c3ab1c14e25edbb3118090b66c2d435848d6516620a49f2493d0ce67382f5": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 4,1 CM"
+  }
+ ],
+ "be129721746b2e96f4691020d5a31286a748f647aa7247aeb52229c1a2409630": [],
+ "d4e8f686ba16c46c335acb858722463933c20e410cca0c716d5affd8d8140636": [],
+ "f38bb4440caa58e87b21aa47173d32cacd7247e3c6fdd59f146ac19d592fe3e5": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "HERNIA UMBILICAL COM EPISODIOS DE ENCARCERAMENTO PARCIAL, REDUCAO MANUAL EM PS"
+  }
+ ],
+ "f601e4a062519167db7b3cc718d28a03ba5879d73573d0ed93dd7d8a0b913f04": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Pielonefrite obstrutiva ha 6 semanas, internado em UTI por sepse"
+  }
+ ],
+ "204d455c7ead75c60e0e55958a08ed0ca3db30624af6e25f26abfe8f0bf44586": [],
+ "249ca45e31f8a50f24adf54c301e9f462aa2dba5e8c1f96172f0b99ae4012522": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CALCULO URETERAL ESQUERDO 18 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "8df8f755058cd97b3df948041e2bf9cf4fb21c5e3edc369edc271d4537f9947b": [],
+ "430380d1f9036b45f0a070453ad0cf4bf11920b60ccc72784e0953b5bd11ccea": [],
+ "3987e10218125794663622fb4a2a16ba92f31891bd05d8e3424db382034eb42b": [],
+ "2f13f7a20f6a91f908c6032c920d6893284dfebe6be9e1e470553cd27ba8f71e": [],
+ "ab53f1ee2035d43fc63be16db9766874f818ac2ef9651e55e88bb0df5fbd056b": [],
+ "b1723ccf73dd933c0bdccbe4099b9cebdb88e7092f4edbc03e4733854f7652e4": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Atrofia tenar importante com perda de funcao da mao dominante, risco de dano neurologico definitivo"
+  }
+ ],
+ "2e14eade360c9eea0d7cf2c00ccb81121c8598d7ea00f469c039d0842f19f7a8": [],
+ "59495f6a07b1cebf5e4f417ac1bd73babb1770e67529ee8ca2feb5ace17e802e": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.92",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "9d616af4c7777179a58efe3ea911150c66af7ac5b89a912de04e82fc551239f7": [],
+ "6fb3a28a9404b92d1315e7b0a16d5b757f598134df42732216b3750aa8c13f1c": [],
+ "83bdc0fb7f095d844640f6cade97ee83fce3204847b1f2d6d6091b7dd5ab8dc6": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Hernia inguino-escrotal bilateral de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "39a8a0fd8854920308f34bdb3b35224d334b265d4764917ce7e92725b58770c0": [],
+ "8628a6ab46a928119f913687b5fb83137eecdbadcf794d9f203fb40a9e1abe05": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Carcinoma basocelular em orelha, 4,1 cm, AP confirmado"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "6fea30f76cf03e5e1ee7d1bd9b0cec211e785e63396e4116b325422fd7eb7e95": [],
+ "badd7d8a7fbdfaec88310d53846b12c0b853649a5df1c0c7ab45452c517b4c83": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.85",
+   "trecho": "Necrose asseptica de cabeca femoral esquerda, dor intensa, deambula com dificuldade"
+  }
+ ],
+ "34eed790b9ab127ae3c66822476e3f1d2b8f772f57a8793326a289cedc57723c": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.83",
+   "trecho": "Pct com coxartrose, dor progressiva ha 2 anos, atualmente restrita ao domicilio"
+  }
+ ],
+ "fbd1e1fc6407823611e095a96a9b34963318e900b648c6c9d86fa1237f6244a5": [],
+ "7708d468c2000b6277bddc7028f41454ecf297936aec6d76549901eae528f206": [],
+ "1e0d9d72e864dda525a3ce99d480c4e01d591497a0b004dec8d85b58deb6a0a5": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.78",
+   "trecho": "CA DE PROSTATA GLEASON 3+3 (ISUP 1), PSA 5,1"
+  }
+ ],
+ "db80eddea0e1c2fab9791bdf81225e12b9e961f5da9aea5ef387b6f6749a1786": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.85",
+   "trecho": "Hiperplasia prostatica, prostata 83 g, residuo pos-miccional elevado, ITU de repeticao"
+  }
+ ],
+ "1d5087ffb48fc79f00b28758fe0275ba769aec071572937c62030594adb4dacc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Massa anexial associada com CA-125 elevado (180)"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Suspeita de malignidade"
+  }
+ ],
+ "730e04121ac12bf5b98c9f5446962781321419333f689528d7236dbcadebafb1": [],
+ "1fab9779af2b46ec37ac36067cfbdac51387d001e4ace421c7769238ee04213c": [],
+ "00bee755a3bbdd7d43a77b7ac527b63e3adb4962ebe4ee57bcd183db107ee5c5": [],
+ "85dfebe8dd5b01d38043e99a0f776fd8e3c49ea654160d397ac6c2aff718685a": [],
+ "52cbee3572fa69f6640855690c74f1fdf5d889b67a885290899436f3701590f9": [],
+ "e1aacc77745003bbaf016e7f30d2b527fd033e6c3cc61ee0be2fed58ca7ec387": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Nodulo pulmonar direito de 4,1 cm, PET-CT com captacao, biopsia transtoracica: adenocarcinoma"
+  }
+ ],
+ "ff0a4d212256dd26ed738f4edff5ceefafbde9d41f42242a2fbfd08407ef5834": [],
+ "13e4a5703fadbcf997d891fc218728cb62e9a8a0ced0b3d0702ef644aaf00ed7": [],
+ "92aee052a2d4ead1b2095c14952a39ba23bacad0b3443ec665bea6e51ad69226": [],
+ "de9468354e4ba0ca6a08588869f22ebea668154b3abc7b6c5a14a55211523e97": [],
+ "26deeef06c103a84ae84470e50ad05898badcdd917daa9f785d4a8999fd34b8f": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.75",
+   "trecho": "Cardiopatia isquemica, FE 36%, lesoes triarteriais nao passiveis de angioplastia"
+  }
+ ],
+ "09ee71c833603250c06c33c07b1f200e5cfba60ae930d6ba93115beccddc47bb": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "CBC nodular em regiao malar, 1,2 cm, biopsia incisional confirmando"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "681372bd098e56c407f0cc0836aa724b321279a5526d89b762926bee08bcb255": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.80",
+   "trecho": "Cardiopatia isquemica, FE 36%, lesoes triarteriais nao passiveis de angioplastia"
+  }
+ ],
+ "e90a48d9db1f9c8d2f876441b6deee642c258fc060f48fd73b97d414695c692a": [],
+ "bf0eb95c0c6ce914aae846a9d8f5dbbcdc08f7cf0c74fed5466506bbb8920623": [],
+ "0a80c8820528026519be03d42021327a7088f5ed9e3cc64abcbf1cfcdd4b5c67": [],
+ "1d1f53291331bc9faf30d34a5c7ddfce5d3b927e2aa56d18acf2f263561c9866": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "SINDROME DO TUNEL DO CARPO BILATERAL, ENMG GRAU GRAVE, ATROFIA TENAR"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Atrofia tenar importante com perda de funcao da mao dominante, risco de dano neurologico definitivo"
+  }
+ ],
+ "6806bac63dfcb7cf0166be2175071aa8f02254151724970a6c55628aace64324": [],
+ "bda70c4d4337e9a54eb5947acdd9dbdfaca38ffc40e824ac1259a05893a2fe03": [],
+ "2022b4f58febeded4a3fa0dc8d519e943c85c3338441c877d68f48899c0a2bb5": [],
+ "2767cd36c3cc940b42fc516ea90e900b151ca7564b6524d794b8b79782303b65": [],
+ "7b3e270184283308c763ec8c72b940559c6660dd0a0b1647f92af5fd2eca7637": [],
+ "87d84f6dbd938fde7443418c70a5275c2fe002eeb22e1c2966f89d37687f4739": [],
+ "706be93b9862ddd3a8b116b2c0701ed55ae82962cec91c15dbdefb94e0a25839": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.79",
+   "trecho": "Neoplasia de colo uterino IIA, AP carcinoma epidermoide"
+  }
+ ],
+ "5c05a094d870a173d92464349c121f7d8eb6b3771491e643baceb5c6af885085": [],
+ "2bb1dc9463ca0f8908f77263ca1cfad0ad5c978b53a1309a8d8e41e1ea1886a8": [],
+ "11d601388a2f7ce2d55c48604d0db6aa6691573af7baeae4c43b3ab802be6cb9": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "HEMORROIDAS GRAU III COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "f20a566d494b61af417383242680ea08a12b9af2cb1b4ff9bdd01fdcc8224e2c": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Ruptura de LCA esquerdo pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "0163fd5c295f686d408573c8010bec0459aa7139a31bb0a4b0921445131fc58f": [],
+ "4298ca0ff374631287b6eff1a014b0aab4bb23e2dfd16eee362de002ccbadc1b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.88",
+   "trecho": "Adenocarcinoma de ceco, colonoscopia + AP confirmados"
+  }
+ ],
+ "97a69a371c8e4c42c0df256675105c5c6fe1734353cef71ad8ccac188fdece69": [],
+ "7735557e1067d79ca84ac5fc0ea9fa4062aaedb4eaef14a776b141fedb6562c5": [],
+ "d0817914d980ee0f28af6da4d5035d2cafc3a69873c69dfc88a30ff2d246bd15": [],
+ "bb83bd99789fa6637b1d9adc38f042333edd08cb284de1d71653a7c58028b177": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 17,6, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "6337b420fbcbc70c79740d5973c8e2f041c099e9cf4bdee20d43aac8b5e21be8": [],
+ "432115a15378dd1a4227cd30e4fd33d0e4a3e2911a7a9b2055b49537881ec9bc": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "e0b8ef2151e8170b50f54928c850ada079874c7f962f21cce07d9f1f0751694f": [],
+ "09fb2049635ccec71e4cad704cd31e2718d9584345bb0a01cf4125d7ee1ef034": [],
+ "1a2b3f42efa1c1bf73edab95964343752abb528993774e98722e6b7ce47594bf": [],
+ "38c7edb0276d14fb22f2af503ae211463539ebbf88dbe71f3220a25f294642b8": [],
+ "217e4c3f59c99e5fbd6285cd06c7c2fdbdc8657eece1455905823823a43a62f9": [],
+ "2690f623061a07d3d3706c714f8a916a501f548a455c303addc7d7d8f34a167b": [],
+ "f80de0f79151ff15ee0db8718ab22ced606b8e2bd19f9fdf3c972677170502b9": [],
+ "5d05d846c200fa0032372624b8953dc5ab93ed967d0fae692866c30afac4251d": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CALCULO URETERAL DIREITO 11 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "e53b6830aef95a509faa8025c41435858020e5a72ade08b8e5f2ba074a1bf62c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "Carcinoma basocelular em antebraco, 2,0 cm, AP confirmado"
+  }
+ ],
+ "239723ab89be5c69d7211aae47ef3bf032092f14626c8dfe7e4eb2f5af0fecc5": [],
+ "570f9b0fccd19cb8134d096ace9f3c080728614cab57beed27f3b3698daf41a1": [],
+ "2e6c71d70cb94e9474e3dc46734b0f3080cf5d0f2cb50906a5a5a03e8cca95ff": [],
+ "72568a26bdadd9e898244b32fb66ac992140ee3273b4c532f4b9918ee3eac7ea": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 10,8, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "93a0aa39ec515d9f89b78987b3cbba5f0d991a078fd4d8880e97cbe8296bc4c8": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.80",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "08595791725cd5150a5203ab0051ceaeda0d1dc6aaa7dbf9105f87c7ef0d9171": [],
+ "73a1d0379e9f736a955f134f2061da8478965f5846bcf84b53201accadd819ba": [],
+ "7c2731e408e22fb6570f92590c4a32e84cca7df96571b949556aee5175853cbf": [],
+ "ed92908a8d143f1cd435552b42450120de1719c2f7ac152ea94feec53770410b": [],
+ "12640024d3939942ac7292a1e23b15e75f105751e2d9458ac11eeb6964e7b129": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal esquerda de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "15304d88b3dcf7e9ecc4f357ef089f4e6bb11473e4e4209000fb74b71bac432f": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.88",
+   "trecho": "Bocio uninodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "b1cf5d260bcfef6490b15000a30d3c380d67dca60f9951c708d413664076258f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "Nodulo pulmonar direito de 1,2 cm, PET-CT com captacao, biopsia transtoracica: adenocarcinoma"
+  }
+ ],
+ "238c08c4c7f12fb25cdf701876ae0207a89877b98b68da028d62521130e649d5": [],
+ "b85e5ada5ae782234bdc7ad18363b0d30b00fb8826852fb86fce39593eb531f2": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "51b8b15336febbb2a0ad3d3ba5867bd1a817ac11490460d35c2a1d72a4b536cb": [],
+ "e85daca4f7bab11bc2742d7eaf9dddb348da3581e528f62bd13af619069c0066": [],
+ "f79d9e609c53931bea23d65f87d5b6455faaa922fc22e6a91531912563e2f80f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4B, core biopsy com carcinoma ductal invasivo"
+  }
+ ],
+ "23b1e52b5c98b66d7ef2228db59c26eea1066358b0ef588acb0dba0659bf9d00": [],
+ "ec9e166420b65d36218dd02c0fb5a5f4e53ec412123f7557396d8c0a3d918c54": [],
+ "b1ee0810c4da816b03d0b302571c31268fdbe89dfca6346f1443658e5d354350": [],
+ "67fefcbb7a70e63a8f186a7a849b30dcae3ccc30e8092eba131d03bf31e45dde": [],
+ "65fb95241496dd23c1797569dac3bc92af0a24d7f64e51709837cbf36c214756": [],
+ "21892a0a85b0216ca706c1164b9e1a41dec9f0440247f6853ff29bf93b0183fb": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.88",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4B, core biopsy com carcinoma ductal in situ"
+  }
+ ],
+ "33ac3c67700808cc1b1ab776922ca09983317bbea8d3b3705913373ae8e98574": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.92",
+   "trecho": "CBC nodular em regiao malar, 1,5 cm, biopsia incisional confirmando"
+  }
+ ],
+ "5926f573725c5b1e41c9dd830b818091aba84d1cb21bb9bb04d4dbd7b3d7d2c5": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Estadiamento clinico IIIB"
+  }
+ ],
+ "a861a544c0830da462d172668fae13bb7e883277b5a26a9c538f93cb0a2ce141": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.96",
+   "trecho": "Apneia obstrutiva grave associada, dessaturacao noturna ate 78%"
+  }
+ ],
+ "494240939dfcd0d58e379cb9ea954f3b02bf009813982c4faec5b233da474fd7": [],
+ "d8b84688b28fbf5c1bff2100393056b0ad716950631df2b45acc81e2b9d1c3b3": [],
+ "aaa60a6e74e493f333d5edc7f845e72cd86a165adaf38bbe917bee63d0799e11": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal direita de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "da39e96f575c6b6eccd19ccb8ed1570515a574f22b7aa1af8e0ab598ebadfa1a": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "Carcinoma espinocelular em orelha, 3,5 cm, AP confirmado"
+  }
+ ],
+ "681a2683f12b8d7d77ade8086039d8092ea47f04d781977826fe9f877f79510c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.81",
+   "trecho": "Carcinoma ductal invasivo de mama direita, 3,5 cm, AP confirmado"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "Estadiamento IIIA"
+  }
+ ],
+ "336402e10e0b3df6eb8aca1f0b512d91e5ba4d66b9b7c167a8ee15531bd9c940": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hernia inguino-escrotal direita de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "0cae7e6e828403bc33d5b69c706cd622cd2910c404588fc28ffe10cbdd720c9a": [],
+ "6b2a6922a7a367cfad7317329e1b8fabc4ee807e4d0e3a8ecf66f152c640d170": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.77",
+   "trecho": "Melanoma orelha, Breslow 1,4 mm, AP confirmado"
+  }
+ ],
+ "3a644b1526682f0f0443fc248d261a972c4a25125ca945a3659469db6adf45c5": [],
+ "c9832e10e617dce3f62932e3b245c26162912c49cf07f42d17c46aff903fbefa": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata esquerda, av 20/200, mora sozinho, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "83ce695ee6a49cb56c6c10f2d98834d654c4c290dd844e82395bda91651aec1a": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Lesao pulmonar benigna (hamartoma) 1,5 cm, exerese por crescimento"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Nodulo em crescimento"
+  }
+ ],
+ "fbf240c8d87701cdd833a981b6399ef0fbbaebb8aa31bf3538d4e4f732b0a068": [],
+ "f7ef4bfe7561e6ded8853f5e25e1e9602642cee8b2063f4db96bebac99645835": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Atrofia tenar importante com perda de funcao da mao dominante, risco de dano neurologico definitivo"
+  }
+ ],
+ "7ee67ff001febb1d539f417d01299887888bfabe46198966773cd197db3ac058": [],
+ "802e60e10e38ce5f1634e85555325586b4dae1b0811861c120de5a2cf103c5bb": [],
+ "23cc2cf6d2924f87336a8a6c6bad5bde456db531ec88e3fae6d42e0e4fe5f51d": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.97",
+   "trecho": "CALCULO URETERAL DIREITO 16 MM COM HIDRONEFROSE MODERADA"
+  }
+ ],
+ "540dbde28f2eccce40d8a7fe391e4d56c698ba736a0811b76dd2c7824c1bcc72": [],
+ "6e481658148bc79e46b551b9911a9c1bd016b1cd664fe9898d585920d8017ac9": [],
+ "a3f105aa420c6a207c6a02eeff164c83b0e9d3006fc315f183df9d41a51bbf41": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.93",
+   "trecho": "Nodulo de mama direita BI-RADS 5, core biopsy com carcinoma lobular"
+  }
+ ],
+ "287c849d3756db6413793a7ae5fc533eccc38265c60959d62a2cb93458b01801": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.81",
+   "trecho": "Neoplasia de colo uterino IIIB, AP carcinoma epidermoide"
+  }
+ ],
+ "ed4ec1341c00613b32396c9c7bb73777353fa70c9cd784c55f66cb98a0d0744b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "ENFERMAGEM: PCT COM EMAGRECIMENTO VISIVEL NA CONSULTA"
+  }
+ ],
+ "685a81711aaab402a8bbad7a23f39bab61b35e16ae784f0fbf4ccee871067c36": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Hernia inguino-escrotal bilateral de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "4b172b602aae034e2f40c795a90bcedee11d2213605241766009a79a444bbb57": [],
+ "abf6b41631bad712dc86f04fe48cf12edce569d34dc6efb1eb5983870014337f": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Tumor de sigmoide, AP adenocarcinoma moderadamente diferenciado, CEA 12,5"
+  }
+ ],
+ "f5482a311b1c42241245a02d084d9b71bd75d3810f7111a4c7dae2e6431af2c2": [],
+ "957670b6d5d0185916bc7fb1cc7c1e6140a6ed44bda40348b93c917825c52d1e": [],
+ "39f36f2b3ce560c2137c42bb20a30006d80ede623a89e16d4fb90e1f1305f0be": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.86",
+   "trecho": "Adenocarcinoma de sigmoide, colonoscopia + AP confirmados"
+  }
+ ],
+ "b6f48f741d066707501fad7dffd80ba9d641300fb9807b80f4e25d0612269de2": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Adenocarcinoma de prostata Gleason 4+4, PSA 22,0"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "PSA em elevacao rapida (de 8 para 21 em 4 meses), dor ossea lombar em investigacao"
+  }
+ ],
+ "846c91270004750de243019256ffbd1303aaaae2fc88e0678c5519944b12800b": [],
+ "651162788c1cd5ee91292b550d2294b83e321f4ba2482ac2eb63838216322ea6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "ff3fde2d77911134d960a2d64164154ec3c05fe1f259a5a00c6b0774ea6506d8": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.94",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "bf663463cb4f6e1e843061ecb4f2f454013e2ffdd2bbb87de16ff4de80cfcc0b": [],
+ "c381faf135bf8f4a82f777bd523d1899ac0aab02bf9b35248d8bffb554dbff3c": [],
+ "b87cd623ea332cb5d26db81e2d84d0a12ab68ea6e97732a9d458be3a54c321d6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.86",
+   "trecho": "Necrose asseptica de cabeca femoral direita, dor intensa, deambula com dificuldade"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Paciente acamada ha 3 meses pela dor, ja apresenta ulcera de pressao sacral inicial"
+  }
+ ],
+ "5d9963bd09b60e284ed18e26a3a58fd46e52a7164b460c22e7e4eeb6184255fc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "b96bab3db61f31b7693f1c160a54b3979f3a26956d77cf805c546909146f02fe": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.73",
+   "trecho": "DAC triarterial, angina CCS III, FE 36%"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.89",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "46bbc4ef1beb814cccdf2f7b0b961c906a998376b1cdebb0bc6243258f1c5d7c": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.78",
+   "trecho": "Ruptura de LCA bilateral pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "1efa40e923586cc738832bd8c3eace29c240ab433f0629376529f66c74367653": [],
+ "5b16c62d398da0c36b7d4105a7084d6f627bf77b226e9eeb94b7495b30e11891": [],
+ "ce05a7810cc9a56d55bbacd5f317c08a264923b03e4f1ce2d175c1e725c4f611": [],
+ "1692b2c6c576aa558792114545bd6a44ef9b41a1c2d509570cb1db015ae46136": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Paciente com colelitiase e polipo vesicular de 3,5 cm em US"
+  }
+ ],
+ "86b03f11bce26ef1d9a9ae47497011d8796b5c40a29fff15109fec3118e6b023": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "fb9c588de3303bad13ac3b22d200864d2e9fc35527f011d05d703ebece67f6b6": [],
+ "24473e91f18fad36c4c406457acc510650c723a2d0586ec3ace0795627af0f16": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Retencao urinaria aguda de repeticao, sonda vesical de demora, ITU de repeticao com sepse urinaria ha 1 mes"
+  }
+ ],
+ "60c36aee1203c19d5acb5902e68b1e4a10a42f2a614a64a3a738dffcbd88f7d0": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.88",
+   "trecho": "Necrose asseptica de cabeca femoral direita, dor intensa, deambula com dificuldade"
+  }
+ ],
+ "54f3e85a80dd6f8ac712677facbda5696bf2fe81b9810d3e22617ff57a8563b7": [],
+ "e73175a9beeecbf639fb38a66f48147245cee12b3ebb8061d375cdca2517fcd7": [],
+ "6060b50d9c628c61cf3b67bbec775a7464432d8ce8993748998b9df1496538c3": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.91",
+   "trecho": "HEMORROIDAS GRAU IV COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "f37d0e5f52b2393529b2b46fbc9f1f74475ccf56cfbae86f5d1b52608a54719b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 10,8, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "9a4f1f881147f537703e2165e5e987d8c52507ceb87145d308a56f8242d493ab": [],
+ "4e8563411b01ee1b1ca15714677eda10027652c0fabf50a830590bebfe8caa24": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Nodulo pulmonar 2,0 cm, crescimento em TC de controle, suspeito de malignidade"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Biopsia pendente"
+  }
+ ],
+ "228dc9828e636df69c761c2ce427a7bc8da4031d60e310b6b20b138e02adb984": [],
+ "8f0d5bdc2a9b8783335d8e86313bf2e421a328c675acda2bd6c02f33d472cc24": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.93",
+   "trecho": "Dependente de familiares"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "1d9572d91ad6abe7bfb11747de841fef6f49e87ffe4937764d4f9e88ddbeaf14": [],
+ "99167a9c95d85f97a5a5e6c6db6268aa9a40161d0aca96b80ca71db6ed1d4c35": [],
+ "e2a07f528171140b61d9cab5da99c88ac3385e67002e02fcbf87bec7c5817d3b": [],
+ "39998263a1efa0eeb52b66f203fd677a033cccfa71b589a822776e866a5740ca": [],
+ "45eaf9918b9463fbd80c77b464411b1a76d47b3bc2ad27ce54cfe837c268148b": [],
+ "681847427ec12e65386f41eef04cbc142bce5d289b89111c0ba2f503efeb5fb2": [],
+ "cbbb631fd7f5257583af4d5a8ae3cfd318536bdc321ec717d3823781cfd7b092": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Adenocarcinoma de colon ascendente, colonoscopia + AP confirmados"
+  }
+ ],
+ "9ee003273b2ed1cc2986a8518895fccc7efb503a257954992ab1bd48e862646f": [],
+ "99d130eef6878ce13921e1b19bfdef412e8ff542e26f7c324ad5c4b786b817ff": [],
+ "a1b6a385337c43c4b551fcadb9750263c43cba184b3d978687f85670a6854d5b": [],
+ "a5415de3526f209d18dda3eb3c68580c19bc630e0ba0ec434cec6d7b0c868fd3": [],
+ "070bdd477458070010c07cdac289cf4e53f1a1bcb28cb0f76f305d22cca5e959": [],
+ "523800592d20f40b1b4283c0908533bee9306eaef445584a2e13a9f6274fe4cc": [],
+ "8fe83e991276e521b0aa799b35462f9efdbbab3b1b0cade557c7241a39ddbfa2": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal esquerda de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "fa4374df8af6f1e9e6a5ea118baa4c6cf6e35492d4af0eeed3588905cd76db2c": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.91",
+   "trecho": "HEMORROIDAS GRAU IV COM SANGRAMENTO FREQUENTE"
+  }
+ ],
+ "4fcbc58e360a827e3b3fea43b0c449579911a1d294e4329e816cd287df2d8308": [],
+ "ce8e9e3d7a1fea31b13dc0da25927e58710b109e82b34ec5b2340c092bf1437b": [],
+ "eb040a37237d2cb7c1ea61f9c360968a78f707ef7033ce0b739ebd639d290440": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Tumor de colon ascendente, AP adenocarcinoma moderadamente diferenciado, CEA 12,5"
+  }
+ ],
+ "054c8ef0ae593822008f9e241119806f8d9d1a9968c16c637f61c7d2f6601515": [],
+ "7b73cff629107018aef2a713a2a3a699000a06578a4869bdf44ba0e24681e2e8": [],
+ "2a5557757f2362b11745a7f39503b72edb4203c115b47529410a7c82536f68fc": [],
+ "6bc3873826dc92de325ba59c5420718fa74fba36223184de48d15601b64e0bff": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Nodulo pulmonar direito de 2,0 cm, PET-CT com captacao, biopsia transtoracica: adenocarcinoma"
+  }
+ ],
+ "7abc9996f77a482582b7d98dac3882450a404d2309c103c62e2f34521cc510b4": [],
+ "345c71e3a013b7098becbed645e4f03261b8c350ffa67f3e36be237fb6006885": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av 20/400, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "f7fec879a96d3b7f561b6928e580111ef6f6057e12bfa372b8905496311e8b6f": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.91",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "effc017839ff4b1276e3fb93b646f003db3e82d052a344dce71a1279aff1d322": [],
+ "4688c6059085c72da63820379f6aadb5a2718875c65d6813166996cd214882da": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "Pct com catarata bilateral, av 20/400, mora sozinho, ja teve 1 queda em casa por baixa visao"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg"
+  }
+ ],
+ "fbcd8b5ac094802998733a9c6d9a50282d7f9e6522850e71949a7dafb226ce29": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Nodulo tireoidiano 4,1 cm, PAAF Bethesda IV"
+  }
+ ],
+ "ed7c26c1833b7759125451b944ad2713e633de62db50d368bf72d7807c4d2f58": [],
+ "60f8710d284fe2715d887b76f3d7732ed3847332325a72941601afcd860f260e": [],
+ "099f964e207569f9b0a0bf03507cb4091e959183aa736fabd6d049ec7a08c610": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Lesao pigmentada em couro cabeludo com assimetria e crescimento recente, suspeita de melanoma"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Dermatoscopia alterada"
+  }
+ ],
+ "d86213c9dc171a8156de441a4d6f64a6f7660971e4470a9cb50b9a117e059116": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "CA DE PROSTATA GLEASON 4+3 (ISUP 3), PSA 6,8"
+  }
+ ],
+ "78b2f0fc839837175c48c66f2a01e30f4efe7436080b4d5977e0136773153502": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "Adenocarcinoma de prostata Gleason 4+4, PSA 5,1"
+  }
+ ],
+ "91e10e13b692675acc6286ee8d307112622e2f007bdfb3750c6f4a07fcb9c21d": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.73",
+   "trecho": "Coxartrose bilateral avancada, dor em repouso, uso de muletas"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Paciente acamada ha 3 meses pela dor, ja apresenta ulcera de pressao sacral inicial"
+  }
+ ],
+ "28eb899fefb4b934a0cd78c1fb755b4eeb1a686a72c0b5bf3be9f6a2fb149857": [],
+ "289172406a5bb873448d68c20915f9a497785a37f42f3174256c8b514f1b974c": [],
+ "265e75bc6113cf74bbb2155578741460dd43f160910ed546e936910cc53fac74": [],
+ "fc737c76c3bb46aceb4bd1e3777c13dc9fc82c270eadf58a999b4333a52d1dc2": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata esquerda, av 20/400, mora sozinho, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "e1d5a19134c5a200f19d0423f85f2364238295859f04fce78d1ec77d4bd2178b": [],
+ "b10ab95696c5e29865a58956337813123829c673ad79dfd5d68ca2c4ca8c3af1": [],
+ "184e8692383ede00b0243fe49fbf7592680547cd4dfe01767aa08fdf0d99879d": [],
+ "55d8469dfdeb3a5fbe43724a7d69df3616355b67f6bdf4504f090adfca482a2c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 14,2, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "1351713cbdc9539c9114472b8fc1245321ae17171d5c5308328faa072960ce84": [],
+ "e7e07c1d358090b0cda01978cba306ecf101acae23f523cce4c3f5c150c8646b": [],
+ "0247e25c8946c414e3737006e482a1a57d2352b8d1ba3f5eb44dad805f52e994": [],
+ "0c723008683658438f445716705247184d3cb3e83c77b12ad3761be1c0ea408c": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.94",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.91",
+   "trecho": "Sincope ao esforco"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao de tronco 80%"
+  }
+ ],
+ "c06f5b16733c3d0e62e496e1547da126d68036c071d5b69e5ad77085fe1b0ea4": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Polipo de colon sigmoide nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.96",
+   "trecho": "Enterorragia recorrente com queda de Hb para 10,2"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.97",
+   "trecho": "Suboclusao intestinal no ultimo mes"
+  }
+ ],
+ "85bf795cbb27aaec813d6a890d385a2297d3d8f1fccee66bbf6d3420630d709d": [],
+ "97632a2c00acb0483ed3c35f015d978cd7361b04973e4c564d3293f73e2d724d": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.82",
+   "trecho": "Carcinoma ductal invasivo de mama esquerda, 4,1 cm, AP confirmado"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Lesao ulcerada de mama com secrecao, crescimento rapido, linfonodo axilar fixo"
+  }
+ ],
+ "7106ad5263f0d104bc545e6c9e54ca34333d8352d926516e673cc5c73fa3e278": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "Hidronefrose importante com perda de funcao renal em cintilografia (DMSA 28%)"
+  }
+ ],
+ "d829ef1758d6a094deb3b281d2db5b52a33af6debef9ba3157e3e9c697bcc2cf": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "CA DE MAMA DIREITA, BIOPSIA: CARCINOMA DUCTAL INVASIVO"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "LINFONODO AXILAR PALPAVEL"
+  }
+ ],
+ "063b5456ddb4a78d690da7199f23eb5838cd9c182087093137e86abbf746b38c": [],
+ "8ed08e5d43bbf2b6451da384d1af36b0bf3c94549bc8bd745745b7f8a173c30d": [],
+ "4e3059ced8404ef7a225d2830d7b4502f5b184fd05b88216b2e673f4f4638c2c": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Adenocarcinoma de prostata Gleason 4+5, PSA 14,2"
+  }
+ ],
+ "780e413583349eaa2da9665a752b54e45265656c363ff1316a31e22dce88a0b3": [],
+ "85abad1686a75c5bda223fd933a92b91a1c48b1b1ee3f8280e43db308173d219": [],
+ "226e892f13a5b53e492b4833570f7232e35f7f98b8e74554c074f2046d8a9b81": [],
+ "1beb194db7709d7939dfb901c043c2f06919d65596b9ebce3d15efd515ad8ebe": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata direita, av CD 1m, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "f695468bd8fb02c4719095ddf3b39ca20ee2b1bfa9d5b310d33d2759271f2b0c": [],
+ "2dfdfa2d45e7e7347df067ca7f1e03144061f3ad06b0a2dbed5ee24e87dfe097": [],
+ "a39467d0a1a08bc06ce40f329073a1167088110f78988b36eb3bc6bbfae8cdf5": [],
+ "c974495a8c5b4f0b514094d9bcba19900f4361c869d4e26b2fe6c3c865fccaaf": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "Hernia inguino-escrotal direita de dificil reducao, episodio de dor intensa no ultimo mes"
+  }
+ ],
+ "e164181802ad9cf7bf8ed2f3497e61d63db7849b5c76cc10cbbb5da57f9a67dd": [],
+ "7297178639d11fcd18596a4e89cd6532990c5d6556cf4be74d40f59c7d9e67fc": [],
+ "9e16b5f3aae8a6442b419b5fcbd0e96f439816afc1f1fe3884ae47cdd7982717": [],
+ "cfb1f77281cb905183a433ac853dc26591bea9d9f586facb5adb14ebcbe75123": [],
+ "a58fe9208cad69c7763de48db09fbe998b5bc655fd885cfcab41a201081d4565": [],
+ "057d8ec9dde622688517ae14561b9d2a2975b126d101c4d5b3eac9b3f0bd4531": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Paciente com colelitiase e polipo vesicular de 1,5 cm em US"
+  }
+ ],
+ "09c08e719753d04138a271bfbb9b409506a3d82eb42db399fe46ee59c1b16dd4": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.83",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "077d6e65ad67de968b7ead3a2fbdd417173e7df875e9a69d53b234de9a088655": [],
+ "2758c38e807811d9418dac7a5afe91c6a733b7126d0aadbd770a8bbd7786ced2": [],
+ "5f37701be7f7d316b7d29c741eb26eb86aca5378d5721ee01d3d0ac9ea988bde": [],
+ "7bfb2bd8761c6abcf0c6c855a19541817f2d9edd7ede4e404c8a1d3b46e21494": [],
+ "539b5653f83f8ed53325d346e1ae74848dab55740c7fb5782035e94bf13bc13e": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Perda ponderal de 11 kg em 2 meses e massa palpavel em FIE"
+  }
+ ],
+ "e8ea5b6e20f6e1b74cb0c4e9c1cf599943f634cfbaa07cb5e8dbefd162ba4959": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Adenocarcinoma de prostata Gleason 3+4, PSA 14,2"
+  }
+ ],
+ "adbbd793b03b2a1f11defe728deed57275d961396d8ddc05f9f58962e8969cd7": [],
+ "4d6b89cbf4385a73dc07ba6e133f12da4efc245909bb5b1f298d344be5b6c063": [],
+ "7669ba77dfcdb55af640925be677c790147a3c73fe08d9c2be8ff6c98447ad57": [],
+ "cc3bcebf6c15e321654ce5336d8253b8d07df77d6ba570c7ceed31b895d97b10": [],
+ "be8d85cc1ba38e32ce217f126b550eea51af761e911a79fec52f7ba91a63124c": [],
+ "8cd5f203abe022987148456b7ce0ecc8d35dc41178f7bd1b6443a50a99e64837": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "7e8d6803588175ce6249a2fdc85a1b6977ecd82382e6bf9213af84ad0704b2fc": [],
+ "ace2b0f9b6390adaf3b2b9e5cb1b5b92566d4646c5f93bd0ee964e0cb7fb16e4": [],
+ "fbe312ce16b0798251c4192a57e3ba16a8ba09e46c1d49a8355cad1af47ee331": [],
+ "34959da793c49f23acb8127feb95031086be795dea9928e9f1ac2b54487408f6": [],
+ "7e60076f98d6535840cf48b551eb6b3c8051fe83552319a60865b94c5e569569": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.84",
+   "trecho": "Carcinoma de endometrio, AP confirmado por histeroscopia"
+  }
+ ],
+ "e6526639cf8a5ef0e416e68e512f912f3f25bb882d491a91712e0e5b9713f5ec": [],
+ "1510767313bca70f5263a52ab30317ea3134ef1490405bfd01f2f7d0cd207660": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "Carcinoma ductal invasivo de mama direita, 2,0 cm, AP confirmado"
+  }
+ ],
+ "b952f03c72c53d976f526fd94ec246cbb8103e6cb35a4a8830cb16f2d3e821f1": [],
+ "467cc8592b80824752082ca973fd1374997c23647d31c085c89e022b5b45b30f": [],
+ "09363d71f65be76d98b7cf26d02eed311c19fb1ebcbab9adbcae6f0aa32dd954": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.91",
+   "trecho": "Nodulo de mama esquerda BI-RADS 4A, core biopsy com carcinoma ductal invasivo"
+  }
+ ],
+ "26fda44384f651af3f483a8ad80b0f95169abf09fc1f3cd6da2ee7387c548a88": [],
+ "93099106a0dcaceca895299636a06f1c528d3f34763df8b84e3c1aaeee003916": [],
+ "d8e6a5ebc6dea376b7927e26a779c3250292a076e8175d434890dd9a009305fd": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.74",
+   "trecho": "Carcinoma basocelular em regiao malar, 1,2 cm, AP confirmado"
+  }
+ ],
+ "4aa4ace15b42541b1de2d0ee581c677bf03d9843602dfce58b8e68f3172e55ef": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Carcinoma espinocelular em dorso, 1,2 cm, AP confirmado"
+  }
+ ],
+ "d7d2850684e241be3642a6ccd8ae628f67957de48551cd5b46cc8fd09ad64c68": [],
+ "4cbe1b9b7b97f23feece95d603f99cd6bae584fbdf0863b9a8e1e10933bd4ac9": [],
+ "3e477d391ad06c5beecee9b5048979fff8dc3158dd2eb30a2b8902f45dee3e66": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.70",
+   "trecho": "CBC EM REGIAO MALAR 1,5 CM, LESAO ULCERADA, CRESCIMENTO LENTO"
+  }
+ ],
+ "b93afc6cb56c83d6263d0ed415dd1ff915bd199f6037250bcc14e72f1170c70a": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.87",
+   "trecho": "LIMITACAO IMPORTANTE DA MARCHA"
+  }
+ ],
+ "aa1644131d65a9f2692e2446c17cca24fe4ede4aa6e9d06e0f69bfd7356c93e6": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.73",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "143beceb60690a5d6a4d73e2f3752c2812b4f14b89b3336714feeae72a0c6b2c": [],
+ "a397b09f75f7cf0cfb156ddc308b60eb6911f924e358e52cb2846c2fdca36678": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "CARCINOMA PAPILIFERO DE TIREOIDE, PAAF BETHESDA VI, 2,8 CM"
+  }
+ ],
+ "7ea48780c7c3fd14f27d9b15a56942b3a6b0b43f0a982ea9c580a3e6ef873687": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.79",
+   "trecho": "Adenocarcinoma de sigmoide, colonoscopia + AP confirmados"
+  }
+ ],
+ "f5af8b82fd2d4031fc94ae9a28333bd338a60f6c79a7d6429add560bdbdc77c5": [],
+ "309fe38b5d88b8ca614bd9224ce50252ca585b61e855dcf479ed2d50e5108b23": [],
+ "f26d9bd5207ac5b88ff2de1d0baad46f1cf09abb4393c972f20dac090754d10a": [],
+ "459bfd70b07db21062b12167cb344080c42a8d2f477aa5a0e31b452266317a73": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.85",
+   "trecho": "CA DE PROSTATA GLEASON 3+3 (ISUP 1), PSA 6,8"
+  }
+ ],
+ "1a65fe2f7f2cc98535ac1de69bb752f1c0fe9fda4e613de06a8ed6c059de110a": [],
+ "d9bc8e2ca7fa3fae78b5de28faebdb8ef75508f1eaab90274d8be592681af64f": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.79",
+   "trecho": "Ruptura de LCA bilateral pos trauma esportivo, instabilidade, falseios frequentes"
+  }
+ ],
+ "4e601b80c5c6e0bb70afb31b151114a8d495c60e4c77ab0140c081e8b77dac95": [],
+ "6fad1a0de633d4ccaaea8f7649c876f8284f3d50692e7429b5c3a97a82c84cb0": [],
+ "5cd313a48abb1ab2fb1065c2dcc49a74be197cf8164a9373bb01cc5c8905ae6d": [],
+ "a350372fd7548c75143ab303f249da50e81f67a1b219f7ac542d08515276b6bc": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.96",
+   "trecho": "Adenocarcinoma gastrico, EDA + AP confirmados"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Disfagia e perda ponderal de 4 kg"
+  }
+ ],
+ "2125411b3616fef6961580c3f5ab2a842f53cb068194cf772d6cdf47257bf4cd": [],
+ "3f08351f218285e20965b69292d8eac09512d65d511471225a9f961d0b38cea4": [],
+ "b2f6306d098c98c58d47585bb5229e9b56475d76f1fed0be9c96acdc87fe5700": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.89",
+   "trecho": "Tumor gastrico de corpo, AP adenocarcinoma difuso (celulas em anel de sinete)"
+  }
+ ],
+ "073ef44ecd0fa8e256c8c0a4a5f4f494870e12c10f3002a9485f966091c591db": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.97",
+   "trecho": "Bocio difuso toxico (doenca de Graves), refratario a tratamento clinico, volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "f4513dbb99486774dbb680b9f6dfdd0b683c902162634dc5cc264a21efb25190": [],
+ "4a6dc4f98f4420449ac082445d6a734a1b70085ca9f4704503a56b48b5e4dcf2": [],
+ "7e48279fed0c524e704aceda850e52b623af6d2e10fb5539c30f6c6952e572f0": [],
+ "640b13f50cc1994d80824b28346c3ed99cb2b5f6978c4320d96d5f74924794ea": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "Carcinoma espinocelular em dorso, 1,5 cm, AP confirmado"
+  }
+ ],
+ "d2bdf60b22359f3f7055adfc95d28250f1b61c521b00641d990a1fd151858cf1": [],
+ "6b086b5fe687ac77caa96512636c825ca70a528d18035fd0204872d6ff910a87": [],
+ "361e3e8af974f9cbb76724194aa9e8b7132180f47e39f4d7abc781c70dcb5c99": [],
+ "5925de79794ff290a024d66c4b049245655680df455e09cb4a7f4293236b8add": [],
+ "811b84477936ba41e76c682d0c638a40e5200a87cb43dee674a163f531f78c17": [],
+ "2d3e07d79dc3bddd785fac2fb1f6079cad0c8f04c042cbdf498bd32c11eed82e": [],
+ "4e4735fb66c956678438d7e669ea0f2aef79c775b3d2de8ce46545ee78434387": [],
+ "50f0d26ea4d9b317619d54810d42a810e78fc76dafb7653f6c090312d74d5d1b": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "Lesao gastrica suspeita a EDA, biopsia com atipias, aguardando nova biopsia"
+  }
+ ],
+ "7eaf7c3edff16c9233c9c1dfa61c185e73c67400c290883a58d4da86aa399798": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.84",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "04a97b548627d3fc40ed366068aa753400cf64725b2f09fe0c0dab6ce98238ee": [],
+ "2ffbe3778a28190ab7d0af36fe0019d44b194751c42462fff958245c0be22f1a": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.99",
+   "trecho": "Lesao com sangramento espontaneo e crescimento rapido nas ultimas 6 semanas"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Linfonodo regional palpavel"
+  }
+ ],
+ "07454f5e585e44c4ba05989c3e957d73154a4c7fcd9ecb2892d03c7e543732a1": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.82",
+   "trecho": "Adenocarcinoma de sigmoide, colonoscopia + AP confirmados"
+  }
+ ],
+ "30ee0451f623aec168bb79c29ac9071642d739fb2923b37060c1d7ad9a198c1a": [],
+ "7a39f83adbf8c2cca17c78d87792039dd38313e95932026b656a76f39a2fc3e0": [],
+ "ccb4e63e892a3c92b8ea39fc9d11a457dafce1c64cc42c70056337f7fcf9b332": [],
+ "13acf7bd146d36d1b02febbfb3e32c6a61b09e517a9c979c32e92f6325bb9fd7": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.77",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "789558192673d6747e2cce282d0d042821e1b62e91e3915ffa8d47ba43027122": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "HERNIA UMBILICAL COM EPISODIOS DE ENCARCERAMENTO PARCIAL, REDUCAO MANUAL EM PS"
+  }
+ ],
+ "0c500f788aa0a0fbd5b248dc0353faca0102c8440e3e6c80a3aba426371ecb79": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.90",
+   "trecho": "CA DE MAMA DIREITA, BIOPSIA: CARCINOMA DUCTAL INVASIVO"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "LINFONODO AXILAR PALPAVEL"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.72",
+   "trecho": "ENCAMINHADA PARA MASTECTOMIA"
+  }
+ ],
+ "56c613b4e86521b597bab483c401676f77fa373e492914e46fcf0896d677cbc1": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.78",
+   "trecho": "Nao consegue mais ler nem reconhecer rostos"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.92",
+   "trecho": "Dependente de familiares"
+  }
+ ],
+ "e15dcbe4c39e50f27f0c3ba20a9b7f219db7c8e085db5ee2468f082c0d40840a": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.98",
+   "trecho": "CATE: TRONCO 80%"
+  }
+ ],
+ "02680dd08175b202d76ea05c5a8acb22620ba997903b6febf569a7d2489387f0": [],
+ "39b4285353ac3c71a9ef3af0ed21bbdc7233fe53f04a2fda482b07d989809b80": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.89",
+   "trecho": "Coxartrose bilateral avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "dd28a7ca734cf4f95fa9c2ff2b8b2ac043bf82ca23b0b21fdf3fab5e6f0ca768": [],
+ "2e7453a95ce02195d8006ed3add630532d559e1866f7fc9affacd5f08fb4e9c0": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.71",
+   "trecho": "Carcinoma ductal invasivo de mama direita, 2,8 cm, AP confirmado"
+  }
+ ],
+ "1e259863382890b8f63d7af2ed86692ca37191c3de7e855aa9ca9f72ff49acfc": [],
+ "89acc475e5bd0bd08dcc7899e532b3b8b8695910bc5dbbde0a1ff6765f729099": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.82",
+   "trecho": "Lesao pulmonar benigna (hamartoma) 4,1 cm, exerese por crescimento"
+  }
+ ],
+ "921f680dd8e0b5b0c537d9653ee0f725413fb04db1608cba32953eb8b0794bc6": [],
+ "8a96fdf1d54f7175c8deeb465971abce670badaba2b11e7f89c37b450ab63446": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.97",
+   "trecho": "Endometriose profunda com dor pelvica cronica incapacitante, dismenorreia intensa"
+  }
+ ],
+ "22bacdcdceabd60f67832f2bb2bbfba035c1e3e71e41880b4e3b3ca81c5ab563": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.88",
+   "trecho": "LIMITACAO IMPORTANTE DA MARCHA"
+  }
+ ],
+ "74288c5359195dd66daa8c69cb1a56b7331b46cb0f19c0b76b35db7a05ecbbad": [],
+ "f8d5ac976d8837a8aada40e6e70adfdf8e62a96141b7d0f9912e4bce52406ccd": [],
+ "6367376b4ffe9a89584c3299f6e5991057ffc03970d83c346ec6aa27fd44c824": [],
+ "b20b92204568684b917db3a0b87f6e107614335e05a2214569f38f942fecb256": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.94",
+   "trecho": "HEMORROIDAS GRAU IV COM SANGRAMENTO FREQUENTE"
+  },
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.77",
+   "trecho": "HB 9,1"
+  }
+ ],
+ "ca29e28cbe66c01428f450885ce49b07755d38c1a2cadf9b82c47bd538e1ffad": [],
+ "934833d01b58e03346f1b6a521f2ff86807ebf5f2f6581830e8deb61ed0806bb": [],
+ "cb8c211778e1cabe407b90b3ab4024e1b81362bef1d14a28ed51ba8fb6139c67": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.74",
+   "trecho": "Carcinoma ductal invasivo de mama esquerda, 2,0 cm, AP confirmado"
+  }
+ ],
+ "79626a695311aef0e35760173f5d6ea7920f70482ec48e879f88200a412ae9ba": [],
+ "a493c0d31037c1551fa2fca339dd579e7e9e090a0dd9e75a6175464cc2ee1cb8": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Carcinoma ductal invasivo de mama direita, 1,5 cm, AP confirmado"
+  }
+ ],
+ "ec7c9761377a51b89291c71c0f2739b313f643631de5b01709b7f004513e6f13": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.99",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.91",
+   "trecho": "DEAMBULA COM ANDADOR"
+  }
+ ],
+ "f4a6fb30c482664ee10fd21fea11747226965a7959772aa5ea14ceb3d258bedc": [],
+ "e2c0e407e85765c31389bea95bf626df3678f6871a41d2538769056b724fd91a": [],
+ "f653586ae0c4e3237514db9d47ec85639b0c54c980f2a02d03340c86eb803537": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.73",
+   "trecho": "Carcinoma ductal invasivo de mama esquerda, 1,2 cm, AP confirmado"
+  },
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.98",
+   "trecho": "Lesao ulcerada de mama com secrecao, crescimento rapido, linfonodo axilar fixo"
+  }
+ ],
+ "c7720a23beae53fa34e6d7f967e89e767e96de6aae0d34dcad02f5f32e57bbac": [],
+ "1d52e67d86e4c9f74cdc4db98a7a04cf5ccf8f7a1a79554b2912c3b2f5ca12f9": [],
+ "5fe5eeabb884d50ca7386af785b8d6b316a97b057c335f7061c5acbcf25ba993": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.96",
+   "trecho": "Sangramento diario com anemia grave Hb 9,1, ja transfundido"
+  }
+ ],
+ "0532f408ac0478b98bb3f7d0344bb4b4821f6ae385eb0d01e2f36dd3e62c938b": [],
+ "45fe8044ec595205b7a250e64a08282148f0d25ea067ded219297d4e83f25108": [],
+ "8082b02facd56837ba60e7e3bc4f1186ae64a68f8575e8b25fa1f9d9f938ff21": [],
+ "e285da8c27fbb0be24411a435e7908b11a12004ad2a1df5d61c263d114b2b633": [],
+ "c02bd4b37548e8e6326082be996eed2702a13e5a6e61d85c66b0d4b10de7cc62": [],
+ "13f09b81558259318b5af49bf0b74590d9fdeeee9a22c340540590a68f699f2a": [],
+ "caea8f98c21286e3336f9582bd3c48ffb3224a7bf030743f80c31af1674cfa18": [],
+ "bc37cb95e5a957363c2bd90240cd473ef1df38e499be31b592eea7348af1d2ea": [],
+ "73b4bf4f647ddf89a5f0ae1c2cfc34c20c977805af9376452cf0e200f48d7206": [],
+ "3bfca6f80d1820a0a2771cc8ff8eb0371cc639e7e131681bda488490426e201d": [],
+ "e949741b3e23de904bd5f81362c71ffb6aec533c9a909c848516f93d0abc7fcf": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.87",
+   "trecho": "Cateterismo: lesoes >70% em DA, CX e CD"
+  }
+ ],
+ "f4837ea35fbdb7cc4598af14a9d3e288e9617abb882aa736671c4313c8d2c768": [],
+ "3dfd2dd39df536e7104f03ebfbc3b8e7e564d28b8bc5f74c8e79617a9b2dfa84": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.95",
+   "trecho": "Nodulo de mama esquerda BI-RADS 5, core biopsy com atipia ductal"
+  }
+ ],
+ "b8fe94015d14017ded48181798450eaa3ead756c1c909849bfd9676985b7f609": [],
+ "c43a37f55ce139943391cf138edb2229649153e71d110b56bacce085da17a28f": [],
+ "2e7b3ee08502a64f104713517c403a493cbaec84b981b468eedc1c7851701b73": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.89",
+   "trecho": "Coxartrose bilateral avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "5b0b7295a486ae325d47a5e31cefbf3a27d356a610f1832211c489c4c8671b66": [],
+ "1ced8af8d5bbef91c92fba7f299fa9290c90d39c5a8e0f5f1dcb98a482bc317e": [],
+ "638cd1ad8e5d48a904060fbae1e316266af1f492715a1d6f4428fd2106369770": [],
+ "e276215f9f214721af4147b539509ba325613295cb151988f934efca0f7ee111": [],
+ "6bf814ce91329e89d9de1d7d5abf39b16971412fc6d2e6dc82128346276b1133": [],
+ "4bd3b79de6d32f15300e0c85ac7e4bd77c653deccde12734430f01a1acd71b20": [],
+ "b73569424c68e40b02e223ab79b481e2d720f85a189f8a4e3cc180d4db3c560d": [],
+ "ab8c4eba8de715f0499ada7206daa6ef26b9383656f122814139ec91ea18a3bf": [],
+ "7f4d58fe7ba4c1848606c097e463647e67f65cbd1303993d1d99382811f20a69": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.89",
+   "trecho": "Bocio multinodular volumoso com desvio traqueal ao Rx, dispneia aos esforcos"
+  }
+ ],
+ "255750e24054afe02d08c99b7e32985f0070a0166d0e2cf4a7ad3f2215a67f7b": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.97",
+   "trecho": "Angina em repouso nas ultimas 2 semanas, 2 idas a emergencia"
+  }
+ ],
+ "cf997fe60e04909b44b151545c2b6640e86cb2e0ac2483f3826490441245c339": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.94",
+   "trecho": "Neoplasia de prostata de risco intermediario, PSA 14,2, biopsia 4/12 fragmentos positivos"
+  }
+ ],
+ "707f5997e594faaf5349b8ddb38486f35521e6b0d957de3c1b0cdaec0ebb68d7": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.80",
+   "trecho": "CA DE PROSTATA GLEASON 3+4 (ISUP 2), PSA 5,1"
+  }
+ ],
+ "ff1271022762a1b2da72700c869c2ac652ef8f9a1cd93b97c0a1f436fbe98397": [],
+ "5bfe6cbefeb1dc047c168ced16da9c75980c8eeb78d34faf61afd910deb77c4f": [],
+ "7a1798e5c6fc9ea2feb65a60c6a7e4c6ac4abc00631615b443f825e3c79e3f33": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=1.00",
+   "trecho": "Nodulo pulmonar 1,5 cm, crescimento em TC de controle, suspeito de malignidade"
+  }
+ ],
+ "edf9652c8fc085270c21c6d798af4f150f76dc8ca6dd11c8fb3e4a158f4a119f": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Pct com catarata bilateral, av 20/400, mora sozinha, ja teve 1 queda em casa por baixa visao"
+  }
+ ],
+ "0ba73f1f76c9678e22e2e8d1e41430d58d77519d98df3a59eecd123dcc3a7b30": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.87",
+   "trecho": "Polipo de colon sigmoide nao ressecavel por colonoscopia, AP: adenoma tubuloviloso com displasia de alto grau"
+  }
+ ],
+ "a8b3c487653ff73af2ec864f34b8799bb532668911eaaccfa584d49d7f262a40": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=1.00",
+   "trecho": "HERNIA UMBILICAL COM EPISODIOS DE ENCARCERAMENTO PARCIAL, REDUCAO MANUAL EM PS"
+  }
+ ],
+ "6701d8a29cc352e700f8c3b10f2dc5cf984eb74639b0ede19b7fbe38b397b6e3": [
+  {
+   "categoria": "risco_vida",
+   "termo": "jev p=0.85",
+   "trecho": "Ulcera venosa infectada com celulite recorrente, 2 ciclos de antibiotico em 3 meses"
+  }
+ ],
+ "5d4b456710a938ad2caf0ed368810d310f68023a0199f302d33166e2386802f8": [
+  {
+   "categoria": "suspeita_malignidade",
+   "termo": "jev p=0.78",
+   "trecho": "Adenocarcinoma de reto medio, colonoscopia + AP confirmados"
+  }
+ ],
+ "57eb0ee1f45703d992b610d57bcd9afd35e57cd8698f197217341bf6c7ba29be": [],
+ "b3aa2c56ece0a367099ce9374edacc252d87f0fe90a63c7ea904a748241c08dd": [],
+ "67e29bdb35012f8cae10f5663ae5fa30d8d5fce0491ac600c5baa74aaa35e02a": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.87",
+   "trecho": "Coxartrose esquerda avancada, dor em repouso, uso de muletas"
+  }
+ ],
+ "f779395a0a4c614ea691f2b24c1244f160bdcd9014456de795822549b56b824a": [],
+ "c4505de80a7b6f895029cf42f185ab4902b2a474421d21c1a0688e1576768113": [],
+ "20cff301330bb38f66b1dce9d2b95caf76ba4fca32623cfb31b166223873c77b": [
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "DOR INCAPACITANTE"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=0.90",
+   "trecho": "DEAMBULA COM ANDADOR"
+  },
+  {
+   "categoria": "sintoma_grave",
+   "termo": "jev p=1.00",
+   "trecho": "Quedas de repeticao (3 em 2 meses) por instabilidade do joelho"
+  }
+ ]
+}

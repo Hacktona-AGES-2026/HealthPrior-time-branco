@@ -1,6 +1,6 @@
 """Composição (injeção de dependências manual). Único lugar que conhece implementações concretas.
 
-Rotas recebem casos de uso prontos via Depends; trocar SwalisStub pelo SWALIS real é só aqui.
+Rotas recebem casos de uso prontos via Depends; trocar a implementação do SWALIS é só aqui.
 """
 from datetime import datetime, timezone
 
@@ -28,12 +28,12 @@ from app.infrastructure.repositories import (
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
-from app.infrastructure.swalis_stub import SwalisStub
+from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
 
 def get_scorer():
-    return SwalisStub()  # TODO(SWALIS): trocar pela implementação real
+    return criar_swalis()
 
 
 def get_carga_inicial(session: Session = Depends(get_session)) -> CargaInicial:

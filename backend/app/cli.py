@@ -7,6 +7,7 @@
     python -m app.cli flags       US-03: recalcula oncologico/piora e marca eventos (sem recarregar)
     python -m app.cli gerar-fila  US-09/10: gera a fila do banco, verifica e publica (I-07)
     python -m app.cli gerar-fila-csv  US-08 provisório (D-26): gera a fila direto do dataset, sem banco
+    python -m app.cli extrair-sinais  SW-01..04: pré-aquece o cache do LLM e mostra as classes SWALIS
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
@@ -38,7 +39,7 @@ from app.infrastructure.repositories import (
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
-from app.infrastructure.swalis_stub import SwalisStub
+from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
 
 
@@ -119,7 +120,7 @@ def cmd_gerar_fila() -> None:
     """US-09/10: gera a fila do banco, roda o verificador e só publica se passar (I-07)."""
     with Session(engine) as session:
         gerar = GerarFila(
-            SqlSolicitacaoRepository(session), SqlEventoRepository(session), SwalisStub(),
+            SqlSolicitacaoRepository(session), SqlEventoRepository(session), criar_swalis(),
             ExportadorCsv(), settings.ref_date,
         )
         resultado = PublicarFila(
@@ -142,7 +143,7 @@ def cmd_gerar_fila_csv() -> None:
     Provisório (D-26): substituído por `gerar-fila` quando a US-01 (carga no banco) existir.
     """
     solicitacoes, eventos = carregar_do_csv(settings.data_dir)
-    linhas = montar_fila(solicitacoes, eventos, SwalisStub(), settings.ref_date)
+    linhas = montar_fila(solicitacoes, eventos, criar_swalis(), settings.ref_date)
     csv_path = ExportadorCsv().exportar(linhas_para_dicts(linhas),
                                         settings.output_dir / "fila_priorizada.csv")
     passou, saida = VerificadorOficial().verificar(csv_path)
@@ -156,12 +157,44 @@ def cmd_gerar_fila_csv() -> None:
         sys.exit(1)
 
 
+def cmd_extrair_sinais() -> None:
+    """Chama o LLM para os textos que faltam no cache (congela o cache) e resume classes e alertas."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    solicitacoes, eventos = carregar_do_csv(settings.data_dir)
+    swalis = criar_swalis(apenas_cache=False)
+    extrator = swalis.extrator
+    if extrator is None:
+        sys.exit("LLM desligado: defina OPENROUTER_API_KEY no .env da raiz (ou HP_LLM_ENABLED=true).")
+    textos = {t for s in solicitacoes for t in (s.justificativa_clinica, s.observacoes) if t.strip()}
+    faltando = [t for t in textos if not extrator.em_cache(t)]
+    print(f"{len(textos)} textos distintos, {len(faltando)} fora do cache ({extrator.modelo})")
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            for i, _ in enumerate(pool.map(lambda t: extrator.extrair(t, ""), faltando), 1):
+                if i % 50 == 0:
+                    print(f"  {i}/{len(faltando)}")
+                    extrator.salvar_cache()
+    finally:
+        extrator.salvar_cache()
+    classes = Counter()
+    por_llm = 0
+    for sol in solicitacoes:
+        c = swalis.classificar(sol, eventos.get(sol.solicitacao_id, []))
+        classes[c.classe.value] += 1
+        por_llm += bool(swalis.alertas_llm(sol))
+    print("Classes: " + " | ".join(f"{k}: {classes[k]}" for k in ("A1", "A2", "B", "C", "D")))
+    print(f"Solicitações com alerta do LLM para o regulador (não mudam a classe): {por_llm}")
+    print(f"Cache: {settings.llm_cache_path}")
+
+
 def cmd_decisoes() -> None:
     raise NotImplementedError("US-11: gerar tabela de exclusões")
 
 
 COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normalizar,
-            "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
+            "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "gerar-fila": cmd_gerar_fila,
+            "gerar-fila-csv": cmd_gerar_fila_csv, "extrair-sinais": cmd_extrair_sinais,
             "decisoes": cmd_decisoes}
 
 
