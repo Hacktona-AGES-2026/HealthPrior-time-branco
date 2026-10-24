@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import { ORIGEM_DADOS } from "@/data/fila"
 import type { Evento, Paciente, TipoEvento } from "@/data/tipos"
-import { type DetalheApi, MOTIVOS_CODIFICADOS, type MotivoCodificado, obterDetalhe } from "@/lib/api"
+import { type DetalheApi, MOTIVOS_CODIFICADOS, type MotivoCodificado, obterDetalheEmCache } from "@/lib/api"
 import { HistoricoPaciente, type DecisaoHistorico } from "./HistoricoPaciente"
 
 const TIPOS: TipoEvento[] = ["biopsia", "hba1c", "pronto_socorro", "internacao", "exame_imagem", "consulta_reavaliacao", "contato_telefonico", "falta"]
@@ -69,8 +69,6 @@ const frasesDecisao = (d: DetalheApi["decisoes"][number]): string => {
   return extra ? `${base} — ${extra}` : base
 }
 
-const cacheDetalhe = new Map<string, Promise<DetalheApi>>()
-
 /** Detalhe da API com cache em memória por id (uma só chamada por solicitação). Nulo no modo offline. */
 export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean } {
   const [estado, setEstado] = useState<{ id: string; d: DetalheApi | null; erro: boolean } | null>(null)
@@ -78,13 +76,7 @@ export function useDetalheApi(id: string): { d: DetalheApi | null; erro: boolean
   useEffect(() => {
     if (ORIGEM_DADOS !== "api") return
     let vivo = true
-    let pr = cacheDetalhe.get(id)
-    if (!pr) {
-      pr = obterDetalhe(id)
-      cacheDetalhe.set(id, pr)
-      pr.catch(() => cacheDetalhe.delete(id))
-    }
-    pr.then((r) => vivo && setEstado({ id, d: r, erro: false })).catch(() => vivo && setEstado({ id, d: null, erro: true }))
+    obterDetalheEmCache(id).then((r) => vivo && setEstado({ id, d: r, erro: false })).catch(() => vivo && setEstado({ id, d: null, erro: true }))
     return () => {
       vivo = false
     }

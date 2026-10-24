@@ -2,7 +2,7 @@ import { create } from "zustand"
 import { toast } from "sonner"
 import { ORIGEM_DADOS, PACIENTES, PACIENTE_POR_ID, carregarFila } from "@/data/fila"
 import type { Classe } from "@/data/tipos"
-import { ErroApi, decidir } from "@/lib/api"
+import { ErroApi, decidir, limparCacheDetalhe } from "@/lib/api"
 import { reguladorAtual } from "@/lib/usuario"
 import { FILTROS_VAZIOS, aplicarFiltros, type Decisao, type Filtros, type MotivoCodificado, type Pagina } from "@/lib/filtros"
 
@@ -125,6 +125,7 @@ export const useStore = create<Estado>((set, get) => {
     versaoDados: 0,
     enviando: false,
     recarregar: async () => {
+      limparCacheDetalhe()  // a ficha busca de novo: eventos e decisões novos aparecem
       await carregarFila()
       set((s) => ({ versaoDados: s.versaoDados + 1, decisoes: decisoesDaApi() }))
     },

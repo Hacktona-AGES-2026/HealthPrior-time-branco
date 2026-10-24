@@ -158,3 +158,19 @@ export type DetalheApi = {
 }
 
 export const obterDetalhe = (id: string) => pedir<DetalheApi>(`/solicitacoes/${encodeURIComponent(id)}`)
+
+// Cache do detalhe por solicitação (uma chamada por ficha aberta). Limpo a cada recarga da fila,
+// senão a ficha mostraria eventos/decisões de antes da última ação.
+const cacheDetalhe = new Map<string, Promise<DetalheApi>>()
+
+export const obterDetalheEmCache = (id: string): Promise<DetalheApi> => {
+  let pr = cacheDetalhe.get(id)
+  if (!pr) {
+    pr = obterDetalhe(id)
+    cacheDetalhe.set(id, pr)
+    pr.catch(() => cacheDetalhe.delete(id))
+  }
+  return pr
+}
+
+export const limparCacheDetalhe = () => cacheDetalhe.clear()
