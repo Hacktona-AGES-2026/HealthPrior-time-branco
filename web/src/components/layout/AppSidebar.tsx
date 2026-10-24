@@ -31,7 +31,6 @@ export function AppSidebar() {
   const pagina = useStore((s) => s.pagina)
   const ir = useStore((s) => s.ir)
   const setAtalhos = useStore((s) => s.setAtalhos)
-  const selecionadoId = useStore((s) => s.selecionadoId)
   const { toggleSidebar, state, isMobile, setOpenMobile } = useSidebar()
   const fechar = () => { if (isMobile) setOpenMobile(false) }
   const resolvido = useTema((t) => t.resolvido)
@@ -63,9 +62,6 @@ export function AppSidebar() {
                   <SidebarMenuButton isActive={pagina === item.id} tooltip={`${item.rotulo} (${item.tecla})`} onClick={() => { ir(item.id); fechar() }}>
                     <item.icone aria-hidden />
                     <span>{item.rotulo}</span>
-                    {item.id === "pacientes" && selecionadoId && (
-                      <span className="ml-auto size-2 rounded-full bg-primary group-data-[collapsible=icon]:hidden" aria-label="Paciente selecionado" />
-                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
