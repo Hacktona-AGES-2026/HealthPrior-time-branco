@@ -38,7 +38,9 @@ class PublicarFila:
         uow: UnidadeDeTrabalho,
         relogio: Callable[[], datetime],
         output_dir: Path,
+        notificar=None,  # NotificarMudancas: avisa quem mudou de posição (demo)
     ):
+        self._notificar = notificar
         self._gerar = gerar
         self._verificador = verificador
         self._fila = fila
@@ -52,6 +54,7 @@ class PublicarFila:
         try:
             res = self._gerar.executar(candidata)
             passou, saida = self._verificador.verificar(res.caminho_csv)
+            antes = self._fila.obter_publicada() if (passou and self._notificar) else []
             if passou:
                 self._fila.salvar_publicada(res.linhas, res.versao_regras, self._relogio(),
                                             res.ref_date)
@@ -64,6 +67,8 @@ class PublicarFila:
         except Exception:
             self._uow.desfazer()
             raise
+        if passou and self._notificar is not None:
+            self._notificar.fila_publicada(antes, res.linhas)  # nunca levanta: a fila já foi publicada
         return ResultadoPublicacao(
             publicada=passou,
             caminho_csv=final if passou else res.caminho_csv,

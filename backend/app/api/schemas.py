@@ -437,3 +437,30 @@ class ReverterRegraOut(BaseModel):
     status: Literal["revertida"]
     versao_regras: str
     devolvidos_ao_inbox: int
+
+
+class NotificacaoOut(BaseModel):
+    notificacao_id: str
+    solicitacao_id: str
+    motivo: Literal["posicao", "situacao", "recontato"]
+    texto: str
+    canal: str
+    status: Literal["pendente", "enviada", "falhou"]
+    criada_em: Optional[datetime] = None
+    enviada_em: Optional[datetime] = None
+    tentativas: int
+    detalhe: Optional[str] = None
+
+
+class NotificacoesOut(BaseModel):
+    canal: str  # simulado | twilio (o que está configurado agora)
+    destino: Optional[str] = None  # número da demo, mascarado
+    total: int
+    itens: list[NotificacaoOut]
+
+
+class EnviosOut(BaseModel):
+    canal: str
+    enviadas: int
+    falhas: int
+    pendentes: int

@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.errors import registrar_handlers
-from app.api.routers import admin, aprendizado, decisoes, eventos, fila, inbox, metricas, pendencias, propostas, solicitacoes
+from app.api.routers import admin, aprendizado, decisoes, eventos, fila, inbox, metricas, notificacoes, pendencias, propostas, solicitacoes
 from app.config import settings
 
 
@@ -20,7 +20,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     registrar_handlers(app)
-    for r in (fila, solicitacoes, inbox, decisoes, eventos, pendencias, admin, metricas, aprendizado, propostas):
+    for r in (fila, solicitacoes, inbox, decisoes, eventos, pendencias, admin, metricas, aprendizado, propostas, notificacoes):
         app.include_router(r.router)
 
     @app.get("/health", tags=["infra"])

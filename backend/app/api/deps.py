@@ -17,6 +17,7 @@ from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.detectar_recontato import DetectarRecontato
 from app.application.gerar_propostas import GerarPropostas
+from app.application.notificacoes import EnviarNotificacoes, NotificarMudancas
 from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
 from app.application.normalizar import Normalizar
@@ -37,6 +38,7 @@ from app.infrastructure.repositories import (
     SqlDecisaoRepository,
     SqlEventoRepository,
     SqlFilaRepository,
+    SqlNotificacaoRepository,
     SqlPendenciaRepository,
     SqlPropostaRepository,
     SqlRegraRepository,
@@ -44,6 +46,7 @@ from app.infrastructure.repositories import (
     SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
+from app.infrastructure.notificador import criar_notificador
 from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
 from app.infrastructure.verificador import VerificadorOficial
@@ -96,6 +99,15 @@ def _gerar_fila_em(session: Session, data: date) -> GerarFila:
     )
 
 
+def _notificar(session: Session) -> NotificarMudancas:
+    """Avisos ao paciente (demo): enfileira nas mudanças e envia pelo canal configurado (simulado por padrão)."""
+    repo, uow = SqlNotificacaoRepository(session), SqlUnidadeDeTrabalho(session)
+    enviar = EnviarNotificacoes(repo, criar_notificador(), uow, settings.notifica_destino,
+                                settings.notifica_limite_envio)
+    return NotificarMudancas(repo, uow, criar_notificador().canal, settings.notifica_min_posicoes,
+                             settings.notifica_max_por_publicacao, enviar)
+
+
 def _publicar_fila_em(session: Session, data: date) -> PublicarFila:
     # Com data simulada (US-16) os arquivos vão para output/simulada/: o fila_priorizada.csv
     # oficial (entregável) só é escrito com a data oficial.
@@ -107,6 +119,7 @@ def _publicar_fila_em(session: Session, data: date) -> PublicarFila:
         uow=SqlUnidadeDeTrabalho(session),
         relogio=lambda: datetime.now(timezone.utc),
         output_dir=output_dir,
+        notificar=_notificar(session),
     )
 
 
@@ -122,7 +135,8 @@ def get_publicar_fila(session: Session = Depends(get_session),
 
 def _detectar_recontato_em(session: Session, data: date) -> DetectarRecontato:
     return DetectarRecontato(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
-                             SqlPendenciaRepository(session), data, settings.recontato_dias)
+                             SqlPendenciaRepository(session), data, settings.recontato_dias,
+                             notificar=_notificar(session))
 
 
 def get_atualizacao_diaria(session: Session = Depends(get_session)) -> AtualizacaoDiaria:
@@ -148,7 +162,7 @@ def get_resolver_pendencia(session: Session = Depends(get_session),
         pendencias=SqlPendenciaRepository(session), solicitacoes=solicitacoes, eventos=eventos,
         correcoes=correcoes, uow=SqlUnidadeDeTrabalho(session), publicar=publicar,
         relogio=lambda: datetime.now(timezone.utc),
-        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes))
+        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes), notificar=_notificar(session))
 
 
 # US-15
@@ -167,7 +181,7 @@ def get_decidir(session: Session = Depends(get_session),
         solicitacoes=SqlSolicitacaoRepository(session), eventos=SqlEventoRepository(session),
         decisoes=SqlDecisaoRepository(session), scorer=_scorer(session, data),
         uow=SqlUnidadeDeTrabalho(session), publicar=publicar, fila=SqlFilaRepository(session),
-        relogio=lambda: datetime.now(timezone.utc), ref_date=data)
+        relogio=lambda: datetime.now(timezone.utc), ref_date=data, notificar=_notificar(session))
 
 
 # US-20
@@ -257,3 +271,14 @@ def get_reverter_regra(session: Session = Depends(get_session),
                          SqlSolicitacaoRepository(session), SqlEventoRepository(session),
                          get_scorer(data), SqlUnidadeDeTrabalho(session),
                          lambda: datetime.now(timezone.utc))
+
+
+# Notificações ao paciente (demo)
+def get_enviar_notificacoes(session: Session = Depends(get_session)) -> EnviarNotificacoes:
+    return EnviarNotificacoes(SqlNotificacaoRepository(session), criar_notificador(),
+                              SqlUnidadeDeTrabalho(session), settings.notifica_destino,
+                              settings.notifica_limite_envio)
+
+
+def get_notificacoes(session: Session = Depends(get_session)) -> SqlNotificacaoRepository:
+    return SqlNotificacaoRepository(session)

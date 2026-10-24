@@ -314,6 +314,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/notificacoes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listar Notificacoes
+         * @description Mais recentes primeiro. O canal e o destino mostram para onde as mensagens iriam agora.
+         */
+        get: operations["listar_notificacoes_notificacoes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notificacoes/enviar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enviar Notificacoes
+         * @description Envia as pendentes pelo canal configurado (no máximo `HP_NOTIFICA_LIMITE_ENVIO` por rodada).
+         */
+        post: operations["enviar_notificacoes_notificacoes_enviar_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -514,6 +554,17 @@ export interface components {
              * Format: date
              */
             em: string;
+        };
+        /** EnviosOut */
+        EnviosOut: {
+            /** Canal */
+            canal: string;
+            /** Enviadas */
+            enviadas: number;
+            /** Falhas */
+            falhas: number;
+            /** Pendentes */
+            pendentes: number;
         };
         /** Erro */
         Erro: {
@@ -788,6 +839,46 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** NotificacaoOut */
+        NotificacaoOut: {
+            /** Notificacao Id */
+            notificacao_id: string;
+            /** Solicitacao Id */
+            solicitacao_id: string;
+            /**
+             * Motivo
+             * @enum {string}
+             */
+            motivo: "posicao" | "situacao" | "recontato";
+            /** Texto */
+            texto: string;
+            /** Canal */
+            canal: string;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "pendente" | "enviada" | "falhou";
+            /** Criada Em */
+            criada_em?: string | null;
+            /** Enviada Em */
+            enviada_em?: string | null;
+            /** Tentativas */
+            tentativas: number;
+            /** Detalhe */
+            detalhe?: string | null;
+        };
+        /** NotificacoesOut */
+        NotificacoesOut: {
+            /** Canal */
+            canal: string;
+            /** Destino */
+            destino?: string | null;
+            /** Total */
+            total: number;
+            /** Itens */
+            itens: components["schemas"]["NotificacaoOut"][];
+        };
         /**
          * ParametrosAprendizadoIn
          * @description Parâmetros do agrupamento (Q-05, provisórios). Omitidos ficam no padrão.
@@ -966,6 +1057,23 @@ export interface components {
              * Format: date
              */
             data_referencia: string;
+            recontato?: components["schemas"]["RecontatoOut"] | null;
+        };
+        /**
+         * RecontatoOut
+         * @description US-17: quem passou de N dias sem evento e o que mudou nas pendências de recontato.
+         */
+        RecontatoOut: {
+            /** N Dias */
+            n_dias: number;
+            /** Sem Evento */
+            sem_evento: number;
+            /** Abertas */
+            abertas: number;
+            /** Atualizadas */
+            atualizadas: number;
+            /** Encerradas */
+            encerradas: number;
         };
         /**
          * ResolucaoPendencia
@@ -1710,6 +1818,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Erro"];
+                };
+            };
+        };
+    };
+    listar_notificacoes_notificacoes_get: {
+        parameters: {
+            query?: {
+                limite?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificacoesOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enviar_notificacoes_notificacoes_enviar_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnviosOut"];
                 };
             };
         };
