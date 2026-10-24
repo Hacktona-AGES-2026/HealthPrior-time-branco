@@ -26,6 +26,8 @@ export type Notificacao = components["schemas"]["NotificacaoOut"]
 export type ListaNotificacoes = components["schemas"]["NotificacoesOut"]
 export type ResultadoEnvios = components["schemas"]["EnviosOut"]
 
+export type ResultadoImportacao = components["schemas"]["ImportacaoOut"]
+
 export const URL_API: string = import.meta.env.VITE_API_URL ?? "http://localhost:8000"
 
 export class ErroApi extends Error {
@@ -184,3 +186,27 @@ export async function enviarNotificacoes(): Promise<ResultadoEnvios> {
   if (!resposta.ok) throw await lerErro(resposta)
   return (await resposta.json()) as ResultadoEnvios
 }
+
+/**
+ * Importa solicitações novas por CSV (uma linha ou várias). Com erro de validação a API responde 422 com o relatório
+ * (nada é gravado): aqui isso volta como resultado, não como exceção.
+ */
+export async function importarSolicitacoes(csv: string, publicar: boolean): Promise<{ ok: boolean; resultado: ResultadoImportacao }> {
+  let resposta: Response
+  try {
+    resposta = await fetch(`${URL_API}/importacao/solicitacoes?publicar=${publicar}`, {
+      method: "POST",
+      headers: { "Content-Type": "text/csv; charset=utf-8" },
+      body: csv,
+    })
+  } catch {
+    throw new ErroApi(`Não foi possível falar com a API em ${URL_API}`)
+  }
+  if (resposta.ok || resposta.status === 422) {
+    const corpo = (await resposta.json().catch(() => null)) as ResultadoImportacao | null
+    if (corpo && Array.isArray(corpo.erros)) return { ok: resposta.ok, resultado: corpo }
+  }
+  throw await lerErro(resposta)
+}
+
+export const URL_MODELO_CSV = `${URL_API}/importacao/modelo.csv`

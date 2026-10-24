@@ -33,6 +33,9 @@ AGORA = datetime(2026, 10, 24, 12, 0, tzinfo=timezone.utc)
 
 
 class VerificadorReprova:
+    def __init__(self, *args, **kwargs):  # o real recebe `session=` (importadas por CSV, D-118)
+        pass
+
     def verificar(self, caminho):
         return False, "reprovado"
 

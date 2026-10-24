@@ -138,3 +138,7 @@ DECIDIR_PROPOSTA = s.DecidirPropostaOut(
 REVERTER_REGRA = s.ReverterRegraOut(
     regra_id="PROP-PROC004-ps_recorrente-C-B", status="revertida",
     versao_regras="swalis-regras-2", devolvidos_ao_inbox=12)
+
+
+IMPORTACAO = s.ImportacaoOut(lidas=2, novas=2, ja_existentes=[], erros=[], novas_ids=["SOL-2026-90001", "SOL-2026-90002"],
+                             suspensas=0, fila_publicada=True, total_fila=902)

@@ -158,7 +158,7 @@ def cmd_gerar_fila() -> None:
             ExportadorCsv(), settings.ref_date,
         )
         resultado = PublicarFila(
-            gerar, VerificadorOficial(), SqlFilaRepository(session), SqlUnidadeDeTrabalho(session),
+            gerar, VerificadorOficial(session=session), SqlFilaRepository(session), SqlUnidadeDeTrabalho(session),
             lambda: datetime.now(timezone.utc), settings.output_dir,
         ).executar()
     print(resultado.saida_verificador, end="")

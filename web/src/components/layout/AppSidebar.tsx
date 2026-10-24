@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 import { Activity, BarChart3, BellRing, BookOpen, CircleHelp, ClipboardList, Gavel, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+=======
+import { FileUp, BellRing, Activity, BarChart3, BookOpen, CircleHelp, FileCheck2, Inbox, ListOrdered, Moon, PanelLeft, Sun, UserSearch } from "lucide-react"
+>>>>>>> Stashed changes
 import {
   Sidebar,
   SidebarContent,
@@ -21,9 +25,15 @@ const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: str
   { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "3" },
   { id: "analise", rotulo: "Análise", icone: BarChart3, tecla: "4" },
   { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
+<<<<<<< Updated upstream
   { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
   { id: "propostas", rotulo: "Propostas", icone: Gavel, tecla: "7" },
   { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "8" },
+=======
+  { id: "propostas", rotulo: "Propostas", icone: FileCheck2, tecla: "6" },
+  { id: "notificacoes", rotulo: "Notificações", icone: BellRing, tecla: "7" },
+  { id: "importar", rotulo: "Importar", icone: FileUp, tecla: "8" },
+>>>>>>> Stashed changes
 ]
 
 export function AppSidebar() {

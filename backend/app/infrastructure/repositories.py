@@ -244,7 +244,7 @@ def _para_decisao(t: DecisaoTable) -> Decisao:
 
 
 class SqlProcedimentoRepository:
-    """Catálogo de procedimentos (só leitura)."""
+    """Catálogo de procedimentos (só leitura): consulta por id (`obter`) e o mapa de nomes (`mapa`)."""
 
     def __init__(self, session: Session):
         self._s = session
@@ -258,6 +258,12 @@ class SqlProcedimentoRepository:
             procedimento_id=t.procedimento_id, porte=t.porte or None,
             risco_cirurgico=t.risco_cirurgico, duracao_media_min=t.duracao_media_min,
             necessita_uti={"sim": "sim", "nao": "nao", "não": "nao", "eventual": "eventual"}.get(uti))
+
+    def mapa(self) -> dict[str, tuple[str | None, str | None]]:
+        """procedimento_id -> (nome, especialidade): valida e completa a importação por CSV."""
+        linhas = self._s.execute(select(ProcedimentoTable.procedimento_id, ProcedimentoTable.procedimento,
+                                        ProcedimentoTable.especialidade)).all()
+        return {pid: (nome, esp) for pid, nome, esp in linhas}
 
 
 class SqlDecisaoRepository:
