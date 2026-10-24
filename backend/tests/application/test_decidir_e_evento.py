@@ -49,6 +49,9 @@ class Repos:
     def atualizar_flags(self, ss):
         pass
 
+    def salvar_alertas(self, ss):
+        pass
+
     # EventoRepository
     def listar_por_solicitacao(self, sid):
         return list(self.eventos.get(sid, []))

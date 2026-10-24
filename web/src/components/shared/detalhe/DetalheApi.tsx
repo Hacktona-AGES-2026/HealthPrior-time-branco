@@ -6,6 +6,7 @@ import { formatarData } from "@/lib/datas"
 import { ClasseBadge } from "@/components/shared/Basicos"
 import { CarregandoBloco } from "@/components/shared/Carregando"
 import { CartaoGrafico } from "./Cartao"
+import { CorrigirCid } from "./CorrigirCid"
 import { ICONE_EVENTO } from "./IconesEvento"
 import { LinhaTempoEventos } from "./LinhaTempoEventos"
 
@@ -25,6 +26,7 @@ const ACAO = { aprovar: "Aprovou", editar: "Editou", manter: "Manteve" } as Reco
 export function DetalheApiPaciente({ p }: { p: Paciente }) {
   const [d, setD] = useState<DetalheApi | null>(null)
   const [erro, setErro] = useState<string | null>(null)
+  const [versao, setVersao] = useState(0)  // sobe quando uma ação muda o paciente (ex.: CID corrigido)
 
   useEffect(() => {
     let vivo = true  // remontado por paciente (key no pai): sem reset de estado aqui
@@ -34,7 +36,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
     return () => {
       vivo = false
     }
-  }, [p.solicitacao_id])
+  }, [p.solicitacao_id, versao])
 
   if (erro) return <p className="rounded-lg border border-dashed p-4 text-xs text-muted-foreground">Não foi possível carregar o detalhe: {erro}</p>
   if (!d) return <CarregandoBloco rotulo="Buscando detalhe na API" altura={220} />
@@ -119,11 +121,22 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
 
       <CartaoGrafico titulo="Pendências e alertas" descricao={`${d.pendencias.length} pendências · ${d.alertas.length} alertas`}>
         <ul className="space-y-1 text-xs">
+          {d.cid_original && (
+            <li className="text-muted-foreground">
+              CID corrigido pelo regulador: {d.cid_original} → <span className="font-medium text-foreground">{d.cid}</span>
+            </li>
+          )}
           {d.pendencias.map((x) => (
-            <li key={x.pendencia_id} className="flex items-center gap-1.5">
-              <ListChecks className="size-3.5 text-muted-foreground" aria-hidden />
-              <span className="font-medium tabular-nums">{x.pendencia_id}</span> {x.regra} · {x.status}
-              {x.bloqueante && <span className="text-[var(--desce)]">bloqueante</span>}
+            <li key={x.pendencia_id}>
+              <div className="flex items-center gap-1.5">
+                <ListChecks className="size-3.5 text-muted-foreground" aria-hidden />
+                <span className="font-medium tabular-nums">{x.pendencia_id}</span> {x.regra} · {x.status}
+                {x.bloqueante && <span className="text-[var(--desce)]">bloqueante</span>}
+                {x.titulo && <span className="text-muted-foreground">· {x.titulo}</span>}
+              </div>
+              {x.regra === "PRE-12" && x.status === "aberta" && (
+                <CorrigirCid pendencia={x} cidAtual={d.cid} aoCorrigir={() => setVersao((v) => v + 1)} />
+              )}
             </li>
           ))}
           {d.alertas.map((a) => (

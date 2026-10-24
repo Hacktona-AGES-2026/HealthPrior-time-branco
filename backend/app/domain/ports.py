@@ -20,6 +20,7 @@ from app.domain.models import (
     ResultadoSincronizacao,
     ResultadoTabela,
     Solicitacao,
+    SugestaoCid,
 )
 from app.domain.aprendizado import PropostaRegra
 from app.domain.enums import MotivoCodificado
@@ -47,6 +48,10 @@ class SolicitacaoRepository(Protocol):
         ...
     def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `oncologico` e `piora_recalculada` (US-03); nenhuma coluna original muda."""
+        ...
+    def salvar_cid_confirmado(self, solicitacao: Solicitacao) -> None:
+        """Grava o CID confirmado pelo regulador (PRE-12), o `cid_norm` e o `oncologico` que
+        decorrem dele. O `cid_principal` original do CSV não muda (I-10)."""
         ...
 
 
@@ -201,3 +206,25 @@ class NotificacaoRepository(Protocol):
     def registrar_envio(self, notificacao_id: str, status: str, em: datetime, detalhe: str | None) -> None: ...
     def listar(self, limite: int = 100) -> list[Notificacao]: ...
     def proximo_id(self) -> str: ...
+
+
+class TabelaCid(Protocol):
+    """Tabela CID-10 oficial (DATASUS). Implementação: infrastructure/tabela_cid.py."""
+
+    def descricao(self, cid: str) -> str | None:
+        """Descrição do código (com ou sem ponto); None se ele não existe."""
+        ...
+    def buscar(self, consulta: str, limite: int = 12) -> list[tuple[str, str]]:
+        """(código com ponto, descrição) que mais batem com as palavras da consulta."""
+        ...
+
+
+class SugestorCid(Protocol):
+    """LLM que lê o laudo e sugere o CID (PRE-12). Nunca troca o CID sozinho (I-05)."""
+
+    modelo: str
+
+    def sugerir(self, procedimento: str, cid_atual: str, cid_descricao: str,
+                laudo: str) -> SugestaoCid | None:
+        """None quando não há chave, a chamada falha ou o modelo não devolve um CID."""
+        ...

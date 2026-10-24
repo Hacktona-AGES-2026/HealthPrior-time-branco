@@ -152,8 +152,36 @@ export type DetalheApi = {
   }
   eventos: { evento_id: string; data_evento: string; tipo_evento: string; resultado: string | null; descricao: string | null; historico: boolean; duplicado: boolean }[]
   decisoes: { decisao_id: string; data: string; regulador_id: string; acao: string; classe_decidida: Classe | null; motivo_codificado: string | null; justificativa: string | null }[]
-  pendencias: { pendencia_id: string; regra: string; bloqueante: boolean; status: string }[]
+  pendencias: PendenciaDetalheApi[]
   alertas: string[]
+  cid: string
+  cid_descricao: string | null
+  /** CID do cadastro quando o regulador corrigiu o CID a partir do laudo (PRE-12, D-117). */
+  cid_original: string | null
+}
+
+/** PRE-12 (D-117): CID sugerido pelo LLM a partir do laudo. Só sugestão: o regulador decide (I-05). */
+export type SugestaoCidApi = { cid: string; descricao: string; citacao: string; confianca: number; modelo: string; evento_id: string | null }
+
+export type PendenciaDetalheApi = {
+  pendencia_id: string
+  regra: string
+  bloqueante: boolean
+  status: string
+  titulo?: string | null
+  evidencias?: { fonte: string; ref?: string | null; texto: string }[]
+  sugestao_cid?: SugestaoCidApi | null
 }
 
 export const obterDetalhe = (id: string) => pedir<DetalheApi>(`/solicitacoes/${encodeURIComponent(id)}`)
+
+/** PRE-12: pede (de novo) a sugestão de CID ao LLM; null se não houver sugestão válida. */
+export const pedirSugestaoCid = (pendenciaId: string) =>
+  pedir<SugestaoCidApi | null>(`/pendencias/${encodeURIComponent(pendenciaId)}/sugerir-cid`, { method: "POST" })
+
+/** PRE-12: o regulador confirma o CID novo; a API troca o CID, guarda o original e republica a fila. */
+export const corrigirCid = (pendenciaId: string, cid: string, usuarioId: string) =>
+  pedir<{ status_fila: string | null; fila_publicada: boolean }>(`/pendencias/${encodeURIComponent(pendenciaId)}/resolver`, {
+    method: "POST",
+    body: JSON.stringify({ resolucao: "corrigir_cid", usuario_id: usuarioId, cid }),
+  })

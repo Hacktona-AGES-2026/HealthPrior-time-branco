@@ -53,6 +53,9 @@ class Settings:
     waha_api_key: str = field(repr=False)
     fatores_enabled: bool
     irr_path: Path
+    cid_llm_model: str
+    cid_llm_esforco: str
+    cid_llm_cache_path: Path
 
 
 def _load() -> Settings:
@@ -96,6 +99,11 @@ def _load() -> Settings:
         fatores_enabled=os.getenv("HP_FATORES_ENABLED", "true").lower() == "true",
         irr_path=Path(os.getenv("HP_IRR_PATH", REPO_ROOT / "score" / "references"
                                 / "irr_nacional_cid_idade_2019_2023.csv")),
+        # Sugestão de CID a partir do laudo (PRE-12, D-117). Esforço "low": mais rápido, mesmo CID.
+        cid_llm_model=os.getenv("HP_CID_LLM_MODEL", "openai/gpt-6-luna"),
+        cid_llm_esforco=os.getenv("HP_CID_LLM_ESFORCO", "low"),
+        cid_llm_cache_path=Path(os.getenv("HP_CID_LLM_CACHE",
+                                          REPO_ROOT / "data" / "processed" / "cache_cid_llm.json")),
     )
 
 

@@ -1,6 +1,7 @@
 """US-07 · Resolver pendência (C-06). Reprocessa ou remove com motivo; nada é apagado (I-03).
 
-A pessoa escolhe uma resolução (confirmar saída, fundir, reativar ou descartar) e o caso de uso:
+A pessoa escolhe uma resolução (confirmar saída, fundir, reativar, descartar ou, na PRE-12,
+corrigir o CID, D-117) e o caso de uso:
   1. valida (a regra aceita essa resolução? `confirmar_saida` tem observação?);
   2. grava o desfecho da pendência (quem, quando, resolução, observação) e muda a solicitação:
      `removida` com motivo (confirmar saída e fusão) ou de volta à fila (reativar e descartar);
@@ -19,8 +20,9 @@ from typing import Callable
 from app.application.publicar_fila import PublicarFila
 from app.application.recalcular_flags import RecalcularFlags
 from app.domain.cid import is_oncologico
+from app.domain.correcao_cid import aplicar_correcao_cid
 from app.domain.enums import ResolucaoPendencia as R
-from app.domain.enums import StatusFila, StatusPendencia
+from app.domain.enums import ClasseStatus, StatusFila, StatusPendencia
 from app.domain.errors import (
     PendenciaJaResolvidaError,
     PendenciaNaoEncontradaError,
@@ -33,10 +35,14 @@ from app.domain.ports import (
     EventoRepository,
     PendenciaRepository,
     SolicitacaoRepository,
+    SwalisScorer,
+    TabelaCid,
     UnidadeDeTrabalho,
 )
 from app.domain.preprocessing.inconsistencias import (
+    ALERTA_POR_REGRA,
     ALERTA_SAIDA_A_CONFIRMAR,
+    PRE_CANCER_ESCONDIDO,
     PRE_DUPLICATA,
     PRE_EVENTO_ORFAO,
     REGRAS_DE_SOLICITACAO,
@@ -55,7 +61,8 @@ class ResolverPendencia:
     def __init__(self, pendencias: PendenciaRepository, solicitacoes: SolicitacaoRepository,
                  eventos: EventoRepository, correcoes: CorrecaoRepository, uow: UnidadeDeTrabalho,
                  publicar: PublicarFila, relogio: Callable[[], datetime],
-                 recalcular_flags: RecalcularFlags | None = None, notificar=None):
+                 recalcular_flags: RecalcularFlags | None = None, notificar=None,
+                 tabela_cid: TabelaCid | None = None, scorer: SwalisScorer | None = None):
         self._notificar = notificar  # NotificarMudancas (demo)
         self._pendencias = pendencias
         self._solicitacoes = solicitacoes
@@ -65,11 +72,14 @@ class ResolverPendencia:
         self._publicar = publicar
         self._relogio = relogio
         self._recalcular_flags = recalcular_flags
+        self._tabela_cid = tabela_cid
+        self._scorer = scorer
 
     def executar(self, pendencia_id: str, resolucao: R, usuario_id: str,
-                 observacao: str | None = None, fundir_com: str | None = None) -> ResultadoResolucao:
+                 observacao: str | None = None, fundir_com: str | None = None,
+                 cid: str | None = None) -> ResultadoResolucao:
         try:
-            status_fila = self._resolver(pendencia_id, resolucao, usuario_id, observacao, fundir_com)
+            status_fila = self._resolver(pendencia_id, resolucao, usuario_id, observacao, fundir_com, cid)
             self._uow.confirmar()
         except Exception:
             self._uow.desfazer()
@@ -86,7 +96,7 @@ class ResolverPendencia:
             self._notificar.evento(p.solicitacao_id, "situacao")
 
     def _resolver(self, pendencia_id: str, resolucao: R, usuario_id: str,
-                  observacao: str | None, fundir_com: str | None) -> StatusFila | None:
+                  observacao: str | None, fundir_com: str | None, cid: str | None = None) -> StatusFila | None:
         p = self._pendencias.obter(pendencia_id)
         if p is None:
             raise PendenciaNaoEncontradaError(f"Pendência {pendencia_id} não encontrada.")
@@ -108,6 +118,11 @@ class ResolverPendencia:
         if resolucao == R.FUNDIR:
             alteradas, correcoes = self._fundir(p, s, fundir_com)
             p.observacao = f"Fundida com {self._permanece(alteradas, s).solicitacao_id}" + (
+                f". {p.observacao}" if p.observacao else "")
+        elif resolucao == R.CORRIGIR_CID:
+            correcao = self._corrigir_cid(s, cid)
+            correcoes = [correcao]
+            p.observacao = f"CID corrigido: {correcao.original} -> {correcao.novo}" + (
                 f". {p.observacao}" if p.observacao else "")
         self._pendencias.salvar(p)
 
@@ -149,6 +164,30 @@ class ResolverPendencia:
         if permanece.data_entrada_fila != data_antes:
             self._solicitacoes.atualizar_data_entrada(permanece)
         return [removida, permanece], correcoes
+
+    def _corrigir_cid(self, s: Solicitacao, cid: str | None) -> Correcao:
+        """D-117: o regulador confirmou o CID (o sugerido ou outro). Vale para tudo dali em diante."""
+        codigo = (cid or "").strip().upper()
+        if not codigo:
+            raise ResolucaoInvalidaError("Corrigir o CID exige o CID novo.")
+        descricao = self._tabela_cid.descricao(codigo) if self._tabela_cid else None
+        if descricao is None:
+            raise ResolucaoInvalidaError(f"O CID {codigo} não existe na tabela CID-10.")
+        if self._scorer is None:  # sem SWALIS não dá para congelar a classe (I-04): melhor falhar alto
+            raise RuntimeError("corrigir_cid precisa do SWALIS (scorer) para proteger a classe em vigor")
+        eventos = self._eventos.listar_por_solicitacao(s.solicitacao_id)
+        antes = self._scorer.calcular(s, eventos).classe_sistema
+        correcao = aplicar_correcao_cid(s, codigo, descricao)
+        if self._scorer.calcular(s, eventos).classe_sistema != antes:
+            # I-04: o CID novo pode mudar a classe sugerida; ela só vale com decisão do regulador.
+            # Quem nunca foi confirmado fica com a classe anterior congelada (como no evento, C-08).
+            if s.classe_status != ClasseStatus.CONFIRMADA and s.classe_vigente is None:
+                s.classe_vigente = antes
+                self._solicitacoes.salvar(s)
+        self._solicitacoes.salvar_cid_confirmado(s)
+        alerta = ALERTA_POR_REGRA[PRE_CANCER_ESCONDIDO]
+        s.alertas = [a for a in s.alertas if a != alerta]  # o CID já foi revisto
+        return correcao
 
     @staticmethod
     def _permanece(alteradas: list[Solicitacao], s: Solicitacao) -> Solicitacao:

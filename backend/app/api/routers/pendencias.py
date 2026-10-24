@@ -4,9 +4,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 
 from app.api import mocks, schemas
-from app.api.deps import get_listar_pendencias, get_resolver_pendencia
+from app.api.deps import get_listar_pendencias, get_resolver_pendencia, get_sugerir_cid
 from app.application.listar_pendencias import ListarPendencias
 from app.application.resolver_pendencia import ResolverPendencia
+from app.application.sugerir_cid import SugerirCid
 from app.config import settings
 from app.domain.enums import StatusPendencia
 from app.domain.models import Pendencia
@@ -21,6 +22,7 @@ def _para_out(p: Pendencia) -> schemas.PendenciaOut:
         resolvido_por=p.resolvido_por, resolvido_em=p.resolvido_em, resolucao=p.resolucao,
         observacao=p.observacao,
         evidencias=[schemas.EvidenciaOut(fonte=m.fonte, ref=m.ref, texto=m.evidencia) for m in p.evidencias],
+        sugestao_cid=schemas.SugestaoCidOut(**vars(p.sugestao_cid)) if p.sugestao_cid else None,
     )
 
 
@@ -45,5 +47,14 @@ def resolver_pendencia(pendencia_id: str, body: schemas.ResolverPendenciaIn,
     if settings.use_mocks:
         return schemas.ResolverPendenciaOut(status_fila="removida", fila_publicada=True)
     resultado = caso_de_uso.executar(
-        pendencia_id, body.resolucao, body.usuario_id, body.observacao, body.fundir_com)
+        pendencia_id, body.resolucao, body.usuario_id, body.observacao, body.fundir_com, body.cid)
     return schemas.ResolverPendenciaOut(status_fila=resultado.status_fila, fila_publicada=resultado.fila_publicada)
+
+
+@router.post("/{pendencia_id}/sugerir-cid", response_model=Optional[schemas.SugestaoCidOut])
+def sugerir_cid(pendencia_id: str, caso_de_uso: SugerirCid = Depends(get_sugerir_cid)):
+    """PRE-12 (D-117): pede (de novo) a sugestão de CID ao LLM. null se não houver sugestão válida."""
+    if settings.use_mocks:
+        return None
+    sugestao = caso_de_uso.executar(pendencia_id)
+    return schemas.SugestaoCidOut(**vars(sugestao)) if sugestao else None

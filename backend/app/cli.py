@@ -12,6 +12,7 @@
     python -m app.cli seed-aprendizado  US-18: grava ~33 decisões de exemplo (DEC-SEED-*); idempotente
     python -m app.cli gerar-propostas  US-18: agrupa as decisões em propostas de regra e as grava
     python -m app.cli recontato   US-17: abre pendências de recontato (sem evento há N dias, HP_RECONTATO_DIAS)
+    python -m app.cli sugerir-cid  PRE-12 (D-117): LLM sugere o CID nas pendências de câncer escondido abertas
     python -m app.cli decisoes    US-11: lista exclusões para o DECISOES.md
 """
 import argparse
@@ -140,6 +141,17 @@ def cmd_bloqueantes() -> None:
         resumo = _detectar_bloqueantes(session).executar()
         SqlUnidadeDeTrabalho(session).confirmar()
     _imprimir_bloqueantes(resumo)
+
+
+def cmd_sugerir_cid() -> None:
+    """PRE-12 (D-117): sugere o CID de cada pendência "câncer escondido" aberta e aquece o cache."""
+    from app.api.deps import montar_sugerir_cid
+
+    with Session(engine) as session:
+        r = montar_sugerir_cid(session).executar_abertas()
+    print(f"PRE-12: {r.pendencias} pendências abertas, {r.sugeridas} com sugestão de CID, "
+          f"{r.sem_sugestao} sem sugestão ({settings.cid_llm_model}, esforço {settings.cid_llm_esforco})")
+    print(f"Cache: {settings.cid_llm_cache_path}")
 
 
 def cmd_inconsistencias() -> None:
@@ -292,7 +304,7 @@ COMANDOS = {"init-db": cmd_init_db, "carga": cmd_carga, "normalizar": cmd_normal
             "flags": cmd_flags, "inconsistencias": cmd_inconsistencias, "bloqueantes": cmd_bloqueantes,
             "gerar-fila": cmd_gerar_fila, "gerar-fila-csv": cmd_gerar_fila_csv,
             "extrair-sinais": cmd_extrair_sinais,
-            "recontato": cmd_recontato, "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
+            "recontato": cmd_recontato, "sugerir-cid": cmd_sugerir_cid, "seed-aprendizado": cmd_seed_aprendizado, "gerar-propostas": cmd_gerar_propostas,
             "decisoes": cmd_decisoes}
 
 

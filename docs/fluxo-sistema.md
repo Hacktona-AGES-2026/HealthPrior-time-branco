@@ -165,7 +165,7 @@ Paciente → UBS (GERCON) → Especialista → Precisa cirurgia? → Exames → 
 
 ### C-03 · Entrada: evento novo
 - **Responsabilidade:** receber um evento (PS, internação, biópsia, imagem, reavaliação, contato, falta, HbA1c) e disparar o recálculo daquela solicitação.
-- **Regras:** passa por C-05; se a classe resultante for igual à atual, apenas registra (C-08).
+- **Regras:** passa por C-05; se a classe resultante for igual à atual, apenas registra (C-08). Biópsia positiva com CID não oncológico abre a PRE-12 na hora; a sugestão de CID pelo LLM chega alguns segundos depois, fora da requisição (D-117).
 - **CA:** um evento sem mudança de classe não gera item no inbox do regulador.
 
 ### C-04 · Entrada: recontato ("sem evento")
@@ -203,7 +203,7 @@ Os problemas se dividem em três tipos:
 |---|---|---|---|
 | PRE-10 | Contato perdido | SOL-2025-00053: "NAO ATENDE. NUMERO NAO EXISTE." 39 pacientes com ≥2 tentativas sem resposta | Pendência "atualizar contato"; **não pune** (pode ser barreira de acesso) |
 | PRE-11 | Sem telefone | SOL-2026-00059: "PCT NAO POSSUI TELEFONE FIXO. CONTATO VIA ACS." (28 casos) | Pendência "contato via ACS" |
-| PRE-12 | Câncer escondido (biópsia positiva com CID não C) | SOL-2026-00757 (D37.4 com biópsia positiva); 23 casos | Segue o fluxo de eventos (proposta de subir classe) + pendência "corrigir CID" |
+| PRE-12 | Câncer escondido (biópsia positiva com CID não C) | SOL-2026-00757 (D37.4 com biópsia positiva); 23 casos | Segue o fluxo de eventos (proposta de subir classe) + pendência "corrigir CID" (também aberta por evento novo). Um LLM sugere o CID com citação do laudo; o regulador confirma com `corrigir_cid` e o CID novo vale para tudo, com o original guardado (D-117) |
 | PRE-13 | Diabetes fora do cadastro | SOL-2026-00444: "HbA1c 9,4%… Diabetes nao consta no cadastro, atualizar." | Pendência "atualizar cadastro"; **não altera prioridade** |
 | PRE-14 | Justificativa sem conteúdo | SOL-2026-00932: "Solicito cirurgia."; SOL-2025-00375: "Conforme laudo anexo." | Alerta "informação insuficiente para classificar" |
 | PRE-15 | Campo vazio | 11 sem `prioridade_regulacao`; 38 sem dor EVA; 26 sem ASA; 20 sem distância | SWALIS usa o que existe; alerta de completude |
@@ -332,6 +332,7 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | `cid_norm` | texto | CID maiúsculo sem ponto (PRE-01) |
 | `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-21) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
+| `cid_confirmado` | texto | CID confirmado pelo regulador a partir do laudo (PRE-12, D-117); quando existe, vale no lugar do `cid_principal`, que guarda o original |
 | `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-28/D-29) |
 | `alertas` | lista de texto | Alertas de PRE-10..15: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto` (D-50); `saida_a_confirmar` em oncológico com achado bloqueante (D-80) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
@@ -420,7 +421,7 @@ Obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `cama
 | Q-05 | Limiares do aprendizado (≥5 casos, ≥3 reguladores, 90 dias, ≥80%). | Time |
 | Q-06 | Override expira? (proposta: até a próxima mudança de classe ou data de revisão) | Time |
 | Q-07 | Como tratar oncológicos de baixo risco (CBC de pele C44, próstata ISUP 1) **dentro** da camada 1? ("decisão difícil" do pitch) | Mentores |
-| Q-08 | Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID? (provisório: camada 2 + alerta, D-24) | Mentores |
+| Q-08 | ~~Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID?~~ **Respondida (D-117):** só via regulador + correção de CID; até lá, camada 2 + alerta (D-24) | Mentores |
 | Q-09 | Distância/TFD deve pesar na prioridade ou só ser monitorada? (proposta: só monitorada) | Mentores |
 | Q-10 | Idade 80+ como desempate dentro da camada? (provisório: score, entrada, id — D-25) | Mentores |
 

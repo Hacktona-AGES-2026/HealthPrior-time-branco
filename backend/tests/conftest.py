@@ -82,3 +82,16 @@ def session(request, _engine):
     with Session(_engine) as s:
         yield s
     SQLModel.metadata.drop_all(_engine)
+
+
+@pytest.fixture(autouse=True)
+def _sem_sugestao_de_cid_em_segundo_plano():
+    """A sugestão de CID depois do POST /eventos abre sessão própria no banco do HP_DB_URL (D-117).
+    Nos testes ela não roda, para nunca tocar um banco que não seja o de teste; quem precisa liga
+    de novo com `app.dependency_overrides` (ver test_correcao_cid_api.py)."""
+    from app.api import deps
+    from app.main import app
+
+    app.dependency_overrides[deps.get_sugerir_cid_em_segundo_plano] = lambda: lambda pendencia_id: None
+    yield
+    app.dependency_overrides.pop(deps.get_sugerir_cid_em_segundo_plano, None)

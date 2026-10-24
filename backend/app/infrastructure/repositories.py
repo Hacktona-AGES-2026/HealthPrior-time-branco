@@ -33,6 +33,7 @@ from app.domain.models import (
     ResultadoSincronizacao,
     ResultadoTabela,
     Solicitacao,
+    SugestaoCid,
 )
 from app.infrastructure.tables import (
     CorrecaoTable,
@@ -53,10 +54,14 @@ TAMANHO_LOTE = 500
 def _para_entidade(t: SolicitacaoTable) -> Solicitacao:
     return Solicitacao(
         solicitacao_id=t.solicitacao_id, paciente_id=t.paciente_id,
-        procedimento_id=t.procedimento_id, cid_principal=t.cid_principal,
+        procedimento_id=t.procedimento_id,
+        # D-117: com CID confirmado pelo regulador, ele vale para tudo; o original fica no banco (I-10)
+        cid_principal=t.cid_confirmado or t.cid_principal,
+        cid_confirmado=t.cid_confirmado, cid_original=t.cid_principal,
         data_entrada_fila=t.data_entrada_fila,
         nome_paciente=t.nome_paciente, idade=t.idade, sexo=t.sexo, municipio=t.municipio,
-        procedimento=t.procedimento, especialidade=t.especialidade, cid_descricao=t.cid_descricao,
+        procedimento=t.procedimento, especialidade=t.especialidade,
+        cid_descricao=t.cid_confirmado_descricao if t.cid_confirmado else t.cid_descricao,
         intensidade_dor_eva=t.intensidade_dor_eva, limitacao_funcional=t.limitacao_funcional,
         justificativa_clinica=t.justificativa_clinica or "", observacoes=t.observacoes or "",
         prioridade_regulacao=t.prioridade_regulacao, flag_oncologico=t.flag_oncologico,
@@ -178,6 +183,15 @@ class SqlSolicitacaoRepository:
               "piora_recalculada": s.piora_recalculada} for s in solicitacoes],
         )
         self._s.expire_all()
+
+    def salvar_cid_confirmado(self, solicitacao: Solicitacao) -> None:
+        t = self._s.get(SolicitacaoTable, solicitacao.solicitacao_id)
+        if t is None:
+            raise ValueError(f"solicitação {solicitacao.solicitacao_id} não existe")
+        t.cid_confirmado = solicitacao.cid_confirmado
+        t.cid_confirmado_descricao = solicitacao.cid_descricao if solicitacao.cid_confirmado else None
+        t.cid_norm, t.oncologico = solicitacao.cid_norm, solicitacao.oncologico
+        self._s.flush()
 
 
 class SqlEventoRepository:
@@ -497,7 +511,13 @@ def _para_pendencia(t: PendenciaTable) -> Pendencia:
         bloqueante=t.bloqueante, evidencias=evidencias, acao_sugerida=t.acao_sugerida or "",
         status=StatusPendencia(t.status), aberta_em=t.aberta_em, resolvido_por=t.resolvido_por,
         resolvido_em=t.resolvido_em, resolucao=t.resolucao, observacao=t.observacao,
+        sugestao_cid=SugestaoCid(**json.loads(t.sugestao_cid_json)) if t.sugestao_cid_json else None,
     )
+
+
+def _sugestao_json(pendencia: Pendencia) -> str | None:
+    s = pendencia.sugestao_cid
+    return json.dumps(vars(s), ensure_ascii=False, sort_keys=True) if s else None
 
 
 def _evidencias_json(pendencia: Pendencia) -> str:
@@ -536,7 +556,7 @@ class SqlPendenciaRepository:
 
     def salvar(self, pendencia: Pendencia) -> None:
         """Pendência nova (id vazio ganha PEN-xxxx) ou, se já existe, só o desfecho (status, quem, quando,
-        resolução, observação); o achado não muda."""
+        resolução, observação) e a sugestão de CID (PRE-12); o achado não muda."""
         p = pendencia
         linha = self._s.get(PendenciaTable, p.pendencia_id) if p.pendencia_id else None
         if linha is None:
@@ -545,12 +565,14 @@ class SqlPendenciaRepository:
             self._s.add(PendenciaTable(
                 pendencia_id=p.pendencia_id, solicitacao_id=p.solicitacao_id, regra=p.regra,
                 titulo=p.titulo, bloqueante=p.bloqueante, evidencias_json=_evidencias_json(p),
-                acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em))
+                acao_sugerida=p.acao_sugerida, aberta_em=p.aberta_em,
+                sugestao_cid_json=_sugestao_json(p)))
             self._s.flush()
             return
         linha.status = pendencia.status.value
         linha.resolvido_por, linha.resolvido_em = pendencia.resolvido_por, pendencia.resolvido_em
         linha.resolucao, linha.observacao = pendencia.resolucao, pendencia.observacao
+        linha.sugestao_cid_json = _sugestao_json(pendencia)
         self._s.flush()
 
     def chaves_abertas(self, regras: tuple[str, ...]) -> set[tuple[str, str]]:

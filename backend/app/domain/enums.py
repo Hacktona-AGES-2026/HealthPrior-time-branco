@@ -74,6 +74,7 @@ class ResolucaoPendencia(str, Enum):
     FUNDIR = "fundir"
     REATIVAR = "reativar"
     DESCARTAR = "descartar"
+    CORRIGIR_CID = "corrigir_cid"  # PRE-12: o regulador confirma o CID novo (sugerido ou digitado)
 
 
 class StatusPendencia(str, Enum):

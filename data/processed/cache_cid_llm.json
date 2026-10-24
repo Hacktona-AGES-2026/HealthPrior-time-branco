@@ -1,0 +1,122 @@
+{
+ "02e987be9b6c76942ed652f78d25e82a8c2ff6f447be63ee76ada93472f8d411": {
+  "cid": "C18.9",
+  "citacao": "carcinoma ductal invasivo, grau 2",
+  "confianca": 0.3,
+  "descricao": "Neoplasia maligna do cólon, não especificado"
+ },
+ "0c200f15fdad6b1975a849867f502dfc6d3306da9cabbb537b16ec9c29919dde": {
+  "cid": "C73",
+  "citacao": "carcinoma epidermoide invasor",
+  "confianca": 0.87,
+  "descricao": "Neoplasia maligna da glândula tireóide"
+ },
+ "2af29af27a4d9947c2a540ed7038ecd311771ab0e290935939f75c745bedfff2": {
+  "cid": "C50.9",
+  "citacao": "carcinoma papilifero",
+  "confianca": 0.65,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "401a4f52383cfb48597988ba8b9ee0111ee6256a4a6bca20f50391a0f6a46fc5": {
+  "cid": "C50.9",
+  "citacao": "adenocarcinoma moderadamente diferenciado.",
+  "confianca": 0.78,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "6153f7db8e2c082609af9702a828139311ddf5cf47044fcd1a1ba999c2da8212": {
+  "cid": "C73",
+  "citacao": "NEOPLASIA MALIGNA.",
+  "confianca": 0.94,
+  "descricao": "Neoplasia maligna da glândula tireóide"
+ },
+ "6715446e0db32054034c6cdd896c76bff7138fbf49f7c0cf7705f99be0ea3a5d": {
+  "cid": "C16.9",
+  "citacao": "carcinoma ductal invasivo, grau 2",
+  "confianca": 0.83,
+  "descricao": "Neoplasia maligna do estômago, não especificado"
+ },
+ "67edb43d1410e9a650424f16505c26164f8afa1dbb757a2c1bab34bbe75e5fcb": {
+  "cid": "C50.9",
+  "citacao": "carcinoma papilifero",
+  "confianca": 0.72,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "7f9da60aa5e3bde88a11ad2fc632c12100e3805323047fd96a3262f45001d3de": {
+  "cid": "C50.9",
+  "citacao": "carcinoma ductal invasivo, grau 2",
+  "confianca": 0.78,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "84246e43644fdefb04f087277f21ce3e07137030c31373de83bc9f1ffd9d6b05": {
+  "cid": "C50.9",
+  "citacao": "POSITIVO para malignidade.",
+  "confianca": 0.76,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "9bd1524d2dcab5bcd79ba6656bc980077d7ad5debee8866a1d92929297d13484": {
+  "cid": "C73",
+  "citacao": "Anatomopatologico POSITIVO para malignidade.",
+  "confianca": 0.88,
+  "descricao": "Neoplasia maligna da glândula tireóide"
+ },
+ "9e2c09b97a0c560e82bb8dbefceb541de8e814b6f81109fcc8d60818fdaedec9": {
+  "cid": "C50.9",
+  "citacao": "carcinoma ductal invasivo, grau 2.",
+  "confianca": 0.56,
+  "descricao": "Neoplasia maligna da mama, não especificada"
+ },
+ "ac2688609a379378601546154880a0d83556a86c1a2296e987b866b4031ab97f": {
+  "cid": "C34.9",
+  "citacao": "carcinoma epidermoide invasor",
+  "confianca": 0.93,
+  "descricao": "Neoplasia maligna dos brônquios ou pulmões, não especificado"
+ },
+ "ad88e8c85f52a3e02840f01b5ad71a36bc870b8e31df1af04f5de587d12e9fdd": {
+  "cid": "C73",
+  "citacao": "adenocarcinoma moderadamente diferenciado",
+  "confianca": 0.89,
+  "descricao": "Neoplasia maligna da glândula tireóide"
+ },
+ "b6161c40bf63b761d72a76776d232329d185f7c6a90081ba5284f7e7ec8d381b": {
+  "cid": "C43.5",
+  "citacao": "melanoma, Breslow 1,2 mm",
+  "confianca": 0.76,
+  "descricao": "Melanoma maligno do tronco"
+ },
+ "bc97ab56b9f0643fa6e4e2f43c7aac38be46d0d5641a3b5353cfec10d456fd95": {
+  "cid": "C44.9",
+  "citacao": "carcinoma papilifero",
+  "confianca": 0.63,
+  "descricao": "Neoplasia maligna da pele, não especificada"
+ },
+ "d0a266600b777c87166c448a9ac82f59f71f29fe7ac198b0af0e6d234e097f8f": {
+  "cid": "C78.5",
+  "citacao": "AP: melanoma, Breslow 1,2 mm.",
+  "confianca": 0.61,
+  "descricao": "Neoplasia maligna secundária do intestino grosso e do reto"
+ },
+ "e6d7f6a052335b103e5407c05f450ada6a91af8c564846be7a4961fc37e24bef": {
+  "cid": "C18.9",
+  "citacao": "carcinoma papilifero",
+  "confianca": 0.82,
+  "descricao": "Neoplasia maligna do cólon, não especificado"
+ },
+ "e7283eaae24b0c5b44daa91a0278bc6747300832b799b3f770d0d80b684e0e04": {
+  "cid": "C73",
+  "citacao": "carcinoma ductal invasivo, grau 2",
+  "confianca": 0.55,
+  "descricao": "Neoplasia maligna da glândula tireóide"
+ },
+ "f84f6509bb4a8037ae53b31444d150fe87b40ecc15be34fde618154a630ab63b": {
+  "cid": "C53.9",
+  "citacao": "carcinoma epidermoide invasor",
+  "confianca": 0.62,
+  "descricao": "Neoplasia maligna do colo do útero, não especificado"
+ },
+ "fb0aff1b510a9047ce954233b1e38bac44658b999c18aae5414ce0401fe3cfc3": {
+  "cid": "C18.9",
+  "citacao": "adenocarcinoma moderadamente diferenciado",
+  "confianca": 0.88,
+  "descricao": "Neoplasia maligna do cólon, não especificado"
+ }
+}

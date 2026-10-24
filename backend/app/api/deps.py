@@ -2,7 +2,9 @@
 
 Rotas recebem casos de uso prontos via Depends; trocar a implementação do SWALIS é só aqui.
 """
+import logging
 from datetime import date, datetime, timezone
+from typing import Callable
 
 from fastapi import Depends
 from sqlalchemy.exc import SQLAlchemyError
@@ -28,9 +30,10 @@ from app.application.listar_inbox import ListarInbox
 from app.application.publicar_fila import ExportarFilaPublicada, PublicarFila
 from app.application.registrar_evento import RegistrarEvento
 from app.application.resolver_pendencia import ResolverPendencia
+from app.application.sugerir_cid import SugerirCid
 from app.config import settings
 from app.infrastructure.csv_loader import LeitorDataset
-from app.infrastructure.db import get_session
+from app.infrastructure.db import engine, get_session
 from app.infrastructure.exportador import ExportadorCsv
 from app.infrastructure.repositories import (
     SqlCargaRepository,
@@ -45,10 +48,12 @@ from app.infrastructure.repositories import (
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
+from app.infrastructure.llm_cid import criar_sugestor_cid
 from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
 from app.infrastructure.notificador import criar_notificador
 from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
+from app.infrastructure.tabela_cid import tabela_cid
 from app.infrastructure.verificador import VerificadorOficial
 
 
@@ -162,7 +167,31 @@ def get_resolver_pendencia(session: Session = Depends(get_session),
         pendencias=SqlPendenciaRepository(session), solicitacoes=solicitacoes, eventos=eventos,
         correcoes=correcoes, uow=SqlUnidadeDeTrabalho(session), publicar=publicar,
         relogio=lambda: datetime.now(timezone.utc),
-        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes), notificar=_notificar(session))
+        recalcular_flags=RecalcularFlags(solicitacoes, eventos, correcoes), notificar=_notificar(session),
+        tabela_cid=tabela_cid(settings.data_dir), scorer=_scorer(session))
+
+
+# PRE-12 · sugestão de CID pelo LLM (D-117)
+def montar_sugerir_cid(session: Session) -> SugerirCid:
+    return SugerirCid(SqlPendenciaRepository(session), SqlSolicitacaoRepository(session),
+                      criar_sugestor_cid(), tabela_cid(settings.data_dir), SqlUnidadeDeTrabalho(session))
+
+
+def get_sugerir_cid(session: Session = Depends(get_session)) -> SugerirCid:
+    return montar_sugerir_cid(session)
+
+
+def _sugerir_cid_em_segundo_plano(pendencia_id: str) -> None:
+    """Roda depois da resposta do POST /eventos, com sessão própria (a da requisição já fechou)."""
+    try:
+        with Session(engine) as session:
+            montar_sugerir_cid(session).executar(pendencia_id)
+    except Exception:  # a pendência já existe; sem sugestão, o regulador digita o CID
+        logging.getLogger(__name__).exception("Sugestão de CID falhou para %s", pendencia_id)
+
+
+def get_sugerir_cid_em_segundo_plano() -> Callable[[str], None]:
+    return _sugerir_cid_em_segundo_plano
 
 
 # US-15

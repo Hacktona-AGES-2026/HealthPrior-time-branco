@@ -5,6 +5,8 @@ Evento -> pré-processamento (PRE-07/08, flags) -> SWALIS -> desfecho:
 - enviado_inbox: a classe sugerida mudou; a classe em vigor fica congelada até o regulador
   decidir (I-04), então nenhuma classe nova vale sem aprovação de um profissional;
 - registrado: só grava; a ordenação é refeita na próxima publicação (D-02).
+Biópsia positiva com CID não oncológico também abre a PRE-12 ("câncer escondido") na hora
+(D-117); a sugestão de CID pelo LLM vem depois, fora da requisição (`SugerirCid`).
 Não republica a fila: a posição muda quando o regulador decide ou na atualização diária.
 """
 from __future__ import annotations
@@ -17,7 +19,7 @@ from typing import Callable
 from app.domain.enums import Classe, ClasseStatus, DesfechoEvento, TipoEvento
 from app.domain.errors import EventoInvalidoError, NaoEncontradoError
 from app.domain.inbox import entra_no_inbox
-from app.domain.models import Evento, Motivo, Pendencia
+from app.domain.models import Evento, Motivo, Pendencia, Solicitacao
 from app.domain.ports import (
     EventoRepository,
     PendenciaRepository,
@@ -26,6 +28,7 @@ from app.domain.ports import (
     UnidadeDeTrabalho,
 )
 from app.domain.preprocessing.flags import marcar_eventos, recalcular_flags
+from app.domain.preprocessing.inconsistencias import ALERTA_POR_REGRA, detectar_cancer_escondido
 
 # Resultado de contato que indica saída da fila (PRE-21/22 e PRE-23). Bloqueante: humano confirma.
 SAIDA_POR_CONTATO = {
@@ -54,6 +57,8 @@ class ResultadoEvento:
     classe_antes: Classe | None
     classe_depois: Classe | None
     pendencia_id: str | None = None
+    # PRE-12 aberta por este evento: quem chamou dispara a sugestão de CID (D-117)
+    pendencia_cid_id: str | None = None
 
 
 class RegistrarEvento:
@@ -116,5 +121,26 @@ class RegistrarEvento:
                         else DesfechoEvento.REGISTRADO)
         else:
             desfecho = DesfechoEvento.REGISTRADO
+        pendencia_cid_id = self._abrir_cancer_escondido(s, todos, evento)
         self._uow.confirmar()
-        return ResultadoEvento(evento.evento_id, desfecho, antes, depois, pendencia_id)
+        return ResultadoEvento(evento.evento_id, desfecho, antes, depois,
+                               pendencia_id or pendencia_cid_id, pendencia_cid_id)
+
+    def _abrir_cancer_escondido(self, s: Solicitacao, eventos: list[Evento], evento: Evento) -> str | None:
+        """PRE-12 (D-117): biópsia positiva nova com CID não oncológico abre a pendência sem esperar
+        a próxima carga. Não muda CID nem classe; só avisa e guarda o laudo para a sugestão."""
+        if evento.tipo_evento != "biopsia" or evento.resultado != "positivo" or evento.duplicado_de:
+            return None
+        achado = detectar_cancer_escondido(s, eventos)
+        if achado is None or any(p.regra == achado.regra and p.status.value == "aberta"
+                                 for p in self._pendencias.listar_por_solicitacao(s.solicitacao_id)):
+            return None
+        p = Pendencia(pendencia_id="", solicitacao_id=s.solicitacao_id, regra=achado.regra,
+                      titulo=achado.titulo, bloqueante=False, evidencias=achado.evidencias,
+                      acao_sugerida=achado.acao_sugerida, aberta_em=evento.data_evento)
+        self._pendencias.salvar(p)
+        alerta = ALERTA_POR_REGRA[achado.regra]
+        if alerta not in s.alertas:
+            s.alertas.append(alerta)
+            self._solicitacoes.salvar_alertas([s])
+        return p.pendencia_id

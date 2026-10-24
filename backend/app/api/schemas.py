@@ -176,11 +176,30 @@ class DecisaoOut(BaseModel):
     justificativa: Optional[str] = None
 
 
+class EvidenciaOut(BaseModel):
+    fonte: str
+    ref: Optional[str] = None
+    texto: str
+
+
+class SugestaoCidOut(BaseModel):
+    """PRE-12 (D-117): CID sugerido pelo LLM a partir do laudo. Só sugestão; o regulador decide (I-05)."""
+    cid: str
+    descricao: str = Field(description="descrição oficial da tabela CID-10")
+    citacao: str = Field(description="trecho literal do laudo que justifica o CID")
+    confianca: float
+    modelo: str
+    evento_id: Optional[str] = None
+
+
 class PendenciaResumoOut(BaseModel):
     pendencia_id: str
     regra: str
     bloqueante: bool
     status: StatusPendencia
+    titulo: Optional[str] = None
+    evidencias: list[EvidenciaOut] = []
+    sugestao_cid: Optional[SugestaoCidOut] = None
 
 
 class CorrecaoOut(BaseModel):
@@ -200,6 +219,8 @@ class SolicitacaoDetalheOut(BaseModel):
     procedimento: str
     cid: str
     cid_descricao: Optional[str]
+    cid_original: Optional[str] = Field(
+        default=None, description="CID do cadastro quando o regulador corrigiu o CID (PRE-12, D-117)")
     status_fila: StatusFila
     posicao: Optional[int]
     camada: Optional[CamadaInt]
@@ -275,12 +296,6 @@ class EventoResultadoOut(BaseModel):
 
 
 # ---------- pendências ----------
-class EvidenciaOut(BaseModel):
-    fonte: str
-    ref: Optional[str] = None
-    texto: str
-
-
 class PendenciaOut(BaseModel):
     pendencia_id: str
     solicitacao_id: str
@@ -289,6 +304,7 @@ class PendenciaOut(BaseModel):
     bloqueante: bool
     evidencias: list[EvidenciaOut]
     acao_sugerida: str
+    sugestao_cid: Optional[SugestaoCidOut] = None
     status: StatusPendencia
     aberta_em: date
     # preenchidos depois de resolvida (US-07); ficam null enquanto a pendência está aberta
@@ -308,6 +324,7 @@ class ResolverPendenciaIn(BaseModel):
     usuario_id: str
     observacao: Optional[str] = None
     fundir_com: Optional[str] = Field(default=None, description="solicitacao_id que permanece")
+    cid: Optional[str] = Field(default=None, description="corrigir_cid (PRE-12): o CID novo, ex. C50.9")
 
 
 class ResolverPendenciaOut(BaseModel):
