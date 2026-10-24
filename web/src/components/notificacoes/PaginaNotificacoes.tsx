@@ -51,7 +51,7 @@ export default function PaginaNotificacoes() {
   }
 
   const dados = estado.tipo === "ok" ? estado.dados : null
-  const real = dados?.canal === "twilio"
+  const real = dados?.canal === "twilio" || dados?.canal === "ntfy"
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
@@ -69,7 +69,7 @@ export default function PaginaNotificacoes() {
         <div className="flex flex-wrap items-center gap-2" aria-live="polite">
           {dados && (
             <Badge variant={real ? "default" : "secondary"}>
-              {real ? `Twilio (conta de teste) → ${dados.destino ?? "sem destino"}` : "Canal simulado: nada é enviado"}
+              {real ? `${dados.canal === "ntfy" ? "ntfy (push)" : "Twilio (conta de teste)"} → ${dados.destino ?? "sem destino"}` : "Canal simulado: nada é enviado"}
             </Badge>
           )}
           {dados && <span className="text-sm text-muted-foreground"><b className="tabular-nums text-foreground">{dados.total}</b> mensagens</span>}

@@ -11,6 +11,12 @@ from app.infrastructure.repositories import SqlNotificacaoRepository
 router = APIRouter(prefix="/notificacoes", tags=["notificacoes"])
 
 
+def _destino_para_tela() -> str | None:
+    if criar_notificador().canal == "ntfy":
+        return f"{settings.ntfy_url.split('://')[-1]}/{settings.ntfy_topic}"
+    return _mascarar(settings.notifica_destino)
+
+
 def _mascarar(numero: str) -> str | None:
     return None if not numero else f"{numero[:3]}{'*' * max(len(numero) - 5, 0)}{numero[-2:]}"
 
@@ -22,7 +28,7 @@ def listar_notificacoes(limite: int = Query(default=100, ge=1, le=500),
     if settings.use_mocks:
         return schemas.NotificacoesOut(canal="simulado", destino=None, total=0, itens=[])
     itens = [schemas.NotificacaoOut(**vars(n)) for n in repo.listar(limite)]
-    return schemas.NotificacoesOut(canal=criar_notificador().canal, destino=_mascarar(settings.notifica_destino),
+    return schemas.NotificacoesOut(canal=criar_notificador().canal, destino=_destino_para_tela(),
                                    total=len(itens), itens=itens)
 
 

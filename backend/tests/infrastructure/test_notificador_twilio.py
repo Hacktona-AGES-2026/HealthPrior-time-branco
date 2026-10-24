@@ -1,7 +1,7 @@
 """Twilio (conta de teste) pela API REST, sem rede: o transporte é simulado."""
 import httpx
 
-from app.infrastructure.notificador import NotificadorSimulado, NotificadorTwilio, sem_acentos
+from app.infrastructure.notificador import NotificadorNtfy, NotificadorSimulado, NotificadorTwilio, sem_acentos
 
 
 def cliente(handler):
@@ -97,3 +97,40 @@ def test_simulado_nao_envia_nada():
 
 def test_sem_acentos():
     assert sem_acentos("posição são ção") == "posicao sao cao"
+
+
+def test_ntfy_posta_no_topico_com_texto_livre_e_acentos():
+    vistos = {}
+
+    def handler(request):
+        vistos["url"], vistos["corpo"], vistos["h"] = str(request.url), request.content.decode("utf-8"), request.headers
+        return httpx.Response(200, json={"id": "abc123", "event": "message"})
+
+    r = NotificadorNtfy("https://ntfy.sh/", "healthprior-teste", client=cliente(handler)).enviar("", "sua posição mudou")
+    assert (r.ok, r.detalhe) == (True, "ntfy abc123")
+    assert vistos["url"] == "https://ntfy.sh/healthprior-teste" and vistos["corpo"] == "sua posição mudou"
+    assert "authorization" not in vistos["h"] and vistos["h"]["title"] == "Atualizacao da fila cirurgica"
+
+
+def test_ntfy_com_token_e_com_erro():
+    def handler(request):
+        assert request.headers["authorization"] == "Bearer tk_x"
+        return httpx.Response(403, text="forbidden")
+
+    r = NotificadorNtfy("https://ntfy.sh", "t", token="tk_x", client=cliente(handler)).enviar("", "x")
+    assert r.ok is False and "403" in r.detalhe and "tk_x" not in r.detalhe
+
+
+def test_ntfy_nao_exige_destino_e_cai_no_simulado_sem_topico():
+    from app.infrastructure import notificador as n
+    import dataclasses
+
+    assert NotificadorNtfy("https://ntfy.sh", "t").exige_destino is False
+    original = n.settings
+    try:
+        n.settings = dataclasses.replace(original, notifica_canal="ntfy", ntfy_topic="")
+        assert n.criar_notificador().canal == "simulado"
+        n.settings = dataclasses.replace(original, notifica_canal="ntfy", ntfy_topic="meu-topico")
+        assert n.criar_notificador().canal == "ntfy"
+    finally:
+        n.settings = original

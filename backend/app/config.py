@@ -43,8 +43,11 @@ class Settings:
     twilio_from: str
     twilio_api_key_sid: str
     twilio_sms_template: str
+    ntfy_url: str
+    ntfy_topic: str
     twilio_auth_token: str = field(repr=False)
     twilio_api_key_secret: str = field(repr=False)
+    ntfy_token: str = field(repr=False)
     fatores_enabled: bool
     irr_path: Path
 
@@ -78,8 +81,11 @@ def _load() -> Settings:
         twilio_from=os.getenv("TWILIO_FROM", "").strip(),
         twilio_api_key_sid=os.getenv("TWILIO_API_KEY_SID", "").strip(),
         twilio_sms_template=os.getenv("TWILIO_SMS_TEMPLATE", "").strip(),
+        ntfy_url=os.getenv("NTFY_URL", "https://ntfy.sh").strip().rstrip("/"),
+        ntfy_topic=os.getenv("NTFY_TOPIC", "").strip(),
         twilio_auth_token=os.getenv("TWILIO_AUTH_TOKEN", "").strip(),
         twilio_api_key_secret=os.getenv("TWILIO_API_KEY_SECRET", "").strip(),
+        ntfy_token=os.getenv("NTFY_TOKEN", "").strip(),
         # Fatores de comorbidade e idade/IRR no score (domain/fatores.py).
         fatores_enabled=os.getenv("HP_FATORES_ENABLED", "true").lower() == "true",
         irr_path=Path(os.getenv("HP_IRR_PATH", REPO_ROOT / "score" / "references"

@@ -20,6 +20,12 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
 3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
 4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
 
+## ntfy.sh (push grátis, o caminho mais simples para a demo)
+Sem cadastro e com texto livre (o texto genérico sai como está, com acentos). No celular, instale o app **ntfy** e assine o tópico.
+1. `.env`: `HP_NOTIFICA_CANAL=ntfy` e `NTFY_TOPIC=<um nome difícil de adivinhar>` (no servidor público, o nome do tópico é o único controle de acesso; `NTFY_TOKEN` e `NTFY_URL` são opcionais).
+2. Teste a assinatura (**sem espaço** depois da barra): `curl -d "oi" ntfy.sh/SEU-TOPICO`.
+3. Aprove ou edite um caso no Inbox: chega o push "Atualizacao da fila cirurgica". Não usa telefone nem `HP_NOTIFICA_DESTINO`.
+
 ## SMS ao Brasil na conta de teste
 A conta de teste só envia SMS ao Brasil com **modelos pré-definidos**; texto livre volta `400: Invalid template name`.
 Defina `TWILIO_SMS_TEMPLATE=sms_event_notifications` (ou outro modelo da sua conta): o Body enviado passa a ser o nome do

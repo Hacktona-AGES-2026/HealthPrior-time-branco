@@ -40,7 +40,7 @@ class EnviarNotificacoes:
 
     def executar(self) -> ResultadoEnvios:
         r = ResultadoEnvios()
-        if not self._destino and self._notificador.canal != "simulado":
+        if not self._destino and getattr(self._notificador, "exige_destino", True):
             return r  # sem número da demo não há para quem enviar
         for n in self._repo.pendentes(self._limite):
             res = self._notificador.enviar(self._destino, n.texto)

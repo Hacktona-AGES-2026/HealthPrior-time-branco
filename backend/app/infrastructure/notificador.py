@@ -1,4 +1,4 @@
-"""Canais de envio das notificações (demo): simulado e Twilio (conta de teste).
+"""Canais de envio das notificações (demo): simulado, Twilio (conta de teste) e ntfy.sh (push).
 
 O Twilio é chamado pela API REST (`httpx`), sem SDK. A conta de teste só entrega a números verificados e
 acrescenta um aviso de "trial" à mensagem; por isso o destino é sempre o número da demo, nunca o do paciente.
@@ -24,13 +24,45 @@ def sem_acentos(texto: str) -> str:
 
 class NotificadorSimulado:
     canal = "simulado"
+    exige_destino = False
 
     def enviar(self, destino: str, texto: str) -> ResultadoEnvio:
         return ResultadoEnvio(True, "simulado: nada foi enviado")
 
 
+class NotificadorNtfy:
+    """Push pelo ntfy.sh (ou um servidor próprio): grátis, sem cadastro, texto livre. Quem assina o tópico recebe.
+
+    O tópico é o único "segredo" no servidor público: use um nome difícil de adivinhar e, se der, `NTFY_TOKEN`.
+    """
+
+    canal = "ntfy"
+    exige_destino = False  # não há telefone: o destino é o tópico
+
+    def __init__(self, url: str, topico: str, token: str = "", client: httpx.Client | None = None,
+                 timeout: float = 15.0):
+        self._url, self._topico, self._token = url.rstrip("/"), topico, token
+        self._client = client or httpx.Client(timeout=timeout)
+
+    def enviar(self, destino: str, texto: str) -> ResultadoEnvio:
+        cabecalhos = {"Title": "Atualizacao da fila cirurgica", "Tags": "hospital", "Content-Type": "text/plain; charset=utf-8"}
+        if self._token:
+            cabecalhos["Authorization"] = f"Bearer {self._token}"
+        try:
+            r = self._client.post(f"{self._url}/{self._topico}", content=texto.encode("utf-8"), headers=cabecalhos)
+        except httpx.HTTPError as e:
+            return ResultadoEnvio(False, f"falha de rede: {e.__class__.__name__}")
+        if r.status_code == 200:
+            try:
+                return ResultadoEnvio(True, f"ntfy {r.json().get('id')}")
+            except ValueError:
+                return ResultadoEnvio(True, "ntfy")
+        return ResultadoEnvio(False, f"ntfy {r.status_code}: {r.text[:120]}")
+
+
 class NotificadorTwilio:
     canal = "twilio"
+    exige_destino = True
 
     def __init__(self, account_sid: str, auth_token: str, remetente: str,
                  client: httpx.Client | None = None, timeout: float = 15.0,
@@ -61,8 +93,10 @@ class NotificadorTwilio:
         return ResultadoEnvio(False, f"Twilio {r.status_code}: {corpo.get('message') or r.text[:120]}")
 
 
-def criar_notificador() -> NotificadorSimulado | NotificadorTwilio:
-    """Simulado, a menos que o canal seja `twilio` e as credenciais e o destino estejam configurados."""
+def criar_notificador() -> NotificadorSimulado | NotificadorTwilio | NotificadorNtfy:
+    """Simulado, a menos que o canal escolhido (`twilio` ou `ntfy`) esteja completo na configuração."""
+    if settings.notifica_canal == "ntfy" and settings.ntfy_topic:
+        return NotificadorNtfy(settings.ntfy_url, settings.ntfy_topic, settings.ntfy_token)
     tem_senha = settings.twilio_auth_token or (settings.twilio_api_key_sid and settings.twilio_api_key_secret)
     if (settings.notifica_canal == "twilio" and settings.twilio_account_sid and tem_senha
             and settings.twilio_from and settings.notifica_destino):
