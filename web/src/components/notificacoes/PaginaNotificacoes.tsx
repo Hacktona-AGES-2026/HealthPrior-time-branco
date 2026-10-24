@@ -1,29 +1,48 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { AlertTriangle, BellRing, Loader2, RefreshCw, Send } from "lucide-react"
 import { toast } from "sonner"
 import { enviarNotificacoes, listarNotificacoes, type ListaNotificacoes, type Notificacao } from "@/api/cliente"
-import { mensagemDeErro, plural } from "@/lib/mensagens"
+import { mensagemDeErro, nomeDoPaciente, plural } from "@/lib/mensagens"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
+import { useStore } from "@/store/useStore"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { DialogoConfirmacao } from "@/components/shared/DialogoConfirmacao"
+
+type Filtro = "todas" | "pendente" | "enviada" | "falhou"
 
 const MOTIVO: Record<Notificacao["motivo"], string> = {
   posicao: "Mudou de posição",
   situacao: "Situação atualizada",
-  recontato: "Sem evento há muito tempo",
+  recontato: "Sem notícias há muito tempo",
 }
-const STATUS: Record<Notificacao["status"], { rotulo: string; variante: "secondary" | "default" | "destructive" }> = {
-  pendente: { rotulo: "Pendente", variante: "secondary" },
-  enviada: { rotulo: "Enviada", variante: "default" },
-  falhou: { rotulo: "Falhou", variante: "destructive" },
+const STATUS: Record<Notificacao["status"], { rotulo: string; ponto: string }> = {
+  pendente: { rotulo: "Para enviar", ponto: "bg-amber-500" },
+  enviada: { rotulo: "Enviada", ponto: "bg-emerald-600" },
+  falhou: { rotulo: "Falhou", ponto: "bg-destructive" },
 }
+const NOME_CANAL: Record<string, string> = { waha: "WhatsApp", ntfy: "push (ntfy)", twilio: "SMS/WhatsApp (Twilio)" }
+const FILTROS: { id: Filtro; rotulo: string }[] = [
+  { id: "todas", rotulo: "Todos" },
+  { id: "pendente", rotulo: "Para enviar" },
+  { id: "enviada", rotulo: "Enviados" },
+  { id: "falhou", rotulo: "Falharam" },
+]
 
 type Estado = { tipo: "carregando" } | { tipo: "erro"; mensagem: string } | { tipo: "ok"; dados: ListaNotificacoes }
 
+/** O texto que o paciente lê, sem o prefixo de demonstração (o paciente já aparece na linha). */
+const semPrefixo = (texto: string) => texto.replace(/^\[DEMO [^\]]+\]\s*(Atualizacao da fila cirurgica:\s*)?/i, "")
+const hora = (iso: string | null | undefined) =>
+  iso ? new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : ""
+const nomeCanal = (canal: string) => canal.split("+").map((c) => NOME_CANAL[c] ?? c).join(" + ")
+
 export default function PaginaNotificacoes() {
+  const abrirFicha = useStore((s) => s.abrirFicha)
   const [estado, setEstado] = useState<Estado>({ tipo: "carregando" })
+  const [filtro, setFiltro] = useState<Filtro>("todas")
   const [enviando, setEnviando] = useState(false)
+  const [confirmando, setConfirmando] = useState(false)
   const [tentativa, setTentativa] = useState(0)
 
   useEffect(() => {
@@ -38,12 +57,28 @@ export default function PaginaNotificacoes() {
 
   const recarregar = useCallback(() => setTentativa((t) => t + 1), [])
 
+  const dados = estado.tipo === "ok" ? estado.dados : null
+  const real = !!dados && dados.canal !== "simulado"
+
+  const contagem = useMemo(() => {
+    const c = { todas: 0, pendente: 0, enviada: 0, falhou: 0 }
+    for (const n of dados?.itens ?? []) {
+      c.todas++
+      c[n.status]++
+    }
+    return c
+  }, [dados])
+  const pendentes = contagem.pendente
+  const itens = useMemo(() => (dados?.itens ?? []).filter((n) => filtro === "todas" || n.status === filtro), [dados, filtro])
+
   async function enviar() {
+    setConfirmando(false)
     setEnviando(true)
     try {
       const r = await enviarNotificacoes()
-      const descricao = [r.falhas > 0 ? `${plural(r.falhas, "falhou", "falharam")}.` : "", r.pendentes > 0 ? `Restam ${r.pendentes}: envie de novo.` : ""].filter(Boolean).join(" ") || undefined
+      const descricao = [r.falhas > 0 ? `${plural(r.falhas, "falhou", "falharam")}.` : "", r.pendentes > 0 ? `Ainda faltam ${r.pendentes}: envie de novo.` : ""].filter(Boolean).join(" ") || undefined
       if (r.enviadas === 0 && r.falhas > 0) toast.error("Nenhum aviso foi enviado", { description: descricao })
+      else if (r.enviadas === 0) toast.info("Não havia avisos para enviar")
       else toast.success(plural(r.enviadas, "aviso enviado", "avisos enviados"), { description: descricao })
     } catch (e) {
       toast.error("Não foi possível enviar os avisos", { description: mensagemDeErro(e) })
@@ -53,42 +88,66 @@ export default function PaginaNotificacoes() {
     }
   }
 
-  const dados = estado.tipo === "ok" ? estado.dados : null
-  const real = !!dados && dados.canal !== "simulado"
+  // Num canal real cada aviso é uma mensagem separada no celular: sempre confirma antes. No simulado nada sai.
+  const aoClicarEnviar = () => (real ? setConfirmando(true) : void enviar())
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="@container mx-auto max-w-5xl space-y-4 p-4">
-        <header className="fx-fade-up space-y-1">
+      <div className="@container mx-auto max-w-4xl space-y-4 p-4">
+        <header className="space-y-1">
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <BellRing className="size-4" aria-hidden /> Notificações ao paciente (demonstração)
+            <BellRing className="size-4" aria-hidden /> Avisos ao paciente
           </h2>
           <p className="text-sm text-muted-foreground">
-            Avisos de mudança de posição, de situação e de recontato. O texto é genérico (sem classe nem posição exata) e, na demonstração, tudo vai para <b className="text-foreground">um número
-            só</b>, nunca para o do paciente.
+            Quando a situação ou a posição de um paciente muda, um aviso curto fica pronto aqui. Cada aviso é uma mensagem separada, sem classe nem posição exata.
           </p>
         </header>
 
-        <div className="flex flex-wrap items-center gap-2" aria-live="polite">
-          {dados && (
-            <Badge variant={real ? "default" : "secondary"}>
-              {real ? `${dados.canal.replace("waha", "WhatsApp").replace("ntfy", "push (ntfy)").replace("twilio", "Twilio")} → ${dados.destino ?? "sem destino"}` : "Canal simulado: nada é enviado"}
-            </Badge>
-          )}
-          {dados && <span className="text-sm text-muted-foreground"><b className="tabular-nums text-foreground">{dados.total}</b> mensagens</span>}
-          <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" className="h-9 lg:h-7" onClick={recarregar} aria-label="Atualizar a lista">
-              <RefreshCw aria-hidden /> Atualizar
-            </Button>
-            <Button size="sm" className="h-9 lg:h-7" disabled={enviando} onClick={enviar}>
-              {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />} Enviar pendentes
-            </Button>
+        {dados && (
+          <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border p-3 text-sm", real ? "border-primary/30 bg-primary/5" : "bg-muted/40")}>
+            <p className="min-w-full flex-1 @lg:min-w-0">
+              {real ? (
+                <>
+                  Os avisos saem por <b>{nomeCanal(dados.canal)}</b> para <b className="break-all">{dados.destino ?? "um destino sem nome"}</b>, nunca para o telefone do paciente.
+                </>
+              ) : (
+                <>Modo de demonstração: <b>nada é enviado de verdade</b>. A lista mostra o que o paciente receberia.</>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" className="h-9" onClick={recarregar} aria-label="Atualizar a lista">
+                <RefreshCw aria-hidden /> Atualizar
+              </Button>
+              <Button className="h-9" disabled={enviando || pendentes === 0} onClick={aoClicarEnviar}>
+                {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />}
+                {pendentes === 0 ? "Nada para enviar" : `Enviar pendentes (${pendentes})`}
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
+
+        {dados && dados.itens.length > 0 && (
+          <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filtrar avisos">
+            {FILTROS.map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                aria-pressed={filtro === f.id}
+                onClick={() => setFiltro(f.id)}
+                className={cn(
+                  "inline-flex h-9 items-center gap-1.5 rounded-lg border px-3 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                  filtro === f.id ? "border-primary bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                )}
+              >
+                {f.rotulo}
+                <span className="tabular-nums opacity-80">{contagem[f.id]}</span>
+              </button>
+            ))}
+          </div>
+        )}
 
         {estado.tipo === "carregando" && (
-          <div className="space-y-2" role="status">
-            <span className="fx-loading-dots text-sm text-muted-foreground">Carregando notificações</span>
+          <div className="space-y-2" role="status" aria-label="Carregando os avisos">
             {[0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
           </div>
         )}
@@ -96,31 +155,59 @@ export default function PaginaNotificacoes() {
           <div className="rounded-xl border border-destructive/40 bg-destructive/5 p-4 text-sm" role="alert">
             <p className="flex items-center gap-2 font-semibold text-destructive"><AlertTriangle className="size-4" aria-hidden /> Não foi possível carregar os avisos</p>
             <p className="mt-1 text-muted-foreground">{estado.mensagem}</p>
-            <Button variant="outline" size="sm" className="mt-3" onClick={recarregar}><RefreshCw aria-hidden /> Tentar de novo</Button>
+            <Button variant="outline" className="mt-3 h-9" onClick={recarregar}><RefreshCw aria-hidden /> Tentar de novo</Button>
           </div>
         )}
         {dados && dados.itens.length === 0 && (
           <div className="rounded-xl bg-muted/40 p-8 text-center text-sm text-muted-foreground">
-            Nada enfileirado ainda. Aprove ou edite uma classe no Inbox, resolva uma pendência bloqueante ou rode a atualização diária.
+            Nenhum aviso ainda. Eles aparecem quando você muda a classe de um paciente, resolve uma pendência que bloqueia ou publica a fila.
           </div>
         )}
-        {dados && dados.itens.length > 0 && (
-          <ul className="space-y-2" aria-label="Notificações">
-            {dados.itens.map((n) => (
-              <li key={n.notificacao_id} className="rounded-xl border bg-card p-3 text-sm">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant={STATUS[n.status].variante}>{STATUS[n.status].rotulo}</Badge>
-                  <span className="font-medium">{MOTIVO[n.motivo]}</span>
-                  <span className="font-mono text-xs text-muted-foreground">{n.solicitacao_id}</span>
-                  <span className="ml-auto hidden font-mono text-xs text-muted-foreground md:inline">{n.notificacao_id} · {n.canal}</span>
+        {dados && dados.itens.length > 0 && itens.length === 0 && (
+          <p className="rounded-xl bg-muted/40 p-6 text-center text-sm text-muted-foreground">Nenhum aviso nesta lista.</p>
+        )}
+        {itens.length > 0 && (
+          <ul className="divide-y rounded-xl border bg-card" aria-label="Avisos">
+            {itens.map((n) => (
+              <li key={n.notificacao_id} className="flex flex-col gap-1 p-3 text-sm @lg:flex-row @lg:items-start @lg:gap-4">
+                <div className="flex shrink-0 items-center gap-2 @lg:w-44 @lg:flex-col @lg:items-start @lg:gap-1">
+                  <span className="inline-flex items-center gap-1.5 font-medium">
+                    <span className={cn("size-2 rounded-full", STATUS[n.status].ponto)} aria-hidden />
+                    {STATUS[n.status].rotulo}
+                  </span>
+                  <span className="text-xs tabular-nums text-muted-foreground">
+                    {n.status === "pendente" ? `Criado ${hora(n.criada_em)}` : hora(n.enviada_em ?? n.criada_em)}
+                  </span>
                 </div>
-                <p className={cn("mt-1.5 leading-snug")}>{n.texto}</p>
-                {n.detalhe && <p className="mt-1 text-xs text-muted-foreground">{n.detalhe}</p>}
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="flex flex-wrap items-baseline gap-x-2">
+                    <button type="button" className="font-medium underline-offset-2 hover:underline focus-visible:underline" onClick={() => abrirFicha(n.solicitacao_id)}>
+                      {nomeDoPaciente(n.solicitacao_id)}
+                    </button>
+                    <span className="text-muted-foreground">{MOTIVO[n.motivo]}</span>
+                  </p>
+                  <p className="leading-snug text-muted-foreground">“{semPrefixo(n.texto)}”</p>
+                  {n.status === "falhou" && n.detalhe && <p className="text-xs text-destructive">Motivo da falha: {n.detalhe}</p>}
+                </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      <DialogoConfirmacao
+        aberto={confirmando}
+        titulo={`Enviar ${plural(pendentes, "aviso", "avisos")}?`}
+        descricao={
+          <>
+            Cada aviso chega como uma mensagem separada em <b>{dados?.destino ?? "o destino configurado"}</b>.
+          </>
+        }
+        rotuloConfirmar="Enviar"
+        aoConfirmar={() => void enviar()}
+        aoCancelar={() => setConfirmando(false)}
+        ocupado={enviando}
+      />
     </div>
   )
 }
