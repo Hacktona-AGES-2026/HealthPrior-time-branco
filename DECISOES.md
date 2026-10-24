@@ -59,6 +59,9 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-50 | 2026-10-24 | Alertas em `Solicitacao.alertas`: `contato_perdido`, `contato_via_acs`, `revisar_cid`, `diabetes_fora_do_cadastro`, `informacao_insuficiente`, `cadastro_incompleto`. Reprocessar troca só esses; alertas de outras regras ficam | O contrato (`GET /fila`) usa slugs, ex.: `contato_perdido`; várias US escrevem no mesmo campo | Sobrescrever a lista toda | US-05 |
 | D-51 | 2026-10-24 | Pendências automáticas (PRE-10..13): uma por (solicitação, regra), ids `PEN-0001…` estáveis, `aberta_em` = REF. Reprocessar abre as novas, atualiza a evidência das abertas e **encerra** (resolvida, por "sistema", resolução "deixou_de_valer") as abertas cujo achado sumiu. Nunca reabre nem altera pendência que uma pessoa resolveu ou descartou, e nunca apaga | Idempotência sem passar por cima do trabalho do administrativo (I-03) | Recriar todas a cada carga; reabrir as descartadas se o achado persistir | US-05 |
 | D-52 | 2026-10-24 | A detecção (`DetectarInconsistencias`) roda na carga depois das flags, na mesma transação (D-32), e avulsa (`python -m app.cli inconsistencias`). Precisa vir depois das flags porque PRE-10/12/13 ignoram eventos duplicados | Carga, normalização, flags e inconsistências entram juntas ou não entram | Rodar antes das flags | US-05 |
+| D-56 | 2026-10-24 | Sem fila publicada, `GET /fila` responde 200 com `publicada: false` e lista vazia | Front trata sem exceção | 404/409 | US-20 |
+| D-57 | 2026-10-24 | `GET /fila` lê só a fila publicada, juntando com a solicitação para exibição | Ninguém vê fila reprovada; mesma ordem do CSV entregue | Gerar na leitura | US-20 |
+| D-58 | 2026-10-24 | Paginação inválida → 422 `PAGINACAO_INVALIDA` no formato do contrato; `page_size` > 200 é limitado a 200 | Erros padronizados; resposta protegida | 422 padrão do FastAPI | US-20 |
 
 ## Solicitações fora da fila
 

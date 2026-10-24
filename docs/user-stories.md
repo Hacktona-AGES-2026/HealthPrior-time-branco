@@ -257,6 +257,8 @@ Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto 
 ### E7 · Visualização e navegação
 
 #### US-20 · Ver a fila priorizada — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-20-fila-api`): `GET /fila` real a partir da fila publicada. Registro: `docs/implementacao/US-20-fila-api.md` (D-56..D-58). Tela do front pendente.
+
 Como **regulador ou gestor**, quero ver a fila ordenada com camada, classe, % do prazo, dias de espera, flag de edição manual e alertas.
 - **CA**
   - Paginação; filtros por camada, procedimento, especialidade; busca por `solicitacao_id`.

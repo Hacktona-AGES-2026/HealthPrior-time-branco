@@ -96,8 +96,8 @@ class ItemFilaOut(BaseModel):
 
 
 class FilaOut(BaseModel):
-    versao_regras: str
-    gerada_em: datetime
+    versao_regras: Optional[str] = None
+    gerada_em: Optional[datetime] = None
     publicada: bool
     total: int
     itens: list[ItemFilaOut]
