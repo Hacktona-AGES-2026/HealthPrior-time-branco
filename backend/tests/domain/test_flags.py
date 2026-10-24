@@ -106,7 +106,7 @@ def test_evento_de_piora_corrige_flag_nao_para_sim():
 
 
 def test_flag_sim_sem_evento_e_mantida_sem_correcao():
-    # D-19: a piora pode estar só no texto (ex.: SOL-2026-00637); não rebaixa sem evidência
+    # D-29: a piora pode estar só no texto (ex.: SOL-2026-00637); não rebaixa sem evidência
     s = solicitacao(flag_piora="sim")
 
     assert recalcular_flags(s, []) == []

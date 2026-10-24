@@ -4,7 +4,8 @@ from fastapi.testclient import TestClient
 from sqlmodel import func, select, text
 
 from app.application.carga_inicial import CargaInicial
-from app.application.preprocessar import Preprocessar
+from app.application.normalizar import Normalizar
+from app.application.recalcular_flags import RecalcularFlags
 from app.config import settings
 from app.infrastructure.csv_loader import LeitorDataset
 from app.infrastructure.db import get_session
@@ -21,20 +22,38 @@ from app.main import app
 DATA = settings.data_dir
 
 
-def preprocessar(session) -> Preprocessar:
-    return Preprocessar(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
-                        SqlCorrecaoRepository(session), SqlUnidadeDeTrabalho(session))
+REGRAS_US03 = ("PRE-05", "PRE-06")
+
+
+def recalcular(session) -> RecalcularFlags:
+    return RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                           SqlCorrecaoRepository(session))
+
+
+def carregar(session, com_flags=True):
+    """A carga como o CLI faz: normaliza e recalcula as flags na mesma transação."""
+    normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+    return CargaInicial(LeitorDataset(DATA), SqlCargaRepository(session), normalizar,
+                        SqlUnidadeDeTrabalho(session),
+                        recalcular(session) if com_flags else None).executar()
+
+
+def reprocessar(session):
+    """O comando avulso `flags`: recalcula e confirma."""
+    resumo = recalcular(session).executar()
+    SqlUnidadeDeTrabalho(session).confirmar()
+    return resumo
 
 
 @pytest.fixture
 def carregado(session):
-    """Carga US-01 (sem pré-processar) seguida do pré-processamento, como o CLI faz."""
-    CargaInicial(LeitorDataset(DATA), SqlCargaRepository(session)).executar()
-    return preprocessar(session).executar()
+    return carregar(session).flags
 
 
 def correcoes_por_regra(session):
-    return dict(session.exec(select(CorrecaoTable.regra, func.count()).group_by(CorrecaoTable.regra)).all())
+    """Só as regras da US-03 (a normalização, US-02, também escreve no mesmo log)."""
+    linhas = session.exec(select(CorrecaoTable.regra, func.count()).group_by(CorrecaoTable.regra)).all()
+    return {regra: n for regra, n in linhas if regra in REGRAS_US03}
 
 
 def eventos_de(session, sol_id):
@@ -73,7 +92,8 @@ def test_flags_originais_continuam_no_banco(session, carregado):
 
 
 def test_correcao_registra_campo_original_novo_e_regra(session, carregado):
-    c = session.exec(select(CorrecaoTable).where(CorrecaoTable.solicitacao_id == "SOL-2025-00149")).one()
+    c = session.exec(select(CorrecaoTable).where(CorrecaoTable.solicitacao_id == "SOL-2025-00149",
+                                                 CorrecaoTable.regra == "PRE-05")).one()
 
     assert (c.campo, c.original, c.novo, c.regra) == ("flag_oncologico", "nao", "sim", "PRE-05")
 
@@ -90,7 +110,7 @@ def test_nenhum_evento_e_apagado(session, carregado):
 
 
 def test_evento_000712_e_713_continuam_dois_atendimentos(session, carregado):
-    # mesma solicitação e descrição, mas origens diferentes (D-20)
+    # mesma solicitação e descrição, mas origens diferentes (D-30)
     e712 = session.get(EventoTable, "EVT-000712")
     e713 = session.get(EventoTable, "EVT-000713")
 
@@ -127,7 +147,7 @@ def test_flag_sim_nunca_e_rebaixada(session, carregado):
 def test_reprocessar_e_idempotente(session, carregado):
     antes = correcoes_por_regra(session)
 
-    resumo = preprocessar(session).executar()
+    resumo = reprocessar(session)
 
     assert correcoes_por_regra(session) == antes == {"PRE-05": 44, "PRE-06": 147}
     assert (resumo.eventos_duplicados, resumo.eventos_historicos) == (6, 155)
@@ -138,20 +158,20 @@ def test_reprocessar_nao_apaga_log_de_outras_regras(session, carregado):
                       "values ('SOL-2025-00149', 'x', 'a', 'b', 'PRE-20', now())"))
     session.commit()
 
-    preprocessar(session).executar()
+    reprocessar(session)
 
-    assert correcoes_por_regra(session)["PRE-20"] == 1
+    assert session.exec(text("select count(*) from correcoes_log where regra = 'PRE-20'")).one()[0] == 1
 
 
 def test_recarga_do_dataset_refaz_as_marcas_sem_duplicar(session):
-    CargaInicial(LeitorDataset(DATA), SqlCargaRepository(session), preprocessar(session)).executar()
-    resumo = CargaInicial(LeitorDataset(DATA), SqlCargaRepository(session), preprocessar(session)).executar()
+    carregar(session)
+    resumo = carregar(session)
 
-    assert resumo.preprocessamento.correcoes == {"PRE-05": 44, "PRE-06": 147}
+    assert resumo.flags.correcoes == {"PRE-05": 44, "PRE-06": 147}
     assert correcoes_por_regra(session) == {"PRE-05": 44, "PRE-06": 147}
 
 
-def test_post_admin_carga_traz_o_preprocessamento(session):
+def test_post_admin_carga_traz_as_flags(session):
     app.dependency_overrides[get_session] = lambda: session
     try:
         resp = TestClient(app).post("/admin/carga")
@@ -159,7 +179,7 @@ def test_post_admin_carga_traz_o_preprocessamento(session):
         app.dependency_overrides.clear()
 
     assert resp.status_code == 200
-    assert resp.json()["preprocessamento"] == {
+    assert resp.json()["flags"] == {
         "solicitacoes": 941, "eventos_duplicados": 6, "eventos_historicos": 155,
         "correcoes": {"PRE-05": 44, "PRE-06": 147},
     }

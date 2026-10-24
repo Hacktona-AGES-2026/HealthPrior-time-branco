@@ -193,7 +193,7 @@ Os problemas se dividem em três tipos:
 | PRE-03 | Município inconsistente | "Porto Alegre" (347), "PORTO ALEGRE" (12), "porto alegre" (8); idem Canoas, Viamão, Pelotas, Osório… | Mapeia para nome oficial (IBGE) |
 | PRE-04 | Prioridade com grafia variada | `baixa`/`Baixa`, `media`/`Média`, `alta`/`Alta` | Normaliza para `alta`/`media`/`baixa` |
 | PRE-05 | Flag oncológica contradiz o CID | SOL-2025-00149 (C61, flag `nao`, prioridade baixa, 510 dias); SOL-2026-00583 (hérnia K40.9 com flag `sim`); SOL-2025-00196 (neoplasia **benigna** com flag `sim`) | Recalcula `oncologico = cid_norm começa com C`; guarda a flag original |
-| PRE-06 | Flags de diabetes/piora desatualizadas | 67 pacientes com PS/internação recente e `flag_piora_clinica = nao` | Recalcula a partir de eventos/texto; guarda original. Piora por evento: D-18/D-19. Diabetes: fica para a PRE-13 (alerta, US-05) |
+| PRE-06 | Flags de diabetes/piora desatualizadas | 67 pacientes com PS/internação recente e `flag_piora_clinica = nao` | Recalcula a partir de eventos/texto; guarda original. Piora por evento: D-28/D-29. Diabetes: fica para a PRE-13 (alerta, US-05) |
 | PRE-07 | Evento duplicado | EVT-000050 e EVT-000051: mesma falta, mesma solicitação (SOL-2023-00083), mesmo dia | Mantém um; marca o outro como duplicado |
 | PRE-08 | Evento anterior à entrada na fila | 155 eventos. Ex.: SOL-2023-00017 com 2 PS em dez/2022, entrou em mar/2023 | Marca `historico = true`: **não conta como piora** durante a espera |
 
@@ -272,15 +272,17 @@ Documentado à parte. Este fluxo só depende do **contrato**:
 - **Ordem efetiva:** usa `score_medico` se existir, senão `score_sistema`.
 
 ### C-11 · Trava da regra de ouro
+> **Implementado (US-08).** Decisões D-22 a D-25; registro em `docs/implementacao/US-08-trava-regra-de-ouro.md`.
+
 - **Responsabilidade:** impor a ordem por **camadas**. Não rejeita: **corrige**.
   1. **Camada 1 — oncológicos** (`cid_norm` começa com `C`), ordenados entre si pelo score efetivo.
-  2. **Camada 2 — urgentes não oncológicos** (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme no texto).
+  2. **Camada 2 — urgentes não oncológicos** (biópsia positiva, PS/internação durante a espera, progressão, reavaliação com piora, CID de complicação, sinais de alarme no texto). Dor e limitação **não** definem camada: são sintomas, critério do SWALIS (D-27).
   3. **Camada 3 — demais**, pelo score efetivo.
 - O score decide a ordem **dentro** da camada; nenhuma camada invade a de cima.
 - Recebe de: regulador (sim), edição manual, carga inicial, atualização diária.
 - **Exemplo de por que existe:** um câncer de pele classe B com 15 dias (25% do prazo) ficaria abaixo de uma hérnia classe D com 400 dias (111%) se só o score ordenasse, violando a regra de ouro.
 - **Fila atual viola a regra:** pelo verificador, o primeiro paciente "sem urgência" está na posição 12, acima dos 177 oncológicos.
-- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A camada 2 deve ser **pelo menos** tão abrangente quanto o complemento disso.
+- A definição de "sem urgência" do verificador oficial é conservadora: CID não oncológico, dor EVA ≤ 3, limitação nenhuma/leve, sem CID de obstrução/instabilidade, sem PS/internação/biópsia positiva/progressão/reavaliação com piora, sem palavras de alarme na justificativa. A regra de ouro é garantida pela camada 1 (todo oncológico no topo), qualquer que seja a camada 2. Por isso a camada 2 usa só sinais clínicos (D-27), e não o complemento completo da definição do verificador.
 
 ### C-12 · Verificador e publicação
 - Antes de publicar, roda `verificar_fila_priorizada.py`.
@@ -321,8 +323,9 @@ Não é retreino de ML. O que muda é a **tabela de regras** do SWALIS (sinal + 
 | Coluna | Tipo | Descrição |
 |---|---|---|
 | `cid_norm` | texto | CID maiúsculo sem ponto (PRE-01) |
+| `nome_norm` | texto | Nome em minúsculo, sem acento, para comparação (PRE-02, D-21) |
 | `oncologico` | bool | `cid_norm` começa com `C` (PRE-05) |
-| `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-18/D-19) |
+| `piora_recalculada` | bool | Piora por evento durante a espera, ou flag original "sim" (PRE-06, D-28/D-29) |
 | `municipio_norm` | texto | Nome oficial (PRE-03) |
 | `prioridade_norm` | texto | `alta`/`media`/`baixa`/vazio (PRE-04) |
 | `status_fila` | enum | `ativa`, `suspensa`, `removida` |
@@ -409,9 +412,9 @@ Obrigatórias: `solicitacao_id`, `posicao`, `justificativa`. Recomendadas: `cama
 | Q-05 | Limiares do aprendizado (≥5 casos, ≥3 reguladores, 90 dias, ≥80%). | Time |
 | Q-06 | Override expira? (proposta: até a próxima mudança de classe ou data de revisão) | Time |
 | Q-07 | Como tratar oncológicos de baixo risco (CBC de pele C44, próstata ISUP 1) **dentro** da camada 1? ("decisão difícil" do pitch) | Mentores |
-| Q-08 | Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID? | Mentores |
+| Q-08 | Biópsia positiva com CID benigno: sobe automaticamente para camada 1 ou só via regulador + correção de CID? (provisório: camada 2 + alerta, D-24) | Mentores |
 | Q-09 | Distância/TFD deve pesar na prioridade ou só ser monitorada? (proposta: só monitorada) | Mentores |
-| Q-10 | Idade 80+ como desempate dentro da camada? | Mentores |
+| Q-10 | Idade 80+ como desempate dentro da camada? (provisório: score, entrada, id — D-25) | Mentores |
 
 ---
 

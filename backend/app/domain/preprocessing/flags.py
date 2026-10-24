@@ -16,7 +16,7 @@ PRE_ONCOLOGICO = "PRE-05"
 PRE_PIORA = "PRE-06"
 REGRAS_FLAGS = (PRE_ONCOLOGICO, PRE_PIORA)
 
-# PRE-06 (D-18): eventos durante a espera que indicam piora clínica.
+# PRE-06 (D-28): eventos durante a espera que indicam piora clínica.
 TIPOS_PIORA: frozenset[str] = frozenset({"pronto_socorro", "internacao"})
 RESULTADOS_PIORA: frozenset[tuple[str, str]] = frozenset({
     ("exame_imagem", "progressao"),
@@ -30,14 +30,14 @@ def evento_indica_piora(evento: Evento) -> bool:
 
 
 def is_historico(evento: Evento, solicitacao: Solicitacao) -> bool:
-    """PRE-08: anterior à entrada na fila. No dia da entrada já é espera (D-21)."""
+    """PRE-08: anterior à entrada na fila. No dia da entrada já é espera (D-31)."""
     return evento.data_evento < solicitacao.data_entrada_fila
 
 
 def marcar_eventos(solicitacao: Solicitacao, eventos: list[Evento]) -> list[Evento]:
     """PRE-07 e PRE-08. Marca (sem apagar) os eventos desta solicitação e os devolve.
 
-    Duplicado (D-20): mesmo conteúdo em tudo menos o `evento_id`, origem inclusive. Fica o de
+    Duplicado (D-30): mesmo conteúdo em tudo menos o `evento_id`, origem inclusive. Fica o de
     menor `evento_id`; os outros recebem `duplicado_de`.
     """
     primeiro_por_conteudo: dict[tuple, str] = {}
@@ -65,7 +65,7 @@ def recalcular_flags(solicitacao: Solicitacao, eventos: list[Evento]) -> list[Co
     piora_por_evento = any(
         evento_indica_piora(e) for e in eventos if not e.historico and e.duplicado_de is None
     )
-    # D-19: um "sim" manual sem evento fica (a piora pode estar só no texto): só corrige "nao" -> "sim".
+    # D-29: um "sim" manual sem evento fica (a piora pode estar só no texto): só corrige "nao" -> "sim".
     solicitacao.piora_recalculada = piora_por_evento or solicitacao.flag_piora_clinica == "sim"
     _registrar(correcoes, solicitacao, "flag_piora_clinica", solicitacao.flag_piora_clinica,
                solicitacao.piora_recalculada, PRE_PIORA)

@@ -50,7 +50,7 @@ backend/
   app/
     config.py                settings (REF_DATE=2026-10-23, caminhos, HP_USE_MOCKS)
     main.py                  create_app(): CORS, handlers de erro, routers, /health
-    cli.py                   init-db, carga, gerar-fila, decisoes
+    cli.py                   init-db, carga, gerar-fila, gerar-fila-csv, decisoes
     domain/
       enums.py               Camada, Classe (+ PRAZO_MAXIMO_DIAS), StatusFila, MotivoCodificado…
       models.py              Solicitacao, Evento, Motivo, ResultadoScore, Achado, Correcao,
@@ -62,10 +62,13 @@ backend/
       ranking.py             trava da regra de ouro: definir_camada, ordenar_fila (US-08)
       preprocessing/
         normalizacao.py      PRE-01..04 (US-02)
+        municipios.py        nomes oficiais dos 38 municípios do dataset (PRE-03, D-19)
         flags.py             PRE-05..08 (US-03)
         inconsistencias.py   PRE-10..25 (US-04, US-05)
     application/
-      carga_inicial.py       US-01
+      carga_inicial.py       US-01 (+ normalização, mesma transação)
+      normalizar.py          US-02
+      montar_fila.py         US-08: score + urgência + trava + justificativa (reutilizável por GerarFila)
       gerar_fila.py          US-08/09/10
       registrar_evento.py    US-15
       decidir.py             US-13/14
@@ -75,6 +78,7 @@ backend/
       tables.py              tabelas SQLModel (espelham fluxo-sistema.md §8)
       repositories.py        Sql*Repository: Table <-> entidade
       csv_loader.py          LeitorDataset (CSV tipado, só leitura de data/)
+      csv_source.py          carregar_do_csv: dataset -> entidades (sem banco; D-26)
       swalis_stub.py         SwalisStub (placeholder do contrato C-07)
       verificador.py         VerificadorOficial (subprocess do verificador)
       exportador.py          ExportadorCsv (fila_priorizada.csv)

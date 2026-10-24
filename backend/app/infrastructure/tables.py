@@ -3,7 +3,7 @@
 Colunas originais nunca são sobrescritas; normalizações vão para colunas *_norm (I-10).
 Listas/estruturas vão como JSON em texto (simples para hackathon).
 """
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Optional
 
 from sqlmodel import Field, SQLModel
@@ -119,7 +119,7 @@ class CorrecaoTable(SQLModel, table=True):
     original: Optional[str] = None
     novo: Optional[str] = None
     regra: str
-    criado_em: datetime = Field(default_factory=datetime.utcnow)
+    criado_em: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class PendenciaTable(SQLModel, table=True):

@@ -19,18 +19,14 @@ from app.domain.models import (
 )
 
 
-class UnidadeDeTrabalho(Protocol):
-    """Fronteira de transação: o caso de uso confirma ou desfaz tudo de uma vez."""
-
-    def confirmar(self) -> None: ...
-    def desfazer(self) -> None: ...
-
-
 class SolicitacaoRepository(Protocol):
     def obter(self, solicitacao_id: str) -> Solicitacao | None: ...
     def listar(self, apenas_ativas: bool = True) -> list[Solicitacao]: ...
     def salvar(self, solicitacao: Solicitacao) -> None: ...
     def salvar_varias(self, solicitacoes: list[Solicitacao]) -> None: ...
+    def salvar_normalizadas(self, solicitacoes: list[Solicitacao]) -> None:
+        """Grava só as colunas *_norm (US-02). Colunas originais e estado não são tocados."""
+        ...
     def atualizar_flags(self, solicitacoes: list[Solicitacao]) -> None:
         """Grava só `oncologico` e `piora_recalculada` (US-03); nenhuma coluna original muda."""
         ...
@@ -46,13 +42,20 @@ class EventoRepository(Protocol):
         ...
 
 
+class UnidadeDeTrabalho(Protocol):
+    """Transação compartilhada pelos repositórios: os casos de uso decidem quando confirmar."""
+
+    def confirmar(self) -> None: ...
+    def desfazer(self) -> None: ...
+
+
 class CargaRepository(Protocol):
     def gravar(self, procedimentos: list[dict], solicitacoes: list[dict],
                eventos: list[dict]) -> dict[str, ResultadoTabela]:
         """Upsert por chave primária numa única transação: ou entra tudo, ou nada.
 
-        Só as colunas originais do dataset são gravadas; o estado do sistema
-        (classe_status, status_fila…) nunca é sobrescrito numa recarga.
+        Não confirma: quem chama usa a UnidadeDeTrabalho. Só as colunas originais do dataset
+        são gravadas; o estado do sistema (classe_status, status_fila, *_norm…) não é sobrescrito.
         """
         ...
 
@@ -71,10 +74,10 @@ class DecisaoRepository(Protocol):
 
 class CorrecaoRepository(Protocol):
     def adicionar_varias(self, correcoes: list[Correcao]) -> None: ...
-    def substituir_por_regras(self, regras: tuple[str, ...], correcoes: list[Correcao]) -> None:
-        """Apaga as correções dessas regras e grava as novas: reprocessar não duplica o log."""
-        ...
     def listar_por_solicitacao(self, solicitacao_id: str) -> list[Correcao]: ...
+    def substituir(self, regras: tuple[str, ...], correcoes: list[Correcao]) -> None:
+        """Apaga o log das `regras` e grava `correcoes`; o log de outras regras fica intacto."""
+        ...
 
 
 class FilaRepository(Protocol):
