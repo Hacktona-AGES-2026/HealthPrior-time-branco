@@ -52,3 +52,4 @@ def test_historico_pronto_socorro(dados):
 def test_orfaos_fora_do_dict(dados):
     ids = {s.solicitacao_id for s in dados[0]}
     assert set(dados[1]) <= ids
+
