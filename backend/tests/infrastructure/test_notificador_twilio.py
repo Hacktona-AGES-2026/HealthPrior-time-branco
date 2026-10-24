@@ -152,7 +152,7 @@ def test_waha_manda_texto_livre_para_cada_numero_com_o_chat_id_certo():
         return httpx.Response(201, json={"id": "true_x"})
 
     w = NotificadorWaha("http://waha:3000/", "default", "chave", cliente(handler))
-    r = w.enviar("+55 (51) 99999-0001, 5511999990002", "sua posição mudou")
+    r = w.enviar("+55 (11) 99999-0001, 5511999990002", "sua posição mudou")
     assert (r.ok, r.detalhe) == (True, "waha: 2 enviada(s)")
     assert [v[0] for v in vistos] == ["http://waha:3000/api/sendText"] * 2
     assert [v[1]["chatId"] for v in vistos] == ["5511999990001@c.us", "5511999990002@c.us"]
