@@ -156,3 +156,51 @@ def test_tabela_irr_csv_do_repo():
     from app.infrastructure.tabela_irr import TabelaIrrCsv
     celula = TabelaIrrCsv(settings.irr_path).consultar("C18", "70-79")
     assert celula is not None and celula.obitos == 17966 and celula.irr == pytest.approx(5.92, abs=0.01)
+
+
+class _RelacaoFalsa:
+    modelo = "falso"
+
+    def __init__(self, resposta):
+        self.resposta = resposta
+
+    def relacao_evento(self, estado):
+        return self.resposta
+
+    def extrair(self, texto, fonte):
+        return []
+
+
+@pytest.mark.parametrize("resposta,marca", [
+    (("nao_relacionado", 0.99), True),
+    (("nao_relacionado", 0.85), False),   # abaixo de 0,9: continua contando (lado seguro)
+    (("relacionado", 1.0), False),
+    (None, False),                         # sem cache/rede: continua contando
+])
+def test_ps_sem_relacao_so_com_jev_muito_seguro(dataset, resposta, marca):
+    from datetime import date
+    from app.domain.models import Evento
+    sols, _ = dataset
+    s = next(x for x in sols if x.solicitacao_id == "SOL-2025-00045")
+    ps = Evento("E1", s.solicitacao_id, s.paciente_id, date(2026, 10, 1), "pronto_socorro",
+                "atendido_liberado", None, "Atendimento em PS por hiperglicemia (glicemia 380).")
+    r = SwalisRegras(_RelacaoFalsa(resposta)).calcular(s, [ps])
+    assert ps.sem_relacao is marca
+    assert any(m.sinal == "evento_sem_relacao" for m in r.motivos) is marca
+
+
+def test_camada_e_classe_leem_o_mesmo_ps_sem_relacao(dataset):
+    # montar_fila: o scorer anota o PS antes da urgência; camada e "piora na espera" ficam coerentes.
+    import copy
+    from datetime import date
+    from app.application.montar_fila import montar_fila
+    from app.domain.models import Evento
+    sols, eventos = copy.deepcopy(dataset)
+    s = next(x for x in sols if x.solicitacao_id == "SOL-2025-00045")
+    ps = Evento("E-PS", s.solicitacao_id, s.paciente_id, date(2026, 10, 1), "pronto_socorro",
+                "atendido_liberado", None, "Atendimento em PS por hiperglicemia (glicemia 380).")
+    eventos[s.solicitacao_id] = [ps]
+    linha = next(l for l in montar_fila(sols, eventos, SwalisRegras(_RelacaoFalsa(("nao_relacionado", 1.0))),
+                                        settings.ref_date) if l.solicitacao_id == s.solicitacao_id)
+    assert linha.camada == 3 and "piora na espera" not in linha.justificativa
+    assert "sem relação com a cirurgia" in linha.justificativa

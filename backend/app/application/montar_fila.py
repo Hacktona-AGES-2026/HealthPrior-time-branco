@@ -53,6 +53,7 @@ def montar_justificativa(
     eixos: list[str] | None = None,
     fatores: list[str] | None = None,
     score: float | None = None,
+    sem_relacao: list[str] | None = None,
 ) -> str:
     """Gera a justificativa legível em português para uma linha da fila."""
     if camada == 1:
@@ -68,6 +69,8 @@ def montar_justificativa(
         base += " SWALIS: " + "; ".join(eixos) + "."
     texto = (f"{base} Classe {classe} (prazo {prazo_dias} dias, regras {versao_regras}); "
              f"{dias_em_fila} dias em fila, {pct_prazo:g}% do prazo.")
+    if sem_relacao:
+        texto += " Não contam como piora (sem relação com a cirurgia): " + "; ".join(sem_relacao) + "."
     if fatores and score is not None and score != pct_prazo:
         texto += f" Fatores: {'; '.join(fatores)}; score {score:g}."
     if editado_manualmente:
@@ -115,6 +118,8 @@ def montar_fila(
         if sol.status_fila != StatusFila.ATIVA:
             continue
         eventos = eventos_por_solicitacao.get(sol.solicitacao_id, [])
+        # O scorer anota os eventos (ex.: PS sem relação com a cirurgia) antes da urgência abaixo,
+        # que lê os mesmos objetos: a camada e a classe usam a mesma leitura dos eventos.
         res = scorer.calcular(sol, eventos)
         classe, score, pct = classe_e_score_efetivos(sol, res, ref_date)
         sinais = SinaisUrgencia(
@@ -152,7 +157,9 @@ def montar_fila(
                                                fatores=[m.evidencia for m in res.motivos
                                                         if m.sinal.startswith("fator_")
                                                         and float(m.ref or 1) != 1.0],
-                                               score=score),
+                                               score=score,
+                                               sem_relacao=[f"{m.evidencia} ({m.ref})" for m in res.motivos
+                                                            if m.sinal == "evento_sem_relacao"]),
             camada=camada,
             classe=classe_txt,
             pct_prazo_consumido=pct,

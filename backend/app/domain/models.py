@@ -88,6 +88,10 @@ class Evento:
     duplicado_de: str | None = None
     historico: bool = False
     orfao: bool = False
+    # PS/internação sem relação com a doença da cirurgia (ex.: hiperglicemia), apontado pelo Jev com
+    # confiança alta. Não conta como piora (camada 2 nem SWALIS); só retira sinal, nunca acrescenta.
+    sem_relacao: bool = False
+    sem_relacao_ref: str | None = None  # "Jev p=0.97", para a justificativa
 
 
 @dataclass

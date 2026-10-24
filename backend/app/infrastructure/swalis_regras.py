@@ -25,6 +25,15 @@ from app.domain.swalis import (
 from app.infrastructure.tabela_irr import TabelaIrrCsv
 
 _FONTES = ("justificativa_clinica", "observacoes")
+# PS/internação só deixa de contar como piora com o Jev muito seguro de que não há relação.
+CONFIANCA_SEM_RELACAO = 0.9
+
+
+def estado_evento(s: Solicitacao, e: Evento) -> str:
+    """Texto que o Jev lê: a cirurgia esperada e o atendimento."""
+    return (f"Cirurgia aguardada: {s.procedimento or s.procedimento_id}. Diagnóstico: {s.cid_principal} "
+            f"{s.cid_descricao or ''}. Atendimento durante a espera: {e.tipo_evento.replace('_', ' ')} "
+            f"({e.resultado or 'sem resultado'}): {e.descricao}")
 VERSAO_FATORES = "fatores-1"
 
 
@@ -57,7 +66,24 @@ class SwalisRegras:
     def pontos_llm(self, solicitacao: Solicitacao) -> list[SinalTexto]:
         return [s for s in self.sinais(solicitacao) if s.origem == "llm"]
 
+    def anotar_eventos(self, solicitacao: Solicitacao, eventos: list[Evento]) -> None:
+        """Marca PS/internação da espera que o Jev aponta como sem relação com a cirurgia (p >= 0,9).
+
+        Só retira sinal (I-01 continua: a camada 2 encolhe). Sem resposta no cache: o evento segue
+        contando. Roda dentro de `calcular`, antes de a fila montar a urgência com os mesmos eventos.
+        """
+        relacao = getattr(self.extrator, "relacao_evento", None)
+        if relacao is None:
+            return
+        for e in eventos:
+            if e.tipo_evento not in ("pronto_socorro", "internacao") or e.historico or e.duplicado_de:
+                continue
+            r = relacao(estado_evento(solicitacao, e))
+            if r and r[0] == "nao_relacionado" and r[1] >= CONFIANCA_SEM_RELACAO:
+                e.sem_relacao, e.sem_relacao_ref = True, f"Jev p={r[1]:.2f}"
+
     def calcular(self, solicitacao: Solicitacao, eventos: list[Evento]) -> ResultadoScore:
+        self.anotar_eventos(solicitacao, eventos)
         sinais = self.sinais(solicitacao)
         c = classificar(solicitacao.cid_principal, solicitacao.intensidade_dor_eva,
                         solicitacao.limitacao_funcional, eventos, sinais)
@@ -70,6 +96,10 @@ class SwalisRegras:
         # Trilha de auditoria: todos os pontos achados, com origem (palavra-chave ou Jev p=…).
         motivos += [Motivo(f"ponto:{s.categoria.value}:{s.origem}", s.trecho, s.fonte,
                            ref=f"{s.confianca:.2f}") for s in c.sinais]
+        # PS/internação que não contam como piora (rastreável na justificativa e na ficha).
+        motivos += [Motivo("evento_sem_relacao", f"{e.tipo_evento.replace('_', ' ')}: {e.descricao}",
+                           "evento", ref=e.sem_relacao_ref, data=e.data_evento)
+                    for e in eventos if e.sem_relacao]
         # Pontos incertos do Jev: não mudam a classe, vão para o regulador revisar.
         motivos += [Motivo(f"revisar:{s.categoria.value}", s.trecho, s.fonte, ref=f"{s.confianca:.2f}")
                     for s in c.revisar]

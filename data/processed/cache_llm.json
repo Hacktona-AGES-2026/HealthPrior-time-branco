@@ -7508,5 +7508,761 @@
    "trecho": "Catarata hipermadura com risco de glaucoma facomorfico, PIO 28 mmHg",
    "confianca": 0.96
   }
+ ],
+ "9b5b010eef2ecf4309bd4168752207809ce6c5b4681a67ba89f970f257d21463": [
+  {
+   "escolha": "relacionado",
+   "p": 0.9
+  }
+ ],
+ "0b0145af3634c69b1e176a47b37577a4a66d1752401332979f0b4a210fdf6740": [
+  {
+   "escolha": "relacionado",
+   "p": 0.94
+  }
+ ],
+ "90706fddbbeb8427a570e0b44a1c5a3a92d40857d1f26561172dff7005dbeffb": [
+  {
+   "escolha": "relacionado",
+   "p": 0.75
+  }
+ ],
+ "1a2ba3e97ff3eedd6780c4ab6561e6dd7ba52a7be711b8c29bcfeba024fa3ff8": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "a7a58c115bf940431cc35bd91ae50379725aaef84617abbb3c54760c14883e72": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "f7c7a41ef5dfee01c124ccb401366a6791f2c035f1f4dd2edc4a9f4ede44d7e4": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "2ee6f1b7dfe26f070b0ddc38a4c37452d704ffc793f80943750b84ce920699d2": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "dfe435725dba629eaad961829d05cb7c907211980c310bfff1e7b06e5e2f2421": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "a0aad80315c17373a1053332c027e8d88d6fcec16f0c0105b232ba2b085429f6": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "243f9d4239b1b5f499d90f5506808b6cd82cb036627cc39550b80348fa7f61d8": [
+  {
+   "escolha": "relacionado",
+   "p": 0.98
+  }
+ ],
+ "aa386df8bebb1379f2041e6f4da498f710efb59f1fe0417ab9dc17692491692e": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "18388cd3a6be59a8c751c28694124baaaacce31178ee093981ed7d0d2ccf92f3": [
+  {
+   "escolha": "relacionado",
+   "p": 0.98
+  }
+ ],
+ "2f172d6806d152be78540ea1c14b6bc55e81644459e23b1ea9097afe30280056": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "49715e60c3bdae6942faf4460e7bd71cd4cf1eea689b035bb5c97d35acf6a12b": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "f5acfc71c4235e32169101f9dd552c2cb56d2c590e386e2f20348ad940861982": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "c5e4b26d851101225bd2c932de233d4220b1c3524cf870f1f791af3ee575ea34": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "447358b97dfd1e64a85792f7a15a439ed49feb4355baec49af26b9c86d2e5017": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 0.99
+  }
+ ],
+ "c39a13dd3e50eaa85cd9f08cdc74702e1aa5e63391e1b323186533e45c216dba": [
+  {
+   "escolha": "relacionado",
+   "p": 0.98
+  }
+ ],
+ "974cb5e8342f50a26bff159ada7ece3f58078a3e212a1dec22f23ba5eddb4e19": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "06686f0d14424d53b7c9fbb08c574ff46dbb5c57686b4429c441936520e3da8a": [
+  {
+   "escolha": "relacionado",
+   "p": 0.79
+  }
+ ],
+ "2e0bf8f53c3dce23e378ec1e3c70dbac7616793f9c4bc35f9197522a218440d5": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "8be1eab53a294b55c4dc38a2f44993346d72c88c3c639d49107b7198374331e2": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "dd642338fbccda3ce911d933643d4210ff65f051efc81bba4f91e26d97642073": [
+  {
+   "escolha": "relacionado",
+   "p": 0.87
+  }
+ ],
+ "b80b6724051dbfb06d6ed1b99e14b0bc247ba304e3afea599780b3f5a06a4239": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "67c7f41755c55bd9aa97a58e5bd3c47bd7281691f29a6778526de16a708c3e4c": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "1d84ed0ffcabdc4cf67f12a001b9970519d7468cc9ee3089efafbe355f3b8675": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "3991225b8468c57f1d1ca8bafc53feb055caafffd996ef4b66c6f1850b255672": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "e202770762c6bfc1fe3dd9e6beb0dff560d8d744e9644a64995730b97fbc53ce": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "e7941494214ce5483726aa4076b09aa5a92f04ece11cf32b9134d0ce1d330d6c": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "dcc82a3ac2fa09d654529426a49e207c94e678ac13eee6941098243da6a279f0": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "5f584444a3b59fd687a06fd6f42db003d2fe9f7d26ba71de97550f17dc245df1": [
+  {
+   "escolha": "relacionado",
+   "p": 0.95
+  }
+ ],
+ "fbb28f9ce5713acba66abc4d2d521eb301b0d60f4d9c4505139c1983bae3b472": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "162325332240d2fda2f2e83508707afbdbe5c56f41926d576bdffd5f0c9df69f": [
+  {
+   "escolha": "relacionado",
+   "p": 0.97
+  }
+ ],
+ "fadc0c5f76e2ee5ede460f5f1cba83494d5a698bd84e143dc000a546cfdf8e7e": [
+  {
+   "escolha": "relacionado",
+   "p": 0.96
+  }
+ ],
+ "7397454270be0c420cf153cd1739bc126eb88f67abb146dfd47e2ecfbfcc8047": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "6ec43bfeb84ed529811a1ff29ef1c7c55f97ee3f924f90bdd890804838ed29da": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "281b4e9c03b4b07c6ae4292eb4da917adbbc792338e4e7b379b943f635310ef5": [
+  {
+   "escolha": "relacionado",
+   "p": 0.97
+  }
+ ],
+ "7e48509422af408192dc5c534e1f1f4cf86551ad967186fe084821efbaca2012": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4b88986200289154586a8aa7bbd8fd094456106dc33a200a242261dbda71fa57": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "78d66a1ea09ede783f888eba14a3e9999fad20576922a3b83687b8e85a0b21ae": [
+  {
+   "escolha": "relacionado",
+   "p": 0.92
+  }
+ ],
+ "cd0319a8e99f52d8c4cb32e5fedb628579d1506843f73973453daff66ffbb6f5": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4f801b93166527df207b43688bdc534aaa36d56bf4295e09879e6b1aa8dc66d6": [
+  {
+   "escolha": "relacionado",
+   "p": 0.91
+  }
+ ],
+ "13ea1c54db87a3dac229172c6e6a69e559661dcbffbd61e396b7cc5e6b588a38": [
+  {
+   "escolha": "relacionado",
+   "p": 0.98
+  }
+ ],
+ "c0a66c0dac3494a84c92743c38f73f3bef375bdb1de7bcbcb8100c04ab2b7d21": [
+  {
+   "escolha": "relacionado",
+   "p": 0.91
+  }
+ ],
+ "23975bd5178229f50a00e57c9f624e1a5f1131b3105e915dd3d4a5cba22e3d39": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "05e2f0f2c913366f4ba26356ed1c4f070d9ec16673364f6617d0d233d13a0c5f": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "f6c963f1e1c50c20295df167719062828dcf6670c95dc6535cf41019ed9415f9": [
+  {
+   "escolha": "relacionado",
+   "p": 0.81
+  }
+ ],
+ "d972bc10c18045adcfb798370a919d56be2c6263cda68ceeaa8066b21df16a02": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "9245816a9253cb1ed2985d564fc654f1693971f16f430bf1c79c0a023c126aca": [
+  {
+   "escolha": "relacionado",
+   "p": 0.94
+  }
+ ],
+ "66e5ce79f52292c1dcf8a023152f16e0a46beceee8c0d4785f189c4b3ecf8c90": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "da8c87132734a3aecf8d0869c5dad6ab2f0174bb60c121d9c290f8bce553196f": [
+  {
+   "escolha": "relacionado",
+   "p": 0.55
+  }
+ ],
+ "23e5b2b0be291dce20aa725192a515587cd9c6db5e961fb06f58ac9ea6ac99fa": [
+  {
+   "escolha": "relacionado",
+   "p": 0.94
+  }
+ ],
+ "92f957af9f8cc2566a48e98a9edbb5a65ad1f542dde033655941bb6a2e4022e3": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "276393121f6b4b178d711c6d94d4303e99f8b2114e4609f999f9c3c5a9a20fe3": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "e97d99aaede73c2ffbe2dbe9a1d7eb074889a84271fb568ff2eaf35e1db2fd98": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "ca62d3d6aac976c1d3ba3df2de4a0d5c48c7d1e4dd7d2ab784e354144cadfde5": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4ad324e2a54530a4c8294c858ca4c738c419787b211ebeca9400a0ca11db5f77": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "a7a67223d9bb6e1cb75e2f9af314446fd227a89d408ffb09fb4d4b25baa8e6fa": [
+  {
+   "escolha": "relacionado",
+   "p": 0.91
+  }
+ ],
+ "752bf7885b6d3c5f5c4f2f337d55920ccd3044ad8927513bcbc2be10e2439287": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "a026fbc7217110e32c3fe4f376cb8b1f3f94d9d8879196b0e3f4fd74f3a83f09": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "dfa9de14a2b80d2e0f1068e78de97ebf77d301534b61b1b93e572491c9854f5b": [
+  {
+   "escolha": "relacionado",
+   "p": 0.7
+  }
+ ],
+ "29bcb37d064d7b53748bd1408e97c9887a326facd1194dab7cca19227e661c42": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "9ec9c72a7c6ac8cbf92fa30224da9c61ab344a0382ecec53154a5f7c51224bc1": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "825ba12ef0b698bfa1e72d2734cb95397443c4662656f7a74b191699f1416579": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "41d9b9bf7da29a2541372907527493c231a65e5a45b4b6bc16f9226fcbaa80ad": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "d6c860153d44054db2d01a8430a1330b4244cf0f94eab11121bf178f702c2f1f": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "65cceb3ba9ab30bf5c5b0fb064617c956a24d87fecc93c4a7ac19dd864977fdc": [
+  {
+   "escolha": "relacionado",
+   "p": 0.57
+  }
+ ],
+ "502da00398e59925e8555fe361c36311aa13fb41fe8f76d20c23c2757e0de4c2": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "8f7ee229cac525539071993c0e93ee11923e6ed128a033ca30db6d9ecf5f425f": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "d964c8f5f779e1e5d2082d721e012c5f7f6c69148902ab6a6ad196b3350bf36d": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "5b5c5f1099c973cbf446d66c92203528dd8c51d67aad1b4d051902acb8b41a9a": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "6912fbc18220982dc9cce87d58bb7d0887d9780bd708a81a3767ee45aed4ef1a": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4894bc46f734ebc9a36fcacca0eae94864b0245489ef116c2664de4774eb4335": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4f4872461e977a4d8248d8ad56aab20b1a5b93e881c60c60cca2f83c0a3fc595": [
+  {
+   "escolha": "relacionado",
+   "p": 0.91
+  }
+ ],
+ "504d8dc89bdc2c37e6b084c2534c50109eed31e641309f979f9db979b90b6c6e": [
+  {
+   "escolha": "relacionado",
+   "p": 0.75
+  }
+ ],
+ "e09f70dee0e938804e128652c51e4b3bf26e1a13709f23dd474eb1ec63512492": [
+  {
+   "escolha": "relacionado",
+   "p": 0.96
+  }
+ ],
+ "518d5c0dcdb90a3b297b5950761c0da7cd592acacaf2620e7ff849949e494411": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "13a3e9f3e59498ce1dd32f6174c57be5cf137b4471a6c66d566ff8102702368c": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "02e6a4f58aa7947785ab5557d83c71dc3ccbc42358722d90d2d35e61274da100": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "da3676f9b8089d1f8f389f3ff7840d41296816b2bd9acb0b6f86d7bf8666e0dd": [
+  {
+   "escolha": "relacionado",
+   "p": 0.93
+  }
+ ],
+ "d8fca5a56f506eae130058078b4e69170b7f08cee0cca8654423c5d0410892ad": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "69dfc874347b4382d21d12b5e02a20b11116eed80d1f5f7a25100ea35512db25": [
+  {
+   "escolha": "relacionado",
+   "p": 0.63
+  }
+ ],
+ "b6523724158c51ce8c69d89c5c01ba7f7d22bc3d5642b29f5140b28502884487": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "98f8810b8042e93485479a5f06619ffc3d6c864c0d2601bb59ac93eb2f77e801": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "d41938abb3a203d7ef7dfbece48e45d038a789ed5571d7825a55fbdd3505c53e": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "56d49fbd1666529585839183c80a8027a05d85eacebc9f7949a92281a6462f13": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "aa5e594c8409e8a6178c80efbb5d08612fbf77e89c6cd66bcb78d970342b7e85": [
+  {
+   "escolha": "relacionado",
+   "p": 0.95
+  }
+ ],
+ "12c5c1507494e9b095fa2a24b3c2f6088c4e82fcbc10954e084866f497b77421": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "de6640f4bade3c7549d0421c159dfcc43da2723fc8e6a8f0a17a9016e10240ac": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "3e7c812d158a6a64bdfdc769ff286f9ddce148026bd6f1cb6a265feb216e063f": [
+  {
+   "escolha": "relacionado",
+   "p": 0.95
+  }
+ ],
+ "4bdbc2beee260bcc00bd711179711f21cb91971c31242f7d648d8f7da22517f7": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "6ad0633e76b56fe4140f0bb7680b6283101667b9ea25c3d9c8c2c331140f5ad3": [
+  {
+   "escolha": "relacionado",
+   "p": 0.63
+  }
+ ],
+ "c9b1ef39c92fb638a09645877c75f20abac726b206a8aab219f0b6f2bb023988": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "728a445cfca727edea151235123c5899fd26f22bfbdd4145d5cef2a5143a08a6": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "66f6a21fdbc41c76a8c6addab9aca72394bed46b78967d7408b200eb93cb21cc": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "df09f700e7181f369d001d69e473b7bfe94651b5382f3a264a46d7d4a9564755": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "5affa2bf65d414a85b809aa457fdc924323683ecc2658036e49e6f602de67a9e": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "3eeed1a2d1e02487f059b9dc50f0770c9b6ed43251d1cb3432368e69a4633967": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "c102c8745ec7ca711410b06fc7384a300cfc2213fb494fa818f4638afe49152a": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "f7689fed04f4e18d7711f76249183efb47f9c387bad57417589d864442eae87f": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "83e79975c75719bd1790999d329c09c64e8dc62d36c9c81d649298ba24f2ace1": [
+  {
+   "escolha": "relacionado",
+   "p": 0.92
+  }
+ ],
+ "b01940f03645cba777889b0372b55f88c5b58153863e405afefc06f63d9ab026": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "7e82eccf21793c634ad4ae4077c2e116286ed73f2a477594c3f83ef21cf66d9b": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "8b7f1d5409335c41366b8770e2caa66bf433e38b143ad46b7bcf59812f597bc9": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "04c077c8930349a6dbce850766a3989c5c4f2a98ca533ad92fe4e24787ebdceb": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "5f94990e94e0422f30f6c59404300f3a490a49480b1e24976fdd25e08d096175": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "af3033afe460cb460c1b184c62945d7df2d0114503dbb8018dc8fabecfc4f529": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "432dbba00739d39973f77325d067334e22d3d18ed197940cebf205ed64f483f4": [
+  {
+   "escolha": "relacionado",
+   "p": 0.92
+  }
+ ],
+ "45e43137b5977660d1dd1f37cef32b10fac947c3534e916a9cda070096e55a61": [
+  {
+   "escolha": "relacionado",
+   "p": 0.55
+  }
+ ],
+ "cdfed2923d464bf20c10771c5091892b416b6c6ba1dfffa2d71880994e7f1b6a": [
+  {
+   "escolha": "relacionado",
+   "p": 0.94
+  }
+ ],
+ "370ac733e918c1df3cd021bac4253fed1f91f5b64e2e7c78dfc46dcabf5be625": [
+  {
+   "escolha": "relacionado",
+   "p": 0.98
+  }
+ ],
+ "82ac6315ad6852adcc8e2ef16236a22bcb6dbcafa182252a72f4a0a549fe24f3": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "4e401ff1c77862523d4b2df73bb31c700163fe961746f86ec4b02bbe7a80666d": [
+  {
+   "escolha": "nao_relacionado",
+   "p": 1
+  }
+ ],
+ "630a54817f9ed6982dfbbe926ef18561e79f9d7e3601608401da01b6393a915d": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "357bc2f57ae940895c9b48380443c1a4aa81058cf3e20778363207cf566be780": [
+  {
+   "escolha": "relacionado",
+   "p": 0.86
+  }
+ ],
+ "3dfa373b80c61f0bf20d2d367eb58f536355de4d0c5e2040e54b10dce119a63a": [
+  {
+   "escolha": "relacionado",
+   "p": 0.95
+  }
+ ],
+ "9c032bce8ba78c9ca7a4e21d0fec20db1f44d3451bd45a1a69102995ccad59b1": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "03aa7f2cc2d9fc941b2e455b981488f2c2c6fbb9f6498d5938ddfe2a61b9b006": [
+  {
+   "escolha": "relacionado",
+   "p": 0.73
+  }
+ ],
+ "7da3eada1c4dca06697202ecd2f180ec5eba96e1c7bee042e56c379e85809880": [
+  {
+   "escolha": "relacionado",
+   "p": 0.96
+  }
+ ],
+ "860f393a24f60080019a5792d05462da6e30ee3eb21cfc1b83ed71bd57576197": [
+  {
+   "escolha": "relacionado",
+   "p": 0.99
+  }
+ ],
+ "f4bb2d9d1e3160217b28e48f66fed216df6a70a17a9ad46c9ee5cb3eb4540de3": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "d7b0e7d7a34099e919348ef2a87be0f192c687210eae6eeb0f67f39f6dd6a9a4": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "75c65c12fe35ed238664eebda915fe6b60442251c868390b837040a13d9336c9": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "9f23f30f5f53f5e878390cb40448403134b51873fba769fdd6b69714468383c6": [
+  {
+   "escolha": "relacionado",
+   "p": 0.63
+  }
+ ],
+ "c381d5c754b1e6c2e5e83b099a4d252d16ec085718c3724a91d270a07065bdd2": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
+ ],
+ "fb2e7527c27bde25c1a948b4aa9b80afa2853c8ac972f5af1aabe272f6387a19": [
+  {
+   "escolha": "relacionado",
+   "p": 1
+  }
  ]
 }

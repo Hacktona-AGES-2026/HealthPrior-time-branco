@@ -211,14 +211,32 @@ def cmd_extrair_sinais() -> None:
                     extrator.salvar_cache()
     finally:
         extrator.salvar_cache()
+    # PS/internação da espera: o atendimento tem relação com a doença da cirurgia?
+    from app.infrastructure.swalis_regras import estado_evento
+    por_id = {s.solicitacao_id: s for s in solicitacoes}
+    estados = {estado_evento(por_id[sid], e) for sid, evs in eventos.items() if sid in por_id
+               for e in evs if e.tipo_evento in ("pronto_socorro", "internacao")
+               and not e.historico and not e.duplicado_de}
+    faltando_ev = [t for t in estados if not extrator.em_cache_evento(t)]
+    print(f"{len(estados)} PS/internações na espera, {len(faltando_ev)} fora do cache")
+    try:
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            list(pool.map(extrator.relacao_evento, faltando_ev))
+    finally:
+        extrator.salvar_cache()
     classes = Counter()
     por_llm = 0
+    sem_relacao = 0
     for sol in solicitacoes:
-        c = swalis.classificar(sol, eventos.get(sol.solicitacao_id, []))
+        evs = eventos.get(sol.solicitacao_id, [])
+        swalis.anotar_eventos(sol, evs)
+        sem_relacao += sum(e.sem_relacao for e in evs)
+        c = swalis.classificar(sol, evs)
         classes[c.classe.value] += 1
         por_llm += bool(swalis.pontos_llm(sol))
     print("Classes: " + " | ".join(f"{k}: {classes[k]}" for k in ("A1", "A2", "B", "C", "D")))
     print(f"Solicitações com ponto apontado pelo Jev: {por_llm}")
+    print(f"PS/internações sem relação com a cirurgia (Jev p >= 0,9, não contam como piora): {sem_relacao}")
     print(f"Cache: {settings.llm_cache_path}")
 
 

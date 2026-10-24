@@ -54,6 +54,17 @@ CRITERIOS = {
               "ou o achado está negado (sem, nega, nunca, ausência de, descarta)",
 }
 
+VERSAO_EVENTO = "evento-v1-decisoes"
+PERGUNTA_EVENTO = ("Fila de cirurgia eletiva. O atendimento descrito é piora ou complicação da DOENÇA QUE "
+                   "MOTIVOU A CIRURGIA (mesmo órgão/condição)? Não julgue gravidade, só a relação.")
+CRITERIOS_EVENTO = {
+    "relacionado": "piora, complicação ou sintoma da própria doença da cirurgia",
+    "nao_relacionado": "outra condição, sem relação com a doença da cirurgia (ex.: descompensação de "
+                       "diabetes, queda sem relação, outra doença)",
+    "incerto": "não dá para saber pelo texto",
+}
+
+
 class ExtratorSinaisLLM:
     def __init__(self, api_key: str, modelo: str, cache_path: Path,
                  client: httpx.Client | None = None, timeout: float = 60.0,
@@ -120,6 +131,42 @@ class ExtratorSinaisLLM:
                 sinais.append({"categoria": categoria, "termo": "jev", "trecho": frase,
                                "confianca": round(prob, 2)})
         return sinais
+
+    # --- Relação de PS/internação com a cirurgia (camada 2 e piora na espera) ---------------
+
+    def _chave_evento(self, estado: str) -> str:
+        return hashlib.sha256(f"{self.modelo}|{VERSAO_EVENTO}|{estado}".encode()).hexdigest()
+
+    def em_cache_evento(self, estado: str) -> bool:
+        return self._chave_evento(estado) in self._cache
+
+    def relacao_evento(self, estado: str) -> tuple[str, float] | None:
+        """(escolha, probabilidade) do Jev: o atendimento é piora da doença da cirurgia?
+
+        `estado` descreve a cirurgia e o atendimento. Sem cache e sem rede (ou `apenas_cache`): None,
+        e quem chama mantém o evento contando (lado seguro).
+        """
+        chave = self._chave_evento(estado)
+        bruto = self._cache.get(chave)
+        if bruto is None:
+            if not self._api_key or self._apenas_cache:
+                return None
+            try:
+                resp = self._client.post(URL, headers={"Authorization": f"Bearer {self._api_key}"}, json={
+                    "model": self.modelo, "state": estado,
+                    "questions": {"relacao": {"type": "choice", "instructions": PERGUNTA_EVENTO,
+                                              "criteria": CRITERIOS_EVENTO}}})
+                resp.raise_for_status()
+                r = resp.json()["answers"]["relacao"]
+                escolha = r.get("choice")
+                bruto = [{"escolha": escolha,
+                          "p": round((r.get("probabilities") or {}).get(escolha, 0), 2)}]
+            except (httpx.HTTPError, ValueError, KeyError) as e:
+                log.warning("LLM falhou ao classificar evento (%s): %s", self.modelo, e)
+                return None
+            with self._lock:
+                self._cache[chave] = bruto
+        return bruto[0]["escolha"], bruto[0]["p"]
 
     def salvar_cache(self) -> None:
         with self._lock:

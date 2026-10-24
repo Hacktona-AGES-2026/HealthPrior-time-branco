@@ -151,3 +151,24 @@ def test_motivos_nao_se_repetem_e_seguem_ordem_fixa():
         "biopsia_positiva",
         "sinal_alarme",
     ]
+
+
+# --- negação no alarme e PS sem relação (só retiram sinal; a camada 2 continua dentro do verificador)
+
+def test_alarme_negado_nao_e_urgencia():
+    from app.domain.urgencia import tem_sinal_alarme
+    # SOL-2023-00058: hérnia redutível com "Sem sinais de encarceramento"
+    assert not tem_sinal_alarme("Hernia inguinal direita redutivel. Sem sinais de encarceramento.")
+    assert tem_sinal_alarme("Hernia encarcerada com reducao manual no PS.")
+    assert tem_sinal_alarme("Sem melhora, evoluiu com suboclusao.")  # vírgula encerra a negação
+
+
+def test_ps_sem_relacao_nao_conta_como_piora():
+    from datetime import date
+    from app.domain.models import Evento
+    from app.domain.urgencia import tem_evento_de_piora_na_espera
+    ps = Evento("E1", "S", "P", date(2026, 5, 1), "pronto_socorro", "atendido_liberado", None,
+                "Atendimento em PS por hiperglicemia")
+    assert tem_evento_de_piora_na_espera([ps], date(2026, 1, 1))
+    ps.sem_relacao = True
+    assert not tem_evento_de_piora_na_espera([ps], date(2026, 1, 1))

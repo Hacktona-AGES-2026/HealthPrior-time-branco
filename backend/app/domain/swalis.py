@@ -144,7 +144,8 @@ def _pontos_do_eixo(sinais: list[SinalTexto], eixo: str) -> list[tuple[int, Sina
 def eventos_de_piora_na_espera(eventos: list[Evento]) -> list[Evento]:
     """PS, internação, progressão em imagem ou piora em consulta, depois da entrada na fila (não é histórico)."""
     return [e for e in eventos
-            if evento_e_piora(e.tipo_evento, e.resultado) and not e.historico and e.duplicado_de is None]
+            if evento_e_piora(e.tipo_evento, e.resultado) and not e.historico and e.duplicado_de is None
+            and not e.sem_relacao]
 
 
 def eixo_progressao(cid: str, eventos: list[Evento], sinais: list[SinalTexto]) -> Eixo:

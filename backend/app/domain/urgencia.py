@@ -16,6 +16,7 @@ import re
 from dataclasses import dataclass
 from datetime import date
 
+from app.domain.texto import buscar_termos
 from app.domain.cid import is_cid_urgente
 from app.domain.models import Evento
 
@@ -48,7 +49,11 @@ class SinaisUrgencia:
 
 
 def tem_sinal_alarme(texto: str | None) -> bool:
-    return bool(texto and _KW_ALARME.search(texto.lower()))
+    """Termo de alarme presente e não negado ("Sem sinais de encarceramento" não conta; SW-04).
+
+    A negação só retira sinal: a camada 2 continua contida na urgência do verificador oficial.
+    """
+    return any(not o.negado for o in buscar_termos(texto, _KW_ALARME))
 
 
 def evento_e_piora(tipo_evento: str, resultado: str | None) -> bool:
@@ -65,6 +70,7 @@ def tem_evento_de_piora_na_espera(eventos: list[Evento], data_entrada_fila: date
         evento_e_piora(e.tipo_evento, e.resultado)
         and e.data_evento >= data_entrada_fila
         and e.duplicado_de is None
+        and not e.sem_relacao  # ex.: PS por hiperglicemia, sem relação com a cirurgia
         for e in eventos
     )
 

@@ -97,3 +97,15 @@ def test_sem_urgencia_outros_bloqueios():
     assert not is_sem_urgencia_verificador(sol("A", just="Paciente com colangite"), [])
     assert not is_sem_urgencia_verificador(sol("A"), [ev("A", "biopsia", resultado="positivo")])
     assert is_sem_urgencia_verificador(sol("A"), [ev("A", "biopsia", resultado="negativo")])
+
+
+def test_espelho_do_verificador_ignora_negacao():
+    # O verificador oficial não trata negação: "Sem sinais de encarceramento" é urgente para ele,
+    # mesmo que a fila (D-122) não conte. A comparação antes × depois tem de seguir o verificador.
+    from datetime import date
+    from app.domain.metricas import is_sem_urgencia_verificador
+    from app.domain.models import Solicitacao
+    s = Solicitacao("S1", "P", "PR", "K40.9", date(2026, 1, 1), intensidade_dor_eva=2,
+                    limitacao_funcional="leve",
+                    justificativa_clinica="Hernia redutivel. Sem sinais de encarceramento.")
+    assert is_sem_urgencia_verificador(s, []) is False

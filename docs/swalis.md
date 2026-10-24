@@ -135,3 +135,15 @@ validação clínica.
 | Q-SW3 | Separação dos termos de palavra-chave por ponto (`TERMOS`) | ver `domain/swalis.py` |
 | Q-SW4 | A camada (`urgencia.py`) não usa os pontos do Jev: um A1 por "hérnia irredutível" pode ficar na camada 3 (ex.: SOL-2024-00181, posição 385). A camada 2 deve incluir progressão 3 do SWALIS? | não (cabe à US-08) |
 | Q-SW5 | Limiares de confiança do Jev (conta ≥ 0,7; revisar ≥ 0,4) | provisórios |
+
+## Eventos sem relação com a cirurgia (D-123)
+
+PS e internação durante a espera contam como piora (camada 2 e "piora na espera" do SWALIS), **exceto**
+quando o Jev responde que o atendimento **não tem relação** com a doença da cirurgia com p ≥ 0,9
+(`SwalisRegras.anotar_eventos`, cache `evento-v1-decisoes`). Pergunta: "o atendimento é piora ou complicação
+da doença que motivou a cirurgia?" (`relacionado` / `nao_relacionado` / `incerto`). Sem cache ou abaixo de
+0,9, o evento continua contando. No dataset: só os 8 "PS por hiperglicemia" saem (p ≥ 0,99).
+
+Efeito com a negação na camada 2 (D-122), fila sem banco: camada 2 206 → 190; mediana dos oncológicos
+257 → 248; oncológicos no 1º terço 73% → 76%; "PS/internação recente na 1ª metade" do verificador
+100% → 92% (o verificador conta qualquer PS, inclusive os sem relação).

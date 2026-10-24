@@ -8,7 +8,7 @@ from statistics import median
 from app.domain.cid import is_cid_urgente
 from app.domain.models import Evento, Solicitacao
 from app.domain.preprocessing.normalizacao import normalizar_prioridade
-from app.domain.urgencia import evento_e_piora, tem_sinal_alarme
+from app.domain.urgencia import _KW_ALARME, evento_e_piora
 
 JANELA_PS_DIAS = 180
 _RANK_PRIORIDADE = {"alta": 0, "media": 1, "baixa": 2}
@@ -27,7 +27,8 @@ def is_sem_urgencia_verificador(solicitacao: Solicitacao, eventos: list[Evento])
         return False
     if any(evento_e_piora(e.tipo_evento, e.resultado) for e in eventos):
         return False
-    return not tem_sinal_alarme(solicitacao.justificativa_clinica)
+    # Espelho do verificador: termo de alarme SEM negação (a fila usa negação, D-122; o verificador não).
+    return not _KW_ALARME.search((solicitacao.justificativa_clinica or "").lower())
 
 
 def _rank_prioridade(s: Solicitacao) -> int:
