@@ -33,16 +33,22 @@ class NotificadorTwilio:
     canal = "twilio"
 
     def __init__(self, account_sid: str, auth_token: str, remetente: str,
-                 client: httpx.Client | None = None, timeout: float = 15.0):
-        self._sid, self._token, self._from = account_sid, auth_token, remetente
+                 client: httpx.Client | None = None, timeout: float = 15.0,
+                 api_key_sid: str = "", api_key_secret: str = ""):
+        # O endereço usa sempre o Account SID (AC...); a senha pode ser o Auth Token ou uma API Key (SK... + secret).
+        self._sid, self._from = account_sid, remetente
+        self._usuario, self._token = (api_key_sid, api_key_secret) if api_key_sid else (account_sid, auth_token)
         self._client = client or httpx.Client(timeout=timeout)
 
     def enviar(self, destino: str, texto: str) -> ResultadoEnvio:
+        if not self._sid.startswith("AC"):
+            return ResultadoEnvio(False, "TWILIO_ACCOUNT_SID precisa ser o Account SID (começa com AC); "
+                                         "SK é a API Key: use TWILIO_API_KEY_SID e TWILIO_API_KEY_SECRET")
         url = f"https://api.twilio.com/2010-04-01/Accounts/{self._sid}/Messages.json"
         whatsapp = self._from.lower().startswith("whatsapp:")
         para = destino if not whatsapp or destino.lower().startswith("whatsapp:") else f"whatsapp:{destino}"
         try:
-            r = self._client.post(url, auth=(self._sid, self._token),
+            r = self._client.post(url, auth=(self._usuario, self._token),
                                   data={"To": para, "From": self._from, "Body": texto if whatsapp else sem_acentos(texto)})
         except httpx.HTTPError as e:
             return ResultadoEnvio(False, f"falha de rede: {e.__class__.__name__}")
@@ -55,7 +61,10 @@ class NotificadorTwilio:
 
 def criar_notificador() -> NotificadorSimulado | NotificadorTwilio:
     """Simulado, a menos que o canal seja `twilio` e as credenciais e o destino estejam configurados."""
-    if (settings.notifica_canal == "twilio" and settings.twilio_account_sid and settings.twilio_auth_token
+    tem_senha = settings.twilio_auth_token or (settings.twilio_api_key_sid and settings.twilio_api_key_secret)
+    if (settings.notifica_canal == "twilio" and settings.twilio_account_sid and tem_senha
             and settings.twilio_from and settings.notifica_destino):
-        return NotificadorTwilio(settings.twilio_account_sid, settings.twilio_auth_token, settings.twilio_from)
+        return NotificadorTwilio(settings.twilio_account_sid, settings.twilio_auth_token, settings.twilio_from,
+                                 api_key_sid=settings.twilio_api_key_sid,
+                                 api_key_secret=settings.twilio_api_key_secret)
     return NotificadorSimulado()

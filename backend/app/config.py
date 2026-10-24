@@ -41,7 +41,9 @@ class Settings:
     notifica_max_por_publicacao: int
     twilio_account_sid: str
     twilio_from: str
+    twilio_api_key_sid: str
     twilio_auth_token: str = field(repr=False)
+    twilio_api_key_secret: str = field(repr=False)
     fatores_enabled: bool
     irr_path: Path
 
@@ -73,7 +75,9 @@ def _load() -> Settings:
         notifica_max_por_publicacao=int(os.getenv("HP_NOTIFICA_MAX_POR_PUBLICACAO", "3")),
         twilio_account_sid=os.getenv("TWILIO_ACCOUNT_SID", "").strip(),
         twilio_from=os.getenv("TWILIO_FROM", "").strip(),
+        twilio_api_key_sid=os.getenv("TWILIO_API_KEY_SID", "").strip(),
         twilio_auth_token=os.getenv("TWILIO_AUTH_TOKEN", "").strip(),
+        twilio_api_key_secret=os.getenv("TWILIO_API_KEY_SECRET", "").strip(),
         # Fatores de comorbidade e idade/IRR no score (domain/fatores.py).
         fatores_enabled=os.getenv("HP_FATORES_ENABLED", "true").lower() == "true",
         irr_path=Path(os.getenv("HP_IRR_PATH", REPO_ROOT / "score" / "references"

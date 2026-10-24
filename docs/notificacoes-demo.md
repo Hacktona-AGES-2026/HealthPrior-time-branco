@@ -15,7 +15,8 @@ está muito tempo sem evento (recontato). **Só para demonstração**: o destino
 
 ## Ligar o Twilio
 1. Crie a conta de teste em twilio.com, verifique o número do celular da apresentação e anote o Account SID, o Auth Token e o número de origem.
-2. No `.env` da raiz (não commitado; veja `.env.example`): `HP_NOTIFICA_CANAL=twilio`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, `HP_NOTIFICA_DESTINO`.
+2. **Atenção ao tipo de credencial:** `TWILIO_ACCOUNT_SID` é sempre o Account SID (começa com `AC`, está na página inicial do console). Se você criou uma API Key (`SK...`), ela vai em `TWILIO_API_KEY_SID` e `TWILIO_API_KEY_SECRET`, e o `TWILIO_AUTH_TOKEN` pode ficar vazio.
+3. No `.env` da raiz (não commitado; veja `.env.example`): `HP_NOTIFICA_CANAL=twilio`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`, `HP_NOTIFICA_DESTINO`.
 3. Reinicie o back. A tela **Notificações** mostra "Twilio (conta de teste) → número mascarado".
 4. Aprove ou edite um caso no Inbox: a mensagem chega no celular. `POST /notificacoes/enviar` reenvia as pendentes.
 

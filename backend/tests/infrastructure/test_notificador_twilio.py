@@ -24,6 +24,28 @@ def test_envia_com_basic_auth_e_corpo_sem_acentos():
     assert vistos["form"] == {"To": "+5551999990000", "From": "+15005550006", "Body": "[DEMO] situacao atualizada"}
 
 
+def test_api_key_autentica_com_sk_mas_o_endereco_usa_o_account_sid():
+    vistos = {}
+
+    def handler(request):
+        vistos["url"], vistos["auth"] = str(request.url), request.headers["authorization"]
+        return httpx.Response(201, json={"sid": "SM9"})
+
+    t = NotificadorTwilio("ACtest", "", "+1500", cliente(handler), api_key_sid="SKabc", api_key_secret="s3gredo")
+    assert t.enviar("+55", "x").ok
+    assert "/Accounts/ACtest/" in vistos["url"]
+    import base64
+    assert base64.b64decode(vistos["auth"].split()[1]).decode() == "SKabc:s3gredo"
+
+
+def test_account_sid_com_cara_de_api_key_da_um_erro_claro_sem_chamar_a_rede():
+    def handler(request):
+        raise AssertionError("não devia chamar a rede")
+
+    r = NotificadorTwilio("SKabc", "segredo", "+1500", cliente(handler)).enviar("+55", "x")
+    assert r.ok is False and "Account SID" in r.detalhe and "segredo" not in r.detalhe
+
+
 def test_whatsapp_prefixa_o_destino_e_mantem_os_acentos():
     vistos = {}
 
