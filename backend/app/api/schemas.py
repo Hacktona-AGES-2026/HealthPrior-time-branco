@@ -484,3 +484,20 @@ class EnviosOut(BaseModel):
     enviadas: int
     falhas: int
     pendentes: int
+
+
+class ErroImportacaoOut(BaseModel):
+    linha: int  # 1 = cabeçalho
+    campo: Optional[str] = None
+    mensagem: str
+
+
+class ImportacaoOut(BaseModel):
+    lidas: int
+    novas: int
+    ja_existentes: list[str]
+    erros: list[ErroImportacaoOut]
+    novas_ids: list[str]
+    suspensas: int
+    fila_publicada: Optional[bool] = None
+    total_fila: Optional[int] = None

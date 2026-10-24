@@ -55,6 +55,7 @@ app/
     registrar_evento.py US-15
     detectar_recontato.py US-17 (REC-01; passo 3 da atualização diária, D-113/D-114)
     notificacoes.py     demo: NotificarMudancas/EnviarNotificacoes (D-115/D-116, docs/notificacoes-demo.md)
+    importar_solicitacoes.py  importação por CSV (D-122/D-123, docs/importacao-csv.md)
     decidir.py         US-13 (aprovar); US-14 (editar/manter)
     resolver_pendencia.py US-07
   infrastructure/    DETALHES. Implementam as portas.

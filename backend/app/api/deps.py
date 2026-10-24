@@ -17,6 +17,7 @@ from app.application.detalhar_solicitacao import DetalharSolicitacao
 from app.application.detectar_inconsistencias import DetectarInconsistencias
 from app.application.detectar_recontato import DetectarRecontato
 from app.application.gerar_propostas import GerarPropostas
+from app.application.importar_solicitacoes import ImportarSolicitacoes
 from app.application.notificacoes import EnviarNotificacoes, NotificarMudancas
 from app.application.propostas import DecidirProposta, ListarPropostas, ReverterRegra
 from app.application.listar_pendencias import ListarPendencias
@@ -42,12 +43,14 @@ from app.infrastructure.repositories import (
     SqlFilaRepository,
     SqlNotificacaoRepository,
     SqlPendenciaRepository,
+    SqlProcedimentoRepository,
     SqlPropostaRepository,
     SqlRegraRepository,
     SqlSolicitacaoRepository,
     SqlUnidadeDeTrabalho,
 )
 from app.infrastructure.llm_motivos import ClassificadorMotivoLLM
+from app.infrastructure.importacao_csv import LeitorEmMemoria, ler_solicitacoes
 from app.infrastructure.notificador import criar_notificador
 from app.infrastructure.swalis_aprendido import com_regras
 from app.infrastructure.swalis_regras import criar_swalis
@@ -116,7 +119,7 @@ def _publicar_fila_em(session: Session, data: date) -> PublicarFila:
     output_dir = settings.output_dir if data == settings.ref_date else settings.output_dir / "simulada"
     return PublicarFila(
         gerar=_gerar_fila_em(session, data),
-        verificador=VerificadorOficial(),
+        verificador=VerificadorOficial(session=session),
         fila=SqlFilaRepository(session),
         uow=SqlUnidadeDeTrabalho(session),
         relogio=lambda: datetime.now(timezone.utc),
@@ -294,3 +297,23 @@ def get_enviar_notificacoes(session: Session = Depends(get_session)) -> EnviarNo
 
 def get_notificacoes(session: Session = Depends(get_session)) -> SqlNotificacaoRepository:
     return SqlNotificacaoRepository(session)
+
+
+# Importação de solicitações por CSV
+def get_importar_solicitacoes(session: Session = Depends(get_session),
+                              publicar: PublicarFila = Depends(get_publicar_fila),
+                              data: date = Depends(get_data_referencia)) -> ImportarSolicitacoes:
+    def gravar(registros: list[dict]) -> None:
+        # a mesma carga do dataset (normaliza, flags, inconsistências e bloqueantes), só com as linhas novas
+        normalizar = Normalizar(SqlSolicitacaoRepository(session), SqlCorrecaoRepository(session))
+        CargaInicial(LeitorEmMemoria(registros), SqlCargaRepository(session), normalizar,
+                     SqlUnidadeDeTrabalho(session),
+                     RecalcularFlags(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                     SqlCorrecaoRepository(session)),
+                     DetectarInconsistencias(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                             SqlPendenciaRepository(session), data),
+                     DetectarBloqueantes(SqlSolicitacaoRepository(session), SqlEventoRepository(session),
+                                         SqlPendenciaRepository(session), data)).executar()
+
+    return ImportarSolicitacoes(SqlSolicitacaoRepository(session), SqlProcedimentoRepository(session),
+                                ler_solicitacoes, gravar, publicar.executar, data)
