@@ -80,6 +80,16 @@ class CargaOut(BaseModel):
     bloqueantes: Optional[BloqueantesOut] = None
 
 
+class RecontatoOut(BaseModel):
+    """US-17: quem passou de N dias sem evento e o que mudou nas pendências de recontato."""
+
+    n_dias: int
+    sem_evento: int
+    abertas: int
+    atualizadas: int
+    encerradas: int
+
+
 class PublicacaoOut(BaseModel):
     publicada: bool
     total: int
@@ -87,6 +97,7 @@ class PublicacaoOut(BaseModel):
     versao_regras: str
     saida_verificador: str
     data_referencia: date  # US-16: data usada no cálculo (avança na atualização diária)
+    recontato: Optional["RecontatoOut"] = None  # US-17: só na atualização diária
 
 
 # ---------- fila ----------
@@ -361,7 +372,7 @@ class PropostaRegraOut(BaseModel):
     n_reguladores: int
     consistencia: float
     casos: list[str]
-    status: Literal["pendente", "descartada"]
+    status: Literal["pendente", "descartada", "aprovada", "rejeitada", "revertida"]
     motivo_descarte: Optional[str] = None
 
 
@@ -372,3 +383,67 @@ class GerarPropostasOut(BaseModel):
     outros_sem_grupo: int
     propostas: list[PropostaRegraOut]
     descartadas: list[PropostaRegraOut]
+
+
+class CasoOrigemOut(BaseModel):
+    decisao_id: str
+    solicitacao_id: str
+    regulador_id: str
+    data: datetime
+    acao: str
+    classe_de: Optional[Classe] = None
+    classe_para: Optional[Classe] = None
+    motivo: Optional[MotivoCodificado] = None
+    justificativa: Optional[str] = None
+
+
+class ImpactoOut(BaseModel):
+    """Shadow run: o que a regra mudaria na fila de hoje, sem aplicar."""
+
+    afetados: int
+    oncologicos_afetados: int
+    oncologicos_rebaixados: int  # tem de ser 0 (I-01)
+    exemplos: list[str]
+
+
+class PropostaDetalheOut(PropostaRegraOut):
+    casos_origem: list[CasoOrigemOut]
+    impacto: Optional[ImpactoOut] = None  # só nas pendentes
+    decidida_por: Optional[str] = None
+    decidida_em: Optional[datetime] = None
+    observacao: Optional[str] = None
+    versao: Optional[int] = None  # versão de regras criada, nas aprovadas e revertidas
+    revertida_por: Optional[str] = None
+    revertida_em: Optional[datetime] = None
+    motivo_reversao: Optional[str] = None
+
+
+class PropostasOut(BaseModel):
+    total: int
+    itens: list[PropostaDetalheOut]
+
+
+class DecidirPropostaIn(BaseModel):
+    decisao: Literal["aprovar", "rejeitar"]
+    usuario_id: str
+    observacao: Optional[str] = None
+
+
+class DecidirPropostaOut(BaseModel):
+    proposta_id: str
+    status: Literal["aprovada", "rejeitada"]
+    versao: Optional[int] = None
+    versao_regras: Optional[str] = None
+    enviados_ao_inbox: int
+
+
+class ReverterRegraIn(BaseModel):
+    usuario_id: str
+    motivo: str
+
+
+class ReverterRegraOut(BaseModel):
+    regra_id: str
+    status: Literal["revertida"]
+    versao_regras: str
+    devolvidos_ao_inbox: int

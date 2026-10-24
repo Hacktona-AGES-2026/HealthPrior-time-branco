@@ -7,7 +7,7 @@ import pytest
 
 from app.domain.enums import Camada
 from app.domain.models import ItemRanking
-from app.domain.ranking import definir_camada, ordenar_fila
+from app.domain.ranking import definir_bloco, definir_camada, ordenar_fila
 
 DATA = date(2025, 1, 1)
 
@@ -43,11 +43,11 @@ def test_oncologico_com_score_baixo_fica_acima_de_nao_urgente_com_score_alto():
     assert fila[1].solicitacao_id == "nao_urgente"
 
 
-def test_tres_camadas_nao_se_invadem():
+def test_camada_3_nao_invade_o_bloco_prioritario():
     itens = [
         item("demais", score=999),
         item("urgente", urgente=True, score=1),
-        item("onco", oncologico=True, score=1),
+        item("onco", oncologico=True, score=2),
     ]
 
     fila = ordenar_fila(itens)
@@ -55,6 +55,24 @@ def test_tres_camadas_nao_se_invadem():
     assert [f.solicitacao_id for f in fila] == ["onco", "urgente", "demais"]
     assert [f.camada for f in fila] == [Camada.ONCOLOGICO, Camada.URGENTE, Camada.DEMAIS]
     assert [f.posicao for f in fila] == [1, 2, 3]
+
+
+def test_urgente_com_score_maior_passa_oncologico():
+    """D-112: camadas 1 e 2 formam um bloco só, ordenado pelo score."""
+    itens = [
+        item("onco", oncologico=True, score=25),
+        item("urgente", urgente=True, score=8000),
+    ]
+
+    fila = ordenar_fila(itens)
+
+    assert [f.solicitacao_id for f in fila] == ["urgente", "onco"]
+    assert [f.camada for f in fila] == [Camada.URGENTE, Camada.ONCOLOGICO]
+
+
+def test_definir_bloco_junta_camadas_1_e_2():
+    assert definir_bloco(Camada.ONCOLOGICO) == definir_bloco(Camada.URGENTE) == 1
+    assert definir_bloco(Camada.DEMAIS) == 2
 
 
 def test_definir_camada_prioriza_oncologico_sobre_urgente():
@@ -124,13 +142,15 @@ def test_propriedade_regra_de_ouro_com_300_itens_aleatorios():
 
     assert [f.posicao for f in fila] == list(range(1, 301))
 
+    # Regra de ouro (I-01): nenhum oncológico abaixo de um paciente da camada 3 (D-112).
     camadas = [f.camada for f in fila]
-    ultimo_onco = max((i for i, c in enumerate(camadas) if c == Camada.ONCOLOGICO), default=-1)
-    primeiro_nao_onco = min(
-        (i for i, c in enumerate(camadas) if c != Camada.ONCOLOGICO), default=len(camadas)
+    ultimo_prioritario = max(
+        (i for i, c in enumerate(camadas) if c != Camada.DEMAIS), default=-1
     )
-    assert ultimo_onco < primeiro_nao_onco
-
-    ultimo_urgente = max((i for i, c in enumerate(camadas) if c == Camada.URGENTE), default=-1)
     primeiro_demais = min((i for i, c in enumerate(camadas) if c == Camada.DEMAIS), default=len(camadas))
-    assert ultimo_urgente < primeiro_demais
+    assert ultimo_prioritario < primeiro_demais
+
+    # Dentro do bloco prioritário, oncológicos e urgentes se intercalam pelo score.
+    bloco = [f for f in fila if f.camada != Camada.DEMAIS]
+    assert [f.score_efetivo for f in bloco] == sorted((f.score_efetivo for f in bloco), reverse=True)
+    assert {f.camada for f in bloco[:20]} == {Camada.ONCOLOGICO, Camada.URGENTE}

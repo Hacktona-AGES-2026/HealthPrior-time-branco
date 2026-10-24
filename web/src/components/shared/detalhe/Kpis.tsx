@@ -1,6 +1,7 @@
 import type { Paciente, Prioridade } from "@/data/tipos"
 import { addDias, diffDias, formatarData } from "@/lib/datas"
 import { formatarPct } from "@/components/shared/Basicos"
+import { classeEmVigor, propostaPendente } from "@/data/adaptador"
 
 const MANUAL: Record<Prioridade, string> = { alta: "alta", media: "média", baixa: "baixa" }
 const CLASSE_DA_MANUAL: Record<Prioridade, string[]> = { alta: ["A1", "A2"], media: ["B"], baixa: ["C", "D"] }
@@ -8,7 +9,9 @@ const CLASSE_DA_MANUAL: Record<Prioridade, string[]> = { alta: ["A1", "A2"], med
 /** Resumo em uma linha: tempo de fila, prazo, posição e classe. */
 export function Resumo({ p }: { p: Paciente }) {
   const largura = Math.max(0, Math.min(100, p.pct))
-  const difere = p.prioridade_atual && !CLASSE_DA_MANUAL[p.prioridade_atual].includes(p.classe)
+  const classe = classeEmVigor(p)
+  const proposta = propostaPendente(p)
+  const difere = p.prioridade_atual && !CLASSE_DA_MANUAL[p.prioridade_atual].includes(classe)
   const hoje = addDias(p.data_entrada, p.dias_em_fila)
   const rev = p.data_revisao_prioridade
   const antiga = rev ? diffDias(rev, hoje) > 365 : false
@@ -34,8 +37,14 @@ export function Resumo({ p }: { p: Paciente }) {
         <div className="text-xs text-muted-foreground">posição na fila</div>
       </div>
       <div>
-        <div className="font-semibold">Classe {p.classe}</div>
-        <div className="text-xs text-muted-foreground">{difere && p.prioridade_atual ? `prioridade manual: ${MANUAL[p.prioridade_atual]}` : "classe de prioridade"}</div>
+        <div className="font-semibold">Classe {classe}</div>
+        <div className="text-xs text-muted-foreground">
+          {proposta
+            ? `proposta ${proposta} aguardando aprovação`
+            : difere && p.prioridade_atual
+              ? `prioridade manual: ${MANUAL[p.prioridade_atual]}`
+              : "classe de prioridade"}
+        </div>
       </div>
       </div>
       <p className="text-xs text-muted-foreground">{textoPrioridade}</p>

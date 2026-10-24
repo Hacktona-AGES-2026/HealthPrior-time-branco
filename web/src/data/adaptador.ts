@@ -76,3 +76,9 @@ export const deApiMinimo = (i: ItemFilaApi, inbox?: ItemInboxApi): Paciente =>
     i,
     inbox
   )
+
+/** Classe que vale na fila hoje. `classe` é a proposta do sistema; só passa a valer quando um profissional aprova. */
+export const classeEmVigor = (p: Paciente): Classe => p.classe_vigente ?? p.classe
+
+/** Proposta do sistema aguardando decisão, se for diferente da classe em vigor. */
+export const propostaPendente = (p: Paciente): Classe | null => (p.classe_vigente && p.classe !== p.classe_vigente ? p.classe : null)

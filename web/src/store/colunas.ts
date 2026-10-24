@@ -6,12 +6,12 @@ export type DefinicaoColuna = { id: string; rotulo: string; padrao: number; min:
 export const COLUNAS: DefinicaoColuna[] = [
   { id: "pos", rotulo: "Posição", padrao: 72, min: 56, max: 140 },
   { id: "paciente", rotulo: "Paciente", padrao: 240, min: 120, max: 600, flexivel: true },
-  { id: "classe", rotulo: "Classe", padrao: 72, min: 56, max: 160 },
+  { id: "classe", rotulo: "Classe", padrao: 100, min: 56, max: 160 }, // cabe "B → A2" (em vigor → proposta)
   { id: "prazo", rotulo: "Prazo", padrao: 150, min: 100, max: 320, minVw: 768 },
   { id: "status", rotulo: "Situação", padrao: 112, min: 90, max: 200 },
 ]
 
-const CHAVE = "healthprior-colunas-v5"
+const CHAVE = "healthprior-colunas-v6"
 const PAINEL_PADRAO = 340
 export const ALTURA_FAIXA_PADRAO = 192
 export const ALTURA_FAIXA_MIN = 140

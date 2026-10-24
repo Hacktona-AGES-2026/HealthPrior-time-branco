@@ -46,8 +46,11 @@ class PropostaRegra:
     n_reguladores: int
     consistencia: float
     casos: list[str] = field(default_factory=list)
-    status: str = "pendente"  # "pendente" | "descartada"
+    status: str = "pendente"  # "pendente" | "descartada" | "aprovada" | "rejeitada"
     motivo_descarte: str | None = None
+    decidida_por: str | None = None  # US-19
+    decidida_em: datetime | None = None
+    observacao: str | None = None
 
 
 def direcao(de: Classe, para: Classe) -> str | None:

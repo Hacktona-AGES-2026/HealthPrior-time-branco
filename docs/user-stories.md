@@ -233,6 +233,8 @@ Como **equipe administrativa**, quero ser avisada de quem está sem eventos há 
   - Não altera prioridade.
 - **Depende de:** US-06, US-16
 
+> **Status: ✅ implementado** (D-113, D-114): pendência `REC-01` para ativas sem evento há N dias (`HP_RECONTATO_DIAS`, padrão 180), no passo 3 da atualização diária e em `python -m app.cli recontato`. No dataset: 260 de 900 ativas em 23/10/2026. Q-04 (N final e gatilho por prazo) segue aberta.
+
 ---
 
 ### E6 · Ciclo de aprendizado (C-14)
@@ -259,6 +261,8 @@ Como **comitê clínico**, quero ver a proposta, os casos de origem e o impacto 
 - **Back:** `GET /propostas`, `POST /propostas/{id}/decidir`
 - **Front:** tela "Propostas" (persona Comitê).
 - **Depende de:** US-18
+
+> **Status: ✅ implementado** (D-108..D-110): `GET /propostas?status=` (com casos de origem e impacto simulado nas pendentes) e `POST /propostas/{id}/decidir` `{decisao: aprovar|rejeitar, usuario_id, observacao?}`; erros 404 `PROPOSTA_NAO_ENCONTRADA`, 409 `PROPOSTA_JA_DECIDIDA`, 422 `OBSERVACAO_OBRIGATORIA`. `POST /regras/{regra_id}/reverter` `{usuario_id, motivo}` desativa a regra (D-111; 404 `REGRA_NAO_ENCONTRADA`, 409 `REGRA_JA_REVERTIDA`, 422 sem motivo) e a proposta passa a `revertida`. A tela Propostas ainda não tem o seletor de persona (US-23).
 
 ---
 

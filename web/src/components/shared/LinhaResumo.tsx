@@ -1,4 +1,5 @@
 import type { Paciente } from "@/data/tipos"
+import { classeEmVigor, propostaPendente } from "@/data/adaptador"
 import type { Decisao } from "@/lib/filtros"
 import { estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
@@ -35,7 +36,15 @@ export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { pac
         </div>
       </div>
       <div className="shrink-0" style={estiloColuna("classe", l, o)}>
-        <ClasseBadge classe={p.classe} />
+        <span className="inline-flex items-center gap-1" title={propostaPendente(p) ? `Proposta ${p.classe} aguardando aprovação` : undefined}>
+          <ClasseBadge classe={classeEmVigor(p)} />
+          {propostaPendente(p) && (
+            <>
+              <span className="text-xs text-muted-foreground" aria-hidden>→</span>
+              <ClasseBadge classe={p.classe} />
+            </>
+          )}
+        </span>
       </div>
       <div className="min-w-0 shrink-0" style={estiloColuna("prazo", l, o)}>
         <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(p.pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Prazo consumido" title={`${Math.round(p.pct)}% do prazo`}>

@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react"
+import { classeEmVigor } from "@/data/adaptador"
 import { useVirtualizer } from "@tanstack/react-virtual"
 import { Search } from "lucide-react"
 import { PACIENTES } from "@/data/fila"
@@ -61,7 +62,7 @@ export function ListaPacientes() {
                       </span>
                       <span className="block truncate text-xs text-muted-foreground">{p.procedimento}</span>
                     </span>
-                    <ClasseBadge classe={p.classe} />
+                    <ClasseBadge classe={classeEmVigor(p)} />
                     <span className="hidden w-28 shrink-0 text-right text-xs text-muted-foreground tabular-nums sm:block">{p.dias_em_fila} dias em fila</span>
                     <span className="w-20 shrink-0 text-right text-xs font-medium tabular-nums">Posição #{p.posicao}</span>
                   </button>

@@ -8,6 +8,7 @@ from app.domain.enums import ResolucaoPendencia as R
 from app.domain.enums import StatusFila, StatusPendencia
 from app.domain.errors import ObservacaoObrigatoriaError, ResolucaoInvalidaError
 from app.domain.models import Correcao, Solicitacao
+from app.domain.recontato import REC_SEM_EVENTO
 from app.domain.preprocessing.inconsistencias import (
     PRE_CANCER_ESCONDIDO,
     PRE_CONTATO_PERDIDO,
@@ -34,6 +35,7 @@ RESOLUCOES_POR_REGRA: dict[str, frozenset[R]] = {
     PRE_EVENTO_ORFAO: frozenset({R.DESCARTAR}),
     PRE_CONTATO_PERDIDO: _SO_ALERTAM,
     PRE_SEM_TELEFONE: _SO_ALERTAM,
+    REC_SEM_EVENTO: _SO_ALERTAM,  # US-17: a equipe liga e registra o retorno como evento
     PRE_CANCER_ESCONDIDO: _SO_ALERTAM,
     PRE_DIABETES_FORA_DO_CADASTRO: _SO_ALERTAM,
 }

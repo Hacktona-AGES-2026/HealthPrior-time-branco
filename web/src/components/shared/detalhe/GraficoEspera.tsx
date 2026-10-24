@@ -1,4 +1,5 @@
 import { useMemo } from "react"
+import { classeEmVigor } from "@/data/adaptador"
 import type { Paciente } from "@/data/tipos"
 import { PRAZO_MAX } from "@/lib/cores"
 import { addDias, diffDias, formatarData } from "@/lib/datas"
@@ -16,7 +17,7 @@ const fmtDias = (n: number) => `${n.toLocaleString("pt-BR")} ${n === 1 ? "dia" :
  * achata o prazo no chão do gráfico e os rótulos se sobrepõem.
  */
 export function GraficoEspera({ p }: { p: Paciente }) {
-  const prazo = PRAZO_MAX[p.classe]
+  const prazo = PRAZO_MAX[classeEmVigor(p)]  // prazo da classe em vigor, não da proposta
   const dias = p.dias_em_fila
   const total = Math.max(dias, prazo, 1)
   const pos = (d: number) => `${(Math.min(Math.max(d, 0), total) / total) * 100}%`
