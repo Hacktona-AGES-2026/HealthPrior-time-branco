@@ -41,11 +41,13 @@ class Solicitacao:
     observacoes: str = ""
     prioridade_regulacao: str | None = None
     flag_oncologico: str | None = None
+    flag_piora_clinica: str | None = None
     # normalizados (PRE-01..PRE-06)
     cid_norm: str = ""
     oncologico: bool = False
     municipio_norm: str | None = None
     prioridade_norm: str | None = None
+    piora_recalculada: bool | None = None
     # estado
     status_fila: StatusFila = StatusFila.ATIVA
     motivo_status: str | None = None
