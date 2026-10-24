@@ -168,6 +168,8 @@ Como **equipe**, quero listar no `DECISOES.md` quem ficou fora da fila e por qu�
 ### E4 · Regulador (C-08, C-09, C-10)
 
 #### US-12 · Inbox do regulador — **P1** · Back + Front
+> **Status: ✅ back implementado** (branch `feat/US-12-inbox`): `GET /inbox` calculado na leitura; 296 itens no dataset. Registro: `docs/implementacao/US-12-inbox.md` (D-64..D-67). Tela do front pendente.
+
 Como **regulador**, quero ver só os pacientes com classe nova ou alterada, com motivo e evidência, para decidir rápido sem revisar a fila inteira.
 - **CA**
   - Item entra no inbox quando `classe_sugerida != classe_atual` (ou classe nova de entrada nova). Eventos sem mudança de classe **não** entram (D-02).

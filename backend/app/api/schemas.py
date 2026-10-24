@@ -198,7 +198,7 @@ class ItemInboxOut(BaseModel):
     motivos: list[MotivoOut]
     evento_gatilho: Optional[str] = None
     editado_anteriormente: Optional[EditadoAnteriormente] = None
-    criado_em: datetime
+    criado_em: Optional[datetime] = None
 
 
 class InboxOut(BaseModel):
