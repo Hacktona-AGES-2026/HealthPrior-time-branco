@@ -53,7 +53,7 @@ export function PacienteDetalhe({ paciente: p }: { paciente: Paciente }) {
       </div>
 
       <div className="grid gap-3 @lg:grid-cols-2">
-        <Etapa pronto={etapa >= 3} rotulo="Montando espera × prazo" altura={290} className="@lg:col-span-2">
+        <Etapa pronto={etapa >= 3} rotulo="Montando espera × prazo" altura={240} className="@lg:col-span-2">
           <GraficoEspera p={p} />
         </Etapa>
         <Etapa pronto={etapa >= 4} rotulo="Calculando camada e posição" altura={260} className="@lg:col-span-2">

@@ -151,13 +151,13 @@ export function SinalChips({ sinais, max = 3 }: { sinais: string[]; max?: number
   return (
     <span className="flex min-w-0 items-center gap-1 overflow-hidden [mask-image:linear-gradient(to_right,black_82%,transparent)]">
       {visiveis.map((s) => (
-        <Badge key={s} variant="secondary" className="shrink-0 bg-muted/70 px-1.5 text-[11px] font-normal whitespace-nowrap text-muted-foreground">
+        <Badge key={s} variant="secondary" className="shrink-0 bg-muted/70 px-1.5 text-xs font-normal whitespace-nowrap text-muted-foreground">
           {s}
         </Badge>
       ))}
       {resto > 0 && (
         <Tooltip>
-          <TooltipTrigger render={<Badge variant="outline" className="shrink-0 border-transparent px-1.5 text-[11px] font-normal text-muted-foreground">+{resto}</Badge>} />
+          <TooltipTrigger render={<Badge variant="outline" className="shrink-0 border-transparent px-1.5 text-xs font-normal text-muted-foreground">+{resto}</Badge>} />
           <TooltipContent>{sinais.slice(max).join(", ")}</TooltipContent>
         </Tooltip>
       )}

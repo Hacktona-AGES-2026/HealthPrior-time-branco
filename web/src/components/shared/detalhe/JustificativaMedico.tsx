@@ -48,7 +48,7 @@ function TextoDestacado({ texto, trechos, ativo, aoAtivar }: { texto: string; tr
             onBlur={() => aoAtivar(null)}
           >
             {parte.texto}
-            <sup className="ml-0.5 text-[9px] font-bold text-muted-foreground">{parte.indice + 1}</sup>
+            <sup className="ml-0.5 text-xs font-bold text-muted-foreground">{parte.indice + 1}</sup>
           </mark>
         )
       )}
@@ -66,18 +66,18 @@ export function JustificativaMedico({ p }: { p: Paciente }) {
         <h3 className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
           <FileText className="size-3.5" aria-hidden /> Justificativa clínica do médico
         </h3>
-        <p className="text-sm leading-relaxed">
+        <p className="break-words text-sm leading-relaxed">
           {p.justificativa_clinica ? <TextoDestacado texto={p.justificativa_clinica} trechos={trechos} ativo={ativo} aoAtivar={setAtivo} /> : <span className="text-muted-foreground">Sem justificativa registrada</span>}
         </p>
         {p.observacoes && (
-          <p className="mt-2 border-t border-border/60 pt-2 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-2 break-words border-t border-border/60 pt-2 text-xs leading-relaxed text-muted-foreground">
             <span className="font-semibold">Observações: </span>
             <TextoDestacado texto={p.observacoes} trechos={trechos} ativo={ativo} aoAtivar={setAtivo} />
           </p>
         )}
         {trechos.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/60 pt-2">
-            <span className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="flex items-center gap-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               <Link2 className="size-3" aria-hidden /> Sinais extraídos do texto
             </span>
             {trechos.map((t, i) => (
@@ -88,7 +88,7 @@ export function JustificativaMedico({ p }: { p: Paciente }) {
                 onMouseLeave={() => setAtivo(null)}
                 onFocus={() => setAtivo(i)}
                 onBlur={() => setAtivo(null)}
-                className={cn("rounded-md px-1.5 py-0.5 text-[11px] outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", ativo === i ? "bg-[var(--destaque)]" : "bg-background/70")}
+                className={cn("inline-flex min-h-9 items-center rounded-md px-2 py-1 text-xs outline-none sm:min-h-0 sm:py-0.5 transition-colors focus-visible:ring-2 focus-visible:ring-ring", ativo === i ? "bg-[var(--destaque)]" : "bg-background/70")}
               >
                 <span className="font-bold">{i + 1}</span> {t}<span className="ml-1 text-muted-foreground">{p.sinais_texto[i].origem === "llm" ? "· LLM, só alerta" : "· regra"}</span>
               </button>
@@ -101,7 +101,7 @@ export function JustificativaMedico({ p }: { p: Paciente }) {
         <h3 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-primary">
           <Route className="size-3.5" aria-hidden /> Por que está nesta posição
         </h3>
-        <p className="text-sm leading-relaxed">{p.justificativa}</p>
+        <p className="break-words text-sm leading-relaxed">{p.justificativa}</p>
         {p.alertas.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
             {p.alertas.map((a, i) => (

@@ -23,7 +23,7 @@ function Conteudo() {
   return (
     <Suspense fallback={<CarregandoPagina rotulo="Carregando página" />}>
       {/* versaoDados: remonta a página quando a fila é recarregada da API */}
-      <div key={`${pagina}-${versaoDados}`} className="fx-fade-up flex min-h-0 flex-1 flex-col">
+      <div key={`${pagina}-${versaoDados}`} className="fx-fade-up flex min-h-0 min-w-0 flex-1 flex-col">
         {pagina === "fila" && <PaginaFila />}
         {pagina === "inbox" && <PaginaInbox />}
         {pagina === "pacientes" && <PaginaPacientes />}
@@ -44,7 +44,7 @@ export default function App() {
   return (
     <>
       <TooltipProvider delay={250}>
-        <SidebarProvider open={sidebarAberta} onOpenChange={setSidebar} className="h-svh">
+        <SidebarProvider open={sidebarAberta} onOpenChange={setSidebar} className="h-svh min-w-0">
           <AppSidebar />
           <SidebarInset className="min-h-0 min-w-0 overflow-hidden">
             <CabecalhoMetricas />
@@ -53,7 +53,7 @@ export default function App() {
         </SidebarProvider>
         <ShortcutsDialog />
         <PaletaBusca />
-        <Toaster position="bottom-center" richColors closeButton />
+        <Toaster position="bottom-center" richColors closeButton offset={{ bottom: 16, left: 12, right: 12 }} mobileOffset={{ bottom: 16, left: 12, right: 12 }} />
       </TooltipProvider>
     </>
   )

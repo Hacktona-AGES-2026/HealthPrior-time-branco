@@ -7,9 +7,9 @@ import { CamadaBadge, ClasseBadge } from "@/components/shared/Basicos"
 
 function Campo({ rotulo, children, larga }: { rotulo: string; children: ReactNode; larga?: boolean }) {
   return (
-    <div className={larga ? "col-span-full" : undefined}>
-      <dt className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{rotulo}</dt>
-      <dd className="mt-0.5 text-sm">{children}</dd>
+    <div className={larga ? "col-span-full min-w-0" : "min-w-0"}>
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{rotulo}</dt>
+      <dd className="mt-0.5 break-words text-sm">{children}</dd>
     </div>
   )
 }
@@ -17,7 +17,7 @@ function Campo({ rotulo, children, larga }: { rotulo: string; children: ReactNod
 function Bloco({ titulo, icone: Icone, children, indice }: { titulo: string; icone: typeof IdCard; children: ReactNode; indice: number }) {
   return (
     <section className="fx-fade-up rounded-xl bg-muted/40" style={{ animationDelay: `${indice * 90}ms` }}>
-      <h3 className="flex items-center gap-1.5 border-b bg-muted/50 px-3 py-2 text-xs font-semibold uppercase tracking-wide">
+      <h3 className="flex items-center gap-1.5 border-b border-border/60 px-3 py-2 text-xs font-semibold uppercase tracking-wide">
         <Icone className="size-3.5" aria-hidden /> {titulo}
       </h3>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 p-3 @lg:grid-cols-3">{children}</dl>
@@ -53,7 +53,7 @@ export function FichaSus({ p }: { p: Paciente }) {
         <Campo rotulo="CID secundário" larga>
           {p.cid_secundario ?? <span className="text-muted-foreground">Não informado</span>}
         </Campo>
-        <Campo rotulo="Prioridade manual → classe sugerida">
+        <Campo rotulo="Prioridade manual → classe sugerida" larga>
           <span className="inline-flex items-center gap-1.5">
             <span className="capitalize">{p.prioridade_atual ? (p.prioridade_atual === "media" ? "média" : p.prioridade_atual) : "vazia"}</span> → <ClasseBadge classe={p.classe} />
           </span>

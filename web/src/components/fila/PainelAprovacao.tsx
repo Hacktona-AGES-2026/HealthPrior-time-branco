@@ -27,7 +27,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
         <Button variant="ghost" size="icon-sm" onClick={() => setOculto(false)} title="Mostrar painel de aprovação (])" aria-label="Mostrar painel de aprovação">
           <PanelRightOpen aria-hidden />
         </Button>
-        <span className="text-[11px] text-muted-foreground tabular-nums [writing-mode:vertical-rl]">
+        <span className="text-xs text-muted-foreground tabular-nums [writing-mode:vertical-rl]">
           {revisados} de {PACIENTES.length} revisados
         </span>
         <span className="relative h-24 w-1 overflow-hidden rounded-full bg-muted" aria-hidden>
@@ -110,7 +110,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
               <p className="text-xs leading-relaxed text-muted-foreground">{p.justificativa}</p>
               {p.alertas.length > 0 && (
                 <div>
-                  <div className="mb-1 flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="mb-1 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     <Scale className="size-3" aria-hidden /> Alertas
                   </div>
                   <ul className="space-y-0.5 text-xs text-muted-foreground">

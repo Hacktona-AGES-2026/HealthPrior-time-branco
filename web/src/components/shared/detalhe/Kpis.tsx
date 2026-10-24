@@ -12,7 +12,7 @@ function Cartao({ icone: Icone, titulo, children, alerta, indice }: { icone: typ
       className={cn("fx-fade-up flex min-w-0 flex-col gap-1.5 rounded-xl bg-muted/40 p-2.5")}
       style={{ animationDelay: `${indice * 45}ms`, background: alerta ? "color-mix(in oklab, var(--prazo-limite) 10%, transparent)" : undefined }}
     >
-      <div className="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
         <Icone className="size-3.5" aria-hidden />
         {titulo}
         {alerta && <TriangleAlert className="ml-auto size-3.5" style={{ color: "var(--prazo-limite)" }} aria-label="Atenção" />}
@@ -115,7 +115,7 @@ export function Kpis({ p }: { p: Paciente }) {
               <span className="text-lg font-bold tabular-nums" style={{ color: hba1cAlta ? "var(--desce)" : undefined }}>
                 {String(hba1cValor).replace(".", ",")}%
               </span>
-              <div className="text-[11px] text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 {hba1cData ? formatarData(hba1cData) : "sem data"}
                 {hba1cAlta && " · acima de 8,5%"}
                 {hba1cAntiga && " · há mais de 90 dias"}

@@ -30,18 +30,18 @@ export function GraficoEspera({ p }: { p: Paciente }) {
   }, [p, prazo])
 
   return (
-    <CartaoGrafico titulo="Espera × prazo da classe" descricao={`Classe ${p.classe}: prazo de ${prazo} dias · ${p.dias_em_fila.toLocaleString("pt-BR")} dias esperados desde ${formatarData(p.data_entrada)} · tracejadas: eventos graves (antes da entrada em cinza)`} className="@lg:col-span-2">
-      <div className="h-60" role="img" aria-label={`${Math.round(p.pct)}% do prazo consumido em ${p.dias_em_fila} dias`}>
+    <CartaoGrafico titulo="Espera × prazo da classe" descricao={`Prazo de ${prazo} dias · ${p.dias_em_fila.toLocaleString("pt-BR")} dias desde ${formatarData(p.data_entrada)} · tracejadas: eventos graves (cinza: antes da entrada)`} className="@lg:col-span-2">
+      <div className="h-48 sm:h-60" role="img" aria-label={`${Math.round(p.pct)}% do prazo consumido em ${p.dias_em_fila} dias`}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={dados} margin={{ top: 18, right: 16, bottom: 4, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
             <ReferenceArea y1={100} y2={maxY} fill="var(--prazo-vencido)" fillOpacity={0.07} />
             <ReferenceArea x1={Math.min(minX, 0)} x2={0} fill="var(--muted-foreground)" fillOpacity={0.08} />
-            <XAxis dataKey="x" type="number" domain={[minX, p.dias_em_fila]} tickFormatter={(v: number) => `${v}d`} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-            <YAxis domain={[0, maxY]} tickFormatter={(v: number) => `${Math.round(v).toLocaleString("pt-BR")}%`} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" width={52} />
-            <ReferenceLine y={100} stroke="var(--prazo-vencido)" strokeDasharray="5 4" label={{ value: `prazo (${prazo}d)`, position: "insideTopLeft", fontSize: 10, fill: "var(--prazo-vencido)" }} />
+            <XAxis dataKey="x" type="number" domain={[minX, p.dias_em_fila]} tickFormatter={(v: number) => `${v}d`} tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+            <YAxis domain={[0, maxY]} tickFormatter={(v: number) => `${Math.round(v).toLocaleString("pt-BR")}%`} tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" width={56} />
+            <ReferenceLine y={100} stroke="var(--prazo-vencido)" strokeDasharray="5 4" label={{ value: `prazo (${prazo}d)`, position: "insideTopLeft", fontSize: 12, fill: "var(--prazo-vencido)" }} />
             {marcas.map((m) => (
-              <ReferenceLine key={m.id} x={m.x} stroke={m.historico ? "var(--muted-foreground)" : "var(--foreground)"} strokeOpacity={0.5} strokeDasharray="2 3" label={{ value: m.rotulo, position: "top", fontSize: 9, fill: "var(--muted-foreground)" }} />
+              <ReferenceLine key={m.id} x={m.x} stroke={m.historico ? "var(--muted-foreground)" : "var(--foreground)"} strokeOpacity={0.5} strokeDasharray="2 3" label={{ value: m.rotulo, position: "top", fontSize: 12, fill: "var(--muted-foreground)" }} />
             ))}
             <Tooltip content={<Dica />} />
             <Line dataKey="pct" type="linear" stroke={corClasse(p.classe)} strokeWidth={3} isAnimationActive animationDuration={1100} dot={{ r: 4.5, fill: corClasse(p.classe), stroke: "var(--background)", strokeWidth: 1.5 }} activeDot={{ r: 6 }} />

@@ -59,7 +59,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
   return (
     <div className="grid gap-3 @lg:grid-cols-2">
       <CartaoGrafico titulo="Por que este paciente está aqui" descricao={d.camada_motivo ?? undefined} className="@lg:col-span-2">
-        <p className="flex gap-2 text-sm leading-relaxed">
+        <p className="flex gap-2 break-words text-sm leading-relaxed">
           <MessageSquareQuote className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
           {d.explicacao}
         </p>
@@ -67,7 +67,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
 
       <CartaoGrafico titulo="Motivos do SWALIS" descricao={`Regras ${d.score.versao_regras ?? ""} · classe sugerida pelo sistema`}>
         <div className="space-y-2 text-xs">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             Sugerida <ClasseBadge classe={d.score.classe_sistema ?? p.classe} />
             {d.score.classe_medico && (
               <>
@@ -77,7 +77,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
           </div>
           <ul className="space-y-1">
             {eixos.map((m) => (
-              <li key={m.sinal} className="leading-snug">
+              <li key={m.sinal} className="break-words leading-snug">
                 <span className="font-semibold">{m.evidencia.split(":")[0]}:</span>
                 {m.evidencia.slice(m.evidencia.indexOf(":") + 1)}
               </li>
@@ -89,7 +89,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
                 <li key={i} className="flex flex-wrap items-baseline gap-1.5 leading-snug">
                   <span className="rounded bg-background px-1.5 py-0.5 font-medium">{info!.ponto}</span>
                   <span className={info!.revisar ? "text-[var(--prazo-limite)]" : "text-muted-foreground"}>{info!.origem}</span>
-                  <q className="text-muted-foreground">{m.evidencia}</q>
+                  <q className="break-words text-muted-foreground">{m.evidencia}</q>
                 </li>
               ))}
             </ul>
@@ -107,7 +107,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
               <li key={x.decisao_id} className="flex gap-2">
                 <Gavel className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" aria-hidden />
                 <div>
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <span className="font-semibold">{ACAO[x.acao] ?? x.acao}</span>
                     {x.classe_decidida && <ClasseBadge classe={x.classe_decidida} />}
                     <span className="text-muted-foreground">
@@ -115,7 +115,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
                     </span>
                   </div>
                   {x.motivo_codificado && <div className="text-muted-foreground">{MOTIVOS_CODIFICADOS[x.motivo_codificado as MotivoCodificado] ?? x.motivo_codificado}</div>}
-                  {x.justificativa && <q className="text-muted-foreground">{x.justificativa}</q>}
+                  {x.justificativa && <q className="break-words text-muted-foreground">{x.justificativa}</q>}
                 </div>
               </li>
             ))}
@@ -126,7 +126,7 @@ export function DetalheApiPaciente({ p }: { p: Paciente }) {
       <CartaoGrafico titulo="Pendências e alertas" descricao={`${d.pendencias.length} pendências · ${d.alertas.length} alertas`}>
         <ul className="space-y-1 text-xs">
           {d.pendencias.map((x) => (
-            <li key={x.pendencia_id} className="flex items-center gap-1.5">
+            <li key={x.pendencia_id} className="flex flex-wrap items-center gap-1.5">
               <ListChecks className="size-3.5 text-muted-foreground" aria-hidden />
               <span className="font-medium tabular-nums">{x.pendencia_id}</span> {x.regra} · {x.status}
               {x.bloqueante && <span className="text-[var(--desce)]">bloqueante</span>}

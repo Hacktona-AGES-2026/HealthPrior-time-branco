@@ -19,7 +19,7 @@ const ITENS: { id: Pagina; rotulo: string; icone: typeof ListOrdered; tecla: str
   { id: "fila", rotulo: "Fila", icone: ListOrdered, tecla: "1" },
   { id: "inbox", rotulo: "Inbox", icone: Inbox, tecla: "2" },
   { id: "pacientes", rotulo: "Pacientes", icone: UserSearch, tecla: "3" },
-  { id: "analise", rotulo: "Análise geral", icone: BarChart3, tecla: "4" },
+  { id: "analise", rotulo: "Análise", icone: BarChart3, tecla: "4" },
   { id: "swalis", rotulo: "SWALIS", icone: BookOpen, tecla: "5" },
   { id: "pendencias", rotulo: "Pendências", icone: ClipboardList, tecla: "6" },
 ]
@@ -29,7 +29,8 @@ export function AppSidebar() {
   const ir = useStore((s) => s.ir)
   const setAtalhos = useStore((s) => s.setAtalhos)
   const selecionadoId = useStore((s) => s.selecionadoId)
-  const { toggleSidebar, state } = useSidebar()
+  const { toggleSidebar, state, isMobile, setOpenMobile } = useSidebar()
+  const fechar = () => { if (isMobile) setOpenMobile(false) }
   const resolvido = useTema((t) => t.resolvido)
   const setTema = useTema((t) => t.setTema)
   const escuro = resolvido === "dark"
@@ -40,12 +41,12 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" tooltip="HealthPrior" render={<div />} className="cursor-default hover:bg-transparent">
-              <span className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <span className="flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
                 <Activity className="size-4" aria-hidden />
               </span>
               <span className="grid flex-1 text-left leading-tight">
                 <span className="truncate text-sm font-semibold">HealthPrior</span>
-                <span className="truncate text-xs text-muted-foreground">Regulação cirúrgica SUS</span>
+                <span className="truncate text-xs text-muted-foreground">Regulação cirúrgica</span>
               </span>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -57,7 +58,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {ITENS.map((item) => (
                 <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton isActive={pagina === item.id} tooltip={item.rotulo} onClick={() => ir(item.id)}>
+                  <SidebarMenuButton isActive={pagina === item.id} tooltip={item.rotulo} onClick={() => { ir(item.id); fechar() }}>
                     <item.icone aria-hidden />
                     <span>{item.rotulo}</span>
                     {item.id === "pacientes" && selecionadoId && (
@@ -79,15 +80,15 @@ export function AppSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Atalhos (?)" onClick={() => setAtalhos(true)}>
+            <SidebarMenuButton tooltip="Atalhos (?)" onClick={() => { setAtalhos(true); fechar() }}>
               <CircleHelp aria-hidden />
               <span>Atalhos</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="hidden md:block">
             <SidebarMenuButton tooltip={state === "expanded" ? "Recolher menu ([)" : "Expandir menu ([)"} onClick={toggleSidebar}>
               <PanelLeft aria-hidden />
-              <span>Recolher menu</span>
+              <span>Recolher</span>
               <kbd className="ml-auto rounded border bg-muted px-1.5 text-[10px] text-muted-foreground group-data-[collapsible=icon]:hidden">[</kbd>
             </SidebarMenuButton>
           </SidebarMenuItem>

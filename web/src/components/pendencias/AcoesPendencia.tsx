@@ -68,6 +68,7 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
             key={a.resolucao}
             size="sm"
             variant={escolhida === a.resolucao ? "default" : "outline"}
+            className="h-9 sm:h-8"
             aria-pressed={escolhida === a.resolucao}
             disabled={enviando}
             onClick={() => (escolhida === a.resolucao ? cancelar() : setEscolhida(a.resolucao))}
@@ -78,7 +79,7 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
       </div>
 
       {acao && escolhida && (
-        <div className="fx-fade-up mt-3 space-y-2 rounded-lg bg-muted/50 p-3">
+        <div className="fx-fade-up mt-3 space-y-3 border-l-2 border-primary/40 pl-3">
           <p className="text-sm">{acao.dica(p.regra)}</p>
 
           {escolhida === "fundir" && opcoes.length > 1 && (
@@ -113,14 +114,14 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
             />
           </label>
 
-          <div className="flex items-center gap-2">
-            <Button size="sm" onClick={confirmar} disabled={enviando || faltaObservacao}>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button size="sm" className="h-9 sm:h-8" onClick={confirmar} disabled={enviando || faltaObservacao}>
               {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} {acao.resolucao === "confirmar_saida" ? "Confirmar a saída" : `${acao.rotulo}: confirmar`}
             </Button>
-            <Button size="sm" variant="ghost" onClick={cancelar} disabled={enviando}>
+            <Button size="sm" variant="ghost" className="h-9 sm:h-8" onClick={cancelar} disabled={enviando}>
               Cancelar
             </Button>
-            <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
+            <span className="text-xs text-muted-foreground sm:ml-auto">por {usuarioAtual()}</span>
           </div>
         </div>
       )}

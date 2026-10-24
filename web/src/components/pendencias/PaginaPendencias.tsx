@@ -57,14 +57,14 @@ export default function PaginaPendencias() {
             <ClipboardList className="size-4" aria-hidden /> Pendências
           </h2>
           <p className="text-sm text-muted-foreground">
-            O que a equipe administrativa precisa resolver: o motivo, de onde veio a evidência e o que fazer. Pendência <b className="text-foreground">bloqueante</b> tira
+            Motivo, evidência e ação sugerida. Pendência <b className="text-foreground">bloqueante</b> tira
             a solicitação da fila priorizada até alguém confirmar; as demais só alertam.
           </p>
         </header>
 
         <div className="flex flex-wrap items-center gap-2" role="search" aria-label="Filtros de pendências">
           <Select items={ITENS_TIPO} value={tipo} onValueChange={(v) => setTipo((v ?? "todas") as TipoFiltro)}>
-            <SelectTrigger size="sm" className="w-44" aria-label="Filtrar por tipo">
+            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-44" aria-label="Filtrar por tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -76,7 +76,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={ITENS_REGRA} value={regra} onValueChange={(v) => setRegra(v ?? "todas")}>
-            <SelectTrigger size="sm" className="w-64" aria-label="Filtrar por regra">
+            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-64" aria-label="Filtrar por regra">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,7 +88,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={STATUS_PENDENCIA} value={status} onValueChange={(v) => setStatus((v ?? "aberta") as StatusPendencia)}>
-            <SelectTrigger size="sm" className="w-40" aria-label="Filtrar por status">
+            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-40" aria-label="Filtrar por status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -100,11 +100,11 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           {filtrando && (
-            <Button variant="ghost" size="sm" onClick={limpar}>
+            <Button variant="ghost" size="sm" className="h-9 sm:h-8" onClick={limpar}>
               <FilterX aria-hidden /> Limpar
             </Button>
           )}
-          <div className="ml-auto flex items-center gap-2 text-sm text-muted-foreground" aria-live="polite">
+          <div className="flex w-full flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground sm:ml-auto sm:w-auto sm:justify-end" aria-live="polite">
             {estado.tipo === "ok" && (
               <>
                 <span>
@@ -117,7 +117,7 @@ export default function PaginaPendencias() {
                 )}
               </>
             )}
-            <Button variant="outline" size="sm" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 sm:h-8" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw className={cn(estado.tipo === "ok" && estado.atualizando && "animate-spin")} aria-hidden /> Atualizar
             </Button>
           </div>
@@ -153,7 +153,7 @@ function CartaoPendencia({ pendencia: p, aoResolver }: { pendencia: Pendencia; a
         ) : (
           <Badge variant="secondary">Não bloqueante</Badge>
         )}
-        <h3 className="text-sm font-semibold">{p.titulo}</h3>
+        <h3 className="min-w-0 break-words text-sm font-semibold">{p.titulo}</h3>
         <span className="ml-auto text-xs text-muted-foreground tabular-nums">
           {p.pendencia_id} · aberta em {formatarData(p.aberta_em)}
         </span>
@@ -169,7 +169,7 @@ function CartaoPendencia({ pendencia: p, aoResolver }: { pendencia: Pendencia; a
       {p.evidencias.length > 0 && (
         <div className="mt-3">
           <h4 className="mb-1.5 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            {lado ? "Evidências lado a lado" : "Evidência"}
+            {lado ? "Evidências" : "Evidência"}
           </h4>
           <ul className={cn("grid gap-2", lado && "@lg:grid-cols-2")}>
             {p.evidencias.map((e, i) => (
@@ -202,12 +202,12 @@ function Desfecho({ pendencia: p }: { pendencia: Pendencia }) {
 
 function ItemEvidencia({ evidencia: e }: { evidencia: Evidencia }) {
   return (
-    <li className="rounded-lg bg-muted/50 p-2.5 text-sm">
-      <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+    <li className="min-w-0 border-l-2 pl-3 text-sm">
+      <div className="mb-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
         <span className="font-semibold text-foreground">{rotuloFonte(e.fonte)}</span>
-        {e.ref && <span className="font-mono">{e.ref}</span>}
+        {e.ref && <span className="break-all font-mono">{e.ref}</span>}
       </div>
-      <p className="leading-snug">{e.texto}</p>
+      <p className="break-words leading-snug">{e.texto}</p>
     </li>
   )
 }
@@ -231,7 +231,7 @@ function ErroApi({ mensagem, onTentar }: { mensagem: string; onTentar: () => voi
       </p>
       <p className="mt-1 text-muted-foreground">{mensagem}</p>
       <p className="mt-2 text-muted-foreground">
-        Confira se o back está no ar em <code className="rounded bg-muted px-1">{URL_API}</code> (<code className="rounded bg-muted px-1">uvicorn app.main:app</code>, com{" "}
+        Confira se o back está no ar em <code className="break-all rounded bg-muted px-1">{URL_API}</code> (<code className="rounded bg-muted px-1">uvicorn app.main:app</code>, com{" "}
         <code className="rounded bg-muted px-1">HP_USE_MOCKS=false</code> para ver os dados reais) e se a carga foi feita.
       </p>
       <Button variant="outline" size="sm" className="mt-3" onClick={onTentar}>

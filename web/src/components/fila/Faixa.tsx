@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
-import { Crosshair, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
+import { Crosshair, CircleHelp, EyeOff, ZoomIn, ZoomOut } from "lucide-react"
 import { FILA, PACIENTES, PACIENTE_POR_ID, TOTAL_FILA } from "@/data/fila"
 import type { Classe, Paciente } from "@/data/tipos"
 import { COR_STATUS, corClasse } from "@/lib/cores"
@@ -44,11 +44,14 @@ const caminhoArco = (x1: number, x2: number, yArco: number) => {
 
 type Tip = { x: number; paciente?: Paciente; bloco?: Bloco }
 
-export function Faixa() {
+export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
   const versaoDados = useStore((s) => s.versaoDados)
   const POR_SALTO = useMemo(() => [...PACIENTES].sort((a, b) => Math.abs(b.posicao_atual - b.posicao) - Math.abs(a.posicao_atual - a.posicao)), [versaoDados])
-  const ALTURA = useColunas((c) => c.alturaFaixa)
+  const [largura, setLargura] = useState(900)
+  const [ajuda, setAjuda] = useState(false)
+  const alturaStore = useColunas((c) => c.alturaFaixa)
   const setFaixaOculta = useColunas((c) => c.setFaixaOculta)
+  const ALTURA = largura < 480 ? Math.min(alturaStore, 150) : alturaStore
   const TOPO_BARRA = ALTURA - 100
   const BASE_BARRA = TOPO_BARRA + 46
   const Y_ARCO = TOPO_BARRA - SOBRA_DETALHE - 3
@@ -59,7 +62,6 @@ export function Faixa() {
   const setZoom = useStore((s) => s.setZoom)
   const selecionar = useStore((s) => s.selecionar)
   const caixa = useRef<HTMLDivElement>(null)
-  const [largura, setLargura] = useState(900)
   const [tip, setTip] = useState<Tip | null>(null)
   const [arrasto, setArrasto] = useState<{ x0: number; x1: number } | null>(null)
   const inicioArrasto = useRef<number | null>(null)
@@ -290,31 +292,50 @@ export function Faixa() {
   return (
     <div className="rounded-xl bg-muted/40 p-2">
       <div className="mb-1 flex items-center justify-between gap-2 px-1">
-        <div className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">Fila proposta</span> · {TOTAL_FILA} posições · coluna = mix de classes do bloco · linha = salto médio (verde subiu, vermelho desceu) · clique num bloco para ampliar
-        </div>
-        <div className="flex items-center gap-1">
-        <Button size="icon-xs" variant="ghost" className="text-muted-foreground" onClick={() => aplicarZoom(selecionado?.posicao ?? (z0 + z1) / 2, 0.6)} title="Ampliar (+ ou Ctrl+roda)" aria-label="Ampliar a faixa">
-          <ZoomIn aria-hidden />
-        </Button>
-        <Button size="icon-xs" variant="ghost" className="text-muted-foreground" onClick={() => aplicarZoom(selecionado?.posicao ?? (z0 + z1) / 2, 1.6)} title="Reduzir (-)" aria-label="Reduzir a faixa">
-          <ZoomOut aria-hidden />
-        </Button>
-        <Button size="icon-xs" variant="ghost" className="text-muted-foreground" disabled={!selecionado} onClick={centralizar} title="Centralizar no selecionado (C)" aria-label="Centralizar no paciente selecionado">
-          <Crosshair aria-hidden />
-        </Button>
-        {zoom && (
-          <Button size="xs" variant="outline" onClick={() => setZoom(null)} className="fx-pop gap-1">
-            <ZoomOut className="size-3" aria-hidden />
-            Resetar zoom ({zoom[0]}–{zoom[1]})
+        <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+          <span className="truncate">
+            <span className="font-semibold text-foreground">Fila proposta</span> · {TOTAL_FILA} posições
+          </span>
+          <Button
+            size="icon-xs"
+            variant="ghost"
+            className="text-muted-foreground max-md:size-9"
+            onClick={() => setAjuda((v) => !v)}
+            aria-expanded={ajuda}
+            aria-label="Como ler a faixa"
+            title="Como ler a faixa"
+          >
+            <CircleHelp aria-hidden />
           </Button>
-        )}
-        <Button size="xs" variant="ghost" onClick={() => setFaixaOculta(true)} className="gap-1 text-muted-foreground" title="Ocultar a faixa da fila">
-          <EyeOff className="size-3" aria-hidden />
-          Ocultar
-        </Button>
+        </div>
+        <div className="flex shrink-0 items-center gap-0.5" role="group" aria-label="Controles da faixa">
+          <Button size="icon-xs" variant="ghost" className="text-muted-foreground max-md:size-9" onClick={() => aplicarZoom(selecionado?.posicao ?? (z0 + z1) / 2, 0.6)} title="Ampliar (+ ou Ctrl+roda)" aria-label="Ampliar a faixa">
+            <ZoomIn aria-hidden />
+          </Button>
+          <Button size="icon-xs" variant="ghost" className="text-muted-foreground max-md:size-9" onClick={() => aplicarZoom(selecionado?.posicao ?? (z0 + z1) / 2, 1.6)} title="Reduzir (-)" aria-label="Reduzir a faixa">
+            <ZoomOut aria-hidden />
+          </Button>
+          <Button size="icon-xs" variant="ghost" className="text-muted-foreground max-md:size-9" disabled={!selecionado} onClick={centralizar} title="Centralizar no selecionado (C)" aria-label="Centralizar no paciente selecionado">
+            <Crosshair aria-hidden />
+          </Button>
+          {zoom && (
+            <Button size="xs" variant="outline" onClick={() => setZoom(null)} className="fx-pop gap-1 max-md:h-9" aria-label={`Resetar zoom (${zoom[0]} a ${zoom[1]})`}>
+              <ZoomOut className="size-3" aria-hidden />
+              <span className="hidden sm:inline">Resetar zoom ({zoom[0]}–{zoom[1]})</span>
+              <span className="sm:hidden">Resetar</span>
+            </Button>
+          )}
+          <Button size="xs" variant="ghost" onClick={aoOcultar ?? (() => setFaixaOculta(true))} className="gap-1 text-muted-foreground max-md:h-9" title="Ocultar a faixa da fila" aria-label="Ocultar faixa">
+            <EyeOff className="size-3" aria-hidden />
+            <span className="hidden sm:inline">Ocultar</span>
+          </Button>
         </div>
       </div>
+      {ajuda && (
+        <p className="mb-1 px-1 text-xs text-muted-foreground">
+          Coluna = mix de classes do bloco. Linha = salto médio (verde subiu, vermelho desceu). Clique num bloco para ampliar; arraste para selecionar um trecho.
+        </p>
+      )}
       <div ref={caixa} className="relative w-full rounded-lg outline-none select-none focus-visible:ring-2 focus-visible:ring-ring" style={{ height: ALTURA }} tabIndex={0} onKeyDown={aoTeclar} aria-label="Faixa da fila: setas trocam o paciente, + e - dão zoom, C centraliza, Home reseta">
         <svg width={largura} height={ALTURA} role="img" aria-label={`Faixa da fila com ${TOTAL_FILA} posições${selecionado ? `; paciente ${selecionado.id} vai da posição ${selecionado.posicao_atual} para ${selecionado.posicao}` : ""}`} className="block overflow-visible">
           <defs>
@@ -508,7 +529,7 @@ export function Faixa() {
                   <span style={{ color: "var(--sobe)" }}>▲ {tip.bloco.subiram} subiram</span> · <span style={{ color: "var(--desce)" }}>▼ {tip.bloco.desceram} desceram</span>
                 </div>
                 <div className="mt-1 text-muted-foreground tabular-nums">Revisados: {tip.bloco.revisados} de {tip.bloco.total}</div>
-                <div className="mt-1 text-[11px] text-muted-foreground">Clique para ampliar</div>
+                <div className="mt-1 text-xs text-muted-foreground">Clique para ampliar</div>
               </>
             )}
           </div>

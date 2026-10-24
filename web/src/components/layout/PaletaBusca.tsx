@@ -23,9 +23,9 @@ export function PaletaBusca() {
 
   return (
     <CommandDialog open={aberta} onOpenChange={setPaleta} title="Abrir paciente" description="Busque por ID, CID, procedimento, município ou iniciais" showCloseButton={false}>
-      <Command shouldFilter={false}>
-        <CommandInput value={consulta} onValueChange={setConsulta} placeholder="Abrir paciente: ID, CID, procedimento, município..." />
-        <CommandList>
+      <Command shouldFilter={false} className="max-w-full">
+        <CommandInput value={consulta} onValueChange={setConsulta} placeholder="ID, CID, procedimento, município..." />
+        <CommandList className="max-h-[60svh]">
           <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
           <CommandGroup heading={`${resultados.length} resultado${resultados.length === 1 ? "" : "s"}`}>
             {resultados.map((p) => (
@@ -37,10 +37,10 @@ export function PaletaBusca() {
                   setPaleta(false)
                   setConsulta("")
                 }}
-                className="gap-3"
+                className="min-h-10 gap-2 sm:gap-3"
               >
                 <ClasseBadge classe={p.classe} />
-                <span className="w-32 shrink-0 font-semibold tabular-nums">{p.id}</span>
+                <span className="w-24 shrink-0 truncate font-semibold tabular-nums sm:w-32">{p.id}</span>
                 <span className="min-w-0 flex-1 truncate text-muted-foreground">{p.procedimento}</span>
                 <span className="text-xs tabular-nums text-muted-foreground">#{p.posicao}</span>
               </CommandItem>

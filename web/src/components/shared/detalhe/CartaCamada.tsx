@@ -18,10 +18,10 @@ export function CartaCamada({ p }: { p: Paciente }) {
           ))}
         </div>
         <div className="fx-fade-up absolute top-0 -translate-x-1/2 text-center" style={{ left: `${(p.posicao / TOTAL_FILA) * 100}%`, animationDelay: "500ms" }}>
-          <div className="rounded-full bg-foreground px-1.5 text-[10px] font-semibold text-background tabular-nums">#{p.posicao}</div>
+          <div className="rounded-full bg-foreground px-1.5 text-xs font-semibold text-background tabular-nums">#{p.posicao}</div>
           <div className="mx-auto size-1.5 rotate-45 bg-foreground" />
         </div>
-        <div className="mt-1 flex text-[11px] text-muted-foreground">
+        <div className="mt-1 flex text-xs text-muted-foreground">
           {TAMANHOS.map((t) => (
             <div key={t.camada} style={{ width: `${(t.n / TOTAL_FILA) * 100}%` }} className="truncate tabular-nums">
               {t.camada} · {NOME_CAMADA[t.camada]} ({t.n})

@@ -61,14 +61,14 @@ export function NovoEvento({ solicitacaoId }: { solicitacaoId: string }) {
 
   return (
     <>
-      <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={() => setAberto(true)}>
+      <Button variant="outline" size="sm" className="h-9 w-full gap-1.5 sm:h-8" onClick={() => setAberto(true)}>
         <CalendarPlus aria-hidden /> Registrar evento
       </Button>
       <Dialog open={aberto} onOpenChange={setAberto}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Novo evento · {solicitacaoId}</DialogTitle>
-            <DialogDescription>O sistema reavalia o paciente; mudança de classe vai ao inbox para um profissional aprovar.</DialogDescription>
+            <DialogDescription>O sistema reavalia o paciente. Mudança de classe vai ao inbox do regulador.</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm">
             <label className="block space-y-1 text-xs text-muted-foreground">

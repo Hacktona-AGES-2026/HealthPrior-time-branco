@@ -41,11 +41,9 @@ export function HistoricoPaciente({ p }: { p: Paciente }) {
 
   return (
     <section className="fx-fade-up rounded-xl bg-muted/40 p-3" aria-label="Eventos do paciente">
-      <h3 className="mb-3 flex items-center gap-1.5 text-sm font-semibold">
+      <h3 className="mb-3 flex flex-wrap items-center gap-1.5 text-sm font-semibold">
         <History className="size-4" aria-hidden /> Eventos do paciente
-        <span className="text-xs font-normal text-muted-foreground">
-          {p.eventos.length} registrados · {p.eventos.filter((e) => e.historico).length} antes da entrada na fila (histórico, não contam como piora)
-        </span>
+        <span className="text-xs font-normal text-muted-foreground tabular-nums">{p.eventos.length} registrados</span>
       </h3>
 
       {p.eventos.length === 0 ? (
@@ -64,7 +62,7 @@ export function HistoricoPaciente({ p }: { p: Paciente }) {
                     type="button"
                     aria-pressed={ligado}
                     onClick={() => alternar(t)}
-                    className={cn("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", ligado ? "bg-primary/15 text-foreground" : "bg-background/60 text-muted-foreground hover:text-foreground")}
+                    className={cn("inline-flex min-h-9 items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium sm:min-h-0 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring", ligado ? "bg-primary/15 text-foreground" : "bg-background/60 text-muted-foreground hover:text-foreground")}
                   >
                     <Icone className="size-3" aria-hidden />
                     {ROTULO_EVENTO_TIPO[t]}
@@ -73,12 +71,13 @@ export function HistoricoPaciente({ p }: { p: Paciente }) {
                 )
               })}
             {ativos.size > 0 && (
-              <Button size="xs" variant="ghost" onClick={() => setAtivos(new Set())}>
+              <Button size="sm" variant="ghost" className="h-9 sm:h-8" onClick={() => setAtivos(new Set())}>
                 Limpar filtros
               </Button>
             )}
           </div>
 
+          <div className="max-h-[26rem] overflow-y-auto overscroll-contain pr-1 sm:max-h-[32rem]">
           <ol className="relative space-y-3 pl-1">
             <span className="fx-grow-y absolute top-2 bottom-2 left-[15px] w-px bg-border" style={{ transformOrigin: "center top", animationDuration: "1.1s" }} aria-hidden />
             {visiveis.map((e, i) => {
@@ -97,18 +96,19 @@ export function HistoricoPaciente({ p }: { p: Paciente }) {
                       </time>
                       {e.resultado && <Badge variant="secondary" className="px-1.5 font-normal">{e.resultado.replaceAll("_", " ")}</Badge>}
                       {valor && <span className="font-medium tabular-nums">{valor}</span>}
-                      {e.historico && <Badge variant="outline" className="px-1.5 font-normal text-muted-foreground">antes da entrada</Badge>}
+                      {e.historico && <Badge variant="outline" title="Histórico: não conta como piora" className="px-1.5 font-normal text-muted-foreground">antes da entrada</Badge>}
                       {e.origem && <span className="text-muted-foreground">· {e.origem}</span>}
                     </div>
-                    <p className="text-sm leading-snug">{e.descricao}</p>
+                    <p className="break-words text-sm leading-snug">{e.descricao}</p>
                   </div>
                 </li>
               )
             })}
           </ol>
+          </div>
 
           {filtrados.length > LIMITE && (
-            <Button variant="outline" size="sm" className="mt-3 w-full" onClick={() => setTudo((v) => !v)}>
+            <Button variant="outline" size="sm" className="mt-3 h-9 w-full sm:h-8" onClick={() => setTudo((v) => !v)}>
               {tudo ? "Mostrar menos" : `Ver tudo (${filtrados.length})`}
             </Button>
           )}
@@ -117,7 +117,7 @@ export function HistoricoPaciente({ p }: { p: Paciente }) {
 
       {p.outras.length > 0 && (
         <div className="mt-4 border-t border-border/60 pt-3">
-          <h4 className="mb-1.5 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <h4 className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <Link2 className="size-3" aria-hidden /> Outras solicitações do mesmo paciente
           </h4>
           <ul className="space-y-1">

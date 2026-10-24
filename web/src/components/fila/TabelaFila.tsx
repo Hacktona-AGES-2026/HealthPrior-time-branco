@@ -55,8 +55,8 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
   const todos = ids.length > 0 && ids.every((id) => marcados.includes(id))
   const algum = !todos && ids.some((id) => marcados.includes(id))
   return (
-    <div className="@container">
-      <div className="flex items-center gap-2 border-b border-border/60 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground" role="row">
+    <div className="@container min-w-0">
+      <div className="flex items-center gap-2 overflow-hidden border-b border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground" role="row">
         <input
           type="checkbox"
           checked={todos}
@@ -65,7 +65,7 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
           }}
           onChange={() => marcarVarios(ids, !todos)}
           aria-label="Selecionar todas as solicitações listadas"
-          className="size-3.5 shrink-0 cursor-pointer accent-[var(--primary)]"
+          className="relative size-3.5 shrink-0 cursor-pointer accent-[var(--primary)] max-md:size-5"
         />
         {table.getHeaderGroups()[0].headers.map((h) => {
           const ordenado = h.column.getIsSorted()
@@ -73,7 +73,7 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
           return (
             <div key={h.id} className="relative" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
               {podeOrdenar ? (
-                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex items-center gap-1 rounded px-0.5 uppercase hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+                <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex min-h-6 items-center gap-1 rounded px-0.5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
                   {flexRender(h.column.columnDef.header, h.getContext())}
                   {ordenado === "asc" ? <ArrowUp className="size-3" /> : ordenado === "desc" ? <ArrowDown className="size-3" /> : <ArrowUpDown className="size-3 opacity-50" />}
                 </button>

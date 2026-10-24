@@ -36,23 +36,38 @@ export function BarraLote() {
   }
 
   return (
-    <div className="fx-expand flex flex-wrap items-center gap-2 rounded-xl bg-primary/8 px-3 py-1.5 text-xs" role="region" aria-label="Ações em lote">
+    <div className="fx-expand flex flex-wrap items-center gap-2 rounded-lg bg-primary/8 px-3 py-1.5 text-xs" role="region" aria-label="Ações em lote">
       {marcados.length > 0 && (
         <>
           <span className="font-medium tabular-nums">{marcados.length} selecionadas</span>
-          <Button size="xs" variant={confirmando === "marcados" ? "default" : "outline"} className="gap-1" disabled={marcadosPendentes.length === 0} onClick={() => executar("marcados")}>
+          <Button
+            size="xs"
+            variant={confirmando === "marcados" ? "default" : "outline"}
+            className="h-8 gap-1 sm:h-6"
+            disabled={marcadosPendentes.length === 0}
+            onClick={() => executar("marcados")}
+            aria-label={confirmando === "marcados" ? `Confirmar aprovar ${marcadosPendentes.length}` : `Aprovar ${marcadosPendentes.length} sugeridas`}
+            title="Aprovar sugeridas"
+          >
             <CheckCheck aria-hidden />
-            {confirmando === "marcados" ? `Confirmar aprovar ${marcadosPendentes.length}?` : `Aprovar sugeridas (${marcadosPendentes.length})`}
+            {confirmando === "marcados" ? `Confirmar ${marcadosPendentes.length}?` : <><span className="hidden sm:inline">Aprovar sugeridas </span>({marcadosPendentes.length})</>}
           </Button>
-          <Button size="xs" variant="ghost" className="gap-1" onClick={limpar}>
-            <X aria-hidden /> Limpar seleção
+          <Button size="xs" variant="ghost" className="h-8 gap-1 sm:h-6" onClick={limpar} aria-label="Limpar seleção" title="Limpar seleção">
+            <X aria-hidden /> <span className="hidden sm:inline">Limpar seleção</span>
           </Button>
         </>
       )}
       {mostrarFiltrados && (
-        <Button size="xs" variant={confirmando === "filtrados" ? "default" : "outline"} className="ml-auto gap-1" onClick={() => executar("filtrados")}>
+        <Button
+          size="xs"
+          variant={confirmando === "filtrados" ? "default" : "outline"}
+          className="ml-auto h-8 gap-1 sm:h-6"
+          onClick={() => executar("filtrados")}
+          aria-label={confirmando === "filtrados" ? `Confirmar aprovar ${pendentesFiltrados.length} do filtro` : `Aprovar ${pendentesFiltrados.length} pendentes do filtro`}
+          title="Aprovar pendentes do filtro"
+        >
           <CheckCheck aria-hidden />
-          {confirmando === "filtrados" ? `Confirmar aprovar ${pendentesFiltrados.length} do filtro?` : `Aprovar pendentes do filtro (${pendentesFiltrados.length})`}
+          {confirmando === "filtrados" ? `Confirmar ${pendentesFiltrados.length}?` : <><span className="hidden sm:inline">Aprovar pendentes do filtro </span>({pendentesFiltrados.length})</>}
         </Button>
       )}
     </div>

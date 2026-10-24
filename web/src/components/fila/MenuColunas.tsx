@@ -29,7 +29,7 @@ export function MenuColunas() {
   return (
     <div ref={caixa} className="relative">
       <Button size="sm" variant="outline" className="gap-1.5" aria-expanded={aberto} onClick={() => setAberto((v) => !v)}>
-        <Columns3 aria-hidden /> Colunas{escondidas > 0 && <span className="rounded bg-primary/15 px-1 text-[10px] tabular-nums">-{escondidas}</span>}
+        <Columns3 aria-hidden /> Colunas{escondidas > 0 && <span className="rounded bg-primary/15 px-1 text-xs tabular-nums">-{escondidas}</span>}
       </Button>
       {aberto && (
         <div className="fx-expand absolute right-0 z-40 mt-1 w-56 rounded-xl border bg-popover p-2 shadow-lg" role="menu">

@@ -22,7 +22,7 @@ export function ShortcutsDialog() {
   const setAtalhos = useStore((s) => s.setAtalhos)
   return (
     <Dialog open={aberto} onOpenChange={setAtalhos}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[85svh] max-w-[calc(100%-1.5rem)] gap-3 overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Atalhos de teclado</DialogTitle>
           <DialogDescription>Ignorados enquanto o foco estiver em um campo de texto.</DialogDescription>
@@ -30,8 +30,8 @@ export function ShortcutsDialog() {
         <ul className="divide-y">
           {ATALHOS.map(([tecla, texto]) => (
             <li key={tecla} className="flex items-center justify-between gap-4 py-2 text-sm">
-              <span>{texto}</span>
-              <kbd className="min-w-8 rounded border bg-muted px-2 py-0.5 text-center text-xs font-semibold">{tecla}</kbd>
+              <span className="min-w-0">{texto}</span>
+              <kbd className="min-w-8 shrink-0 rounded border bg-muted px-2 py-0.5 text-center text-xs font-semibold">{tecla}</kbd>
             </li>
           ))}
         </ul>

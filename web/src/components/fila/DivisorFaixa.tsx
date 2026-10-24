@@ -11,7 +11,7 @@ export function DivisorFaixa() {
       aria-orientation="horizontal"
       aria-label="Arraste para cima para dar mais espaço à tabela (duplo clique restaura)"
       tabIndex={0}
-      className="group/dv flex h-3 cursor-row-resize touch-none items-center justify-center outline-none"
+      className="group/dv flex h-3 max-md:hidden cursor-row-resize touch-none items-center justify-center outline-none"
       onDoubleClick={() => setAltura(ALTURA_FAIXA_PADRAO)}
       onPointerDown={(e) => {
         origem.current = { y: e.clientY, h: altura }

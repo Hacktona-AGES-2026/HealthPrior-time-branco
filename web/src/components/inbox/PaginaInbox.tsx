@@ -2,7 +2,6 @@ import { Inbox } from "lucide-react"
 import { PACIENTES } from "@/data/fila"
 import { ClasseBadge } from "@/components/shared/Basicos"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CLASSES } from "@/lib/cores"
 import { useStore } from "@/store/useStore"
 
@@ -13,47 +12,39 @@ export default function PaginaInbox() {
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Inbox className="size-4 text-muted-foreground" aria-hidden />
-        <h2 className="text-sm font-semibold">Inbox do regulador</h2>
-        <span className="text-xs text-muted-foreground tabular-nums">{itens.length} propostas aguardando decisão</span>
-      </div>
-      {itens.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma proposta pendente.</p>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Solicitação</TableHead>
-              <TableHead>Procedimento</TableHead>
-              <TableHead>Classe atual → sugerida</TableHead>
-              <TableHead>Posição</TableHead>
-              <TableHead>Motivo principal</TableHead>
-              <TableHead />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+      <div className="mx-auto max-w-5xl space-y-3">
+        <div className="flex items-center gap-2">
+          <Inbox className="size-4 text-muted-foreground" aria-hidden />
+          <h2 className="text-sm font-semibold">Inbox do regulador</h2>
+          <span className="text-xs text-muted-foreground tabular-nums">{itens.length} propostas aguardando decisão</span>
+        </div>
+        {itens.length === 0 ? (
+          <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">Nenhuma proposta pendente.</p>
+        ) : (
+          <ul className="divide-y rounded-lg border" aria-label="Propostas aguardando decisão">
             {itens.map((p) => (
-              <TableRow key={p.id}>
-                <TableCell className="font-medium tabular-nums">{p.id}</TableCell>
-                <TableCell className="max-w-56 truncate">{p.procedimento}</TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center gap-1.5">
-                    {p.classe_vigente ? <ClasseBadge classe={p.classe_vigente} /> : <span className="text-xs text-muted-foreground">sem classe</span>} → <ClasseBadge classe={p.classe} />
-                  </span>
-                </TableCell>
-                <TableCell className="tabular-nums">{p.posicao}</TableCell>
-                <TableCell className="max-w-96 truncate text-xs text-muted-foreground">{p.inbox?.motivos[0] ?? "—"}</TableCell>
-                <TableCell>
-                  <Button size="xs" variant="outline" onClick={() => abrirNaFila(p.id)}>
-                    Revisar
-                  </Button>
-                </TableCell>
-              </TableRow>
+              <li key={p.id} className="flex items-center gap-3 p-3">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                    <span className="font-semibold tabular-nums">{p.id}</span>
+                    <span className="inline-flex items-center gap-1.5">
+                      {p.classe_vigente ? <ClasseBadge classe={p.classe_vigente} /> : <span className="text-xs text-muted-foreground">sem classe</span>}
+                      <span aria-hidden>→</span>
+                      <ClasseBadge classe={p.classe} />
+                    </span>
+                    <span className="text-xs text-muted-foreground tabular-nums">posição {p.posicao}</span>
+                  </div>
+                  <p className="break-words text-sm">{p.procedimento}</p>
+                  <p className="line-clamp-2 break-words text-xs text-muted-foreground">{p.inbox?.motivos[0] ?? "—"}</p>
+                </div>
+                <Button size="sm" variant="outline" className="h-9 shrink-0 sm:h-8" onClick={() => abrirNaFila(p.id)} aria-label={`Revisar ${p.id}`}>
+                  Revisar
+                </Button>
+              </li>
             ))}
-          </TableBody>
-        </Table>
-      )}
+          </ul>
+        )}
+      </div>
     </div>
   )
 }

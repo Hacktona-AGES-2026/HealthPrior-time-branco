@@ -72,7 +72,7 @@ export default function PaginaPacientes() {
                   {resultados.map((p, i) => (
                     <CommandItem key={p.id} value={p.id} onSelect={() => escolher(p)} className="fx-fade-up gap-3 py-2" style={{ animationDelay: `${i * 25}ms` }}>
                       <ClasseBadge classe={p.classe} />
-                      <span className="w-32 shrink-0 font-semibold tabular-nums">{p.id}</span>
+                      <span className="shrink-0 font-semibold tabular-nums sm:w-28">{p.id}</span>
                       <span className="min-w-0 flex-1 truncate">
                         <span className="text-muted-foreground">{p.iniciais} · </span>
                         {p.procedimento}
@@ -101,21 +101,21 @@ export default function PaginaPacientes() {
             <div className="fx-fade-up flex flex-wrap items-center gap-3 rounded-xl bg-muted/40 p-3">
               <div className="min-w-0 flex-1">
                 <div className="text-lg font-bold tabular-nums">{paciente.id}</div>
-                <div className="truncate text-sm text-muted-foreground">
+                <div className="break-words text-sm text-muted-foreground">
                   {paciente.iniciais} · {paciente.idade} anos · {paciente.procedimento}
                 </div>
               </div>
               <div className="no-print flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="icon-sm" onClick={() => moverNaFicha(-1)} disabled={paciente.posicao <= 1} aria-label="Paciente anterior na fila" title="Anterior na fila">
+                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(-1)} disabled={paciente.posicao <= 1} aria-label="Paciente anterior na fila" title="Anterior na fila">
                   <ChevronLeft aria-hidden />
                 </Button>
-                <Button variant="outline" size="icon-sm" onClick={() => moverNaFicha(1)} aria-label="Próximo paciente na fila" title="Próximo na fila">
+                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(1)} aria-label="Próximo paciente na fila" title="Próximo na fila">
                   <ChevronRight aria-hidden />
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => abrirNaFila(paciente.id)}>
+                <Button variant="outline" size="sm" className="h-9 gap-1.5 sm:h-8" onClick={() => abrirNaFila(paciente.id)}>
                   <ExternalLink aria-hidden /> Voltar à fila
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.print()}>
+                <Button variant="outline" size="sm" className="h-9 gap-1.5 sm:h-8" onClick={() => window.print()}>
                   <Printer aria-hidden /> Imprimir
                 </Button>
               </div>
@@ -124,8 +124,8 @@ export default function PaginaPacientes() {
               </div>
             </div>
 
-            <section className="fx-fade-up @container overflow-hidden rounded-xl bg-muted/40" aria-label="Linha da tabela">
-              <div className="flex items-center gap-2 border-b border-border/60 px-3 py-1.5 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+            <section className="fx-fade-up @container overflow-x-auto rounded-xl bg-muted/40" aria-label="Linha da tabela">
+              <div className="flex min-w-max items-center gap-2 border-b border-border/60 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {COLUNAS.map((c) => (
                   <div key={c.id} className="relative" style={estiloColuna(c.id, larguras, ocultas)}>
                     {c.rotulo}
@@ -133,7 +133,7 @@ export default function PaginaPacientes() {
                   </div>
                 ))}
               </div>
-              <div className="relative flex h-11 items-center gap-2 overflow-hidden bg-primary/5 px-3 text-sm shadow-[inset_2px_0_0_var(--primary)]">
+              <div className="relative flex h-11 items-center gap-2 min-w-max bg-primary/5 px-3 text-sm shadow-[inset_2px_0_0_var(--primary)]">
                 <LinhaResumo paciente={paciente} decisao={decisoes[paciente.id]} selecionado />
               </div>
             </section>

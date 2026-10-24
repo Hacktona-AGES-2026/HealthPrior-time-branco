@@ -1,6 +1,6 @@
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import { Bar, BarChart, CartesianGrid, Cell, Legend, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { CheckCheck, Layers, Siren, TimerOff, type LucideIcon } from "lucide-react"
+import { ChevronDown, CheckCheck, Layers, Siren, TimerOff, type LucideIcon } from "lucide-react"
 import { ESPECIALIDADES, PACIENTES, TOTAL_FILA } from "@/data/fila"
 import { CLASSES, NOME_CAMADA, corClasse, corPrazo } from "@/lib/cores"
 import { usarContagem } from "@/lib/motion"
@@ -21,7 +21,7 @@ function Resumo({ icone: Icone, rotulo, valor, sufixo = "", cor, detalhe, indice
           {sufixo}
         </div>
         <div className="mt-1 text-xs font-medium">{rotulo}</div>
-        <div className="truncate text-[11px] text-muted-foreground">{detalhe}</div>
+        <div className="truncate text-xs text-muted-foreground">{detalhe}</div>
       </div>
     </button>
   )
@@ -49,11 +49,15 @@ const BINS_POSICAO: [string, number, number][] = [
 
 const grupoAlerta = (a: string) => (a.startsWith("HbA1c") ? "HbA1c acima de 8,5%" : a)
 
+// Rótulos de eixo inclinados para caberem na largura do cartão no mobile.
+const ANGULO_EIXO = { angle: -35, textAnchor: "end" as const, height: 56 }
+
 export default function PaginaAnalise() {
   const decisoes = useStore((s) => s.decisoes)
   const abrirNaFila = useStore((s) => s.abrirNaFila)
   const setFiltros = useStore((s) => s.setFiltros)
   const ir = useStore((s) => s.ir)
+  const [maisAberto, setMaisAberto] = useState(false)
 
   const dados = useMemo(() => {
     const prioridades = [
@@ -110,173 +114,215 @@ export default function PaginaAnalise() {
   const corPrioridade = { alta: "var(--cls-a1)", media: "var(--cls-b)", baixa: "var(--cls-c)", vazia: "var(--muted-foreground)" }
   const corCamada = { c1: "var(--cls-a2)", c2: "var(--cls-b)", c3: "var(--cls-d)" }
 
+  const cartaoPrioridade = (
+    <CartaoGrafico titulo="Prioridade manual × classe sugerida" descricao="Cadastro hoje vs. classe do SWALIS">
+      <div className="h-48 sm:h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dados.porClasse} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="classe" tick={{ fontSize: 12, fontWeight: 600, fill: "var(--foreground)" }} stroke="var(--border)" />
+            <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+            <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+            {dados.prioridades.map(([chave, rotulo], i) => (
+              <Bar key={chave} name={rotulo} dataKey={chave} stackId="p" fill={corPrioridade[chave]} fillOpacity={0.85} animationDuration={900} animationBegin={i * 120} />
+            ))}
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </CartaoGrafico>
+  )
+
+  const cartaoHistograma = (
+    <CartaoGrafico titulo="Histograma do % do prazo consumido" descricao="Acima de 100% são vencidos">
+      <div className="h-48 sm:h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dados.bins} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="faixa" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} {...ANGULO_EIXO} />
+            <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+            <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
+            <ReferenceLine x="100–200%" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
+            <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={1000}>
+              {dados.bins.map((b) => (
+                <Cell key={b.faixa} fill={b.cor} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </CartaoGrafico>
+  )
+
+  const cartaoPosicao = (
+    <CartaoGrafico titulo="Mudança de posição: atual → proposta" descricao="Quantas posições cada solicitação sobe ou desce">
+      <div className="h-48 sm:h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dados.posicoes} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="faixa" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} {...ANGULO_EIXO} />
+            <YAxis tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+            <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
+            <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={900}>
+              {dados.posicoes.map((b) => (
+                <Cell key={b.faixa} fill={b.faixa === "igual" ? "var(--muted-foreground)" : b.sobe ? "var(--sobe)" : "var(--desce)"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </CartaoGrafico>
+  )
+
+  const cartaoEsperas = (
+    <CartaoGrafico titulo="10 maiores esperas" descricao="Clique para abrir na fila">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Pos.</TableHead>
+            <TableHead>Caso</TableHead>
+            <TableHead>Camada</TableHead>
+            <TableHead className="text-right">Dias</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {dados.esperas.map((p, i) => (
+            <TableRow key={p.id} className="fx-fade-up cursor-pointer" style={{ animationDelay: `${i * 45}ms` }} onClick={() => abrirNaFila(p.id)}>
+              <TableCell className="tabular-nums">#{p.posicao}</TableCell>
+              <TableCell>
+                <button type="button" className="text-left outline-none focus-visible:underline" onClick={() => abrirNaFila(p.id)}>
+                  <div className="font-semibold tabular-nums">{p.id}</div>
+                  <div className="max-w-40 truncate text-xs text-muted-foreground sm:max-w-52">{p.procedimento}</div>
+                </button>
+              </TableCell>
+              <TableCell>
+                <CamadaBadge camada={p.camada} />
+              </TableCell>
+              <TableCell className="text-right font-semibold tabular-nums">{p.dias_em_fila.toLocaleString("pt-BR")}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </CartaoGrafico>
+  )
+
+  const cartaoCamadas = (
+    <CartaoGrafico titulo="Camadas por especialidade" descricao="Solicitações de cada especialidade por camada">
+      <div className="h-72 sm:h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={dados.porEsp} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 12, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
+            <YAxis type="category" dataKey="especialidade" width={150} interval={0} tick={{ fontSize: 12, fill: "var(--foreground)" }} stroke="none" />
+            <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
+            <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
+            <Bar name={`1 · ${NOME_CAMADA[1]}`} dataKey="c1" stackId="c" fill={corCamada.c1} animationDuration={900} />
+            <Bar name={`2 · ${NOME_CAMADA[2]}`} dataKey="c2" stackId="c" fill={corCamada.c2} animationDuration={900} animationBegin={150} />
+            <Bar name={`3 · ${NOME_CAMADA[3]}`} dataKey="c3" stackId="c" fill={corCamada.c3} animationDuration={900} animationBegin={300} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </CartaoGrafico>
+  )
+
+  const cartaoMapa = (
+    <CartaoGrafico titulo="Mapa de calor: especialidade × classe" descricao="Número de solicitações por célula">
+      <div className="overflow-x-auto">
+        <table className="w-full border-separate border-spacing-1 text-xs">
+          <thead>
+            <tr>
+              <th />
+              {CLASSES.map((c) => (
+                <th key={c} className="pb-1">
+                  <ClasseBadge classe={c} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {dados.matriz.map((linha, li) => (
+              <tr key={linha.especialidade}>
+                <th className="pr-2 text-left font-medium whitespace-nowrap">{linha.especialidade}</th>
+                {linha.celulas.map((n, ci) => (
+                  <td
+                    key={ci}
+                    className={cn("fx-pop h-7 rounded text-center font-semibold tabular-nums", n === 0 && "text-muted-foreground/60")}
+                    style={{
+                      animationDelay: `${(li * 5 + ci) * 20}ms`,
+                      background: n === 0 ? "var(--muted)" : `color-mix(in oklab, ${corClasse(CLASSES[ci])} ${Math.round(18 + (n / dados.maxCelula) * 60)}%, transparent)`,
+                    }}
+                    title={`${linha.especialidade} · ${CLASSES[ci]}: ${n}`}
+                  >
+                    {n}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </CartaoGrafico>
+  )
+
+  const cartaoAlertas = (
+    <CartaoGrafico titulo="Alertas de dados" descricao="Inconsistências do cadastro · clique para filtrar">
+      <ul className="space-y-1.5">
+        {dados.alertas.map(([alerta, n], i) => (
+          <li key={alerta}>
+            <button type="button" onClick={() => filtrarEIr({ alertas: true })} className="group w-full rounded-md p-1 text-left outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
+              <div className="mb-0.5 flex items-baseline justify-between gap-2 text-xs">
+                <span>{alerta}</span>
+                <span className="font-semibold tabular-nums">{n}</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <div className="fx-grow-x h-full rounded-full bg-[var(--prazo-limite)]" style={{ width: `${(n / dados.alertas[0][1]) * 100}%`, animationDelay: `${i * 90}ms` }} />
+              </div>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </CartaoGrafico>
+  )
+
   return (
     <div className="min-h-0 flex-1 overflow-y-auto">
-      <div className="@container mx-auto max-w-7xl space-y-4 p-4">
+      <div className="@container mx-auto max-w-7xl space-y-5 p-4">
         <div className="grid grid-cols-1 gap-3 @lg:grid-cols-2 @4xl:grid-cols-4">
-          <Resumo indice={0} icone={Layers} rotulo="Camada 1 · oncológicos" valor={oncologicos} cor="var(--cls-a2-fg)" detalhe="CID iniciado por C, sempre no topo" aoClicar={() => filtrarEIr({ camada: "1" })} />
+          <Resumo indice={0} icone={Layers} rotulo="Camada 1 · oncológicos" valor={oncologicos} cor="var(--cls-a2-fg)" detalhe="CID iniciado por C" aoClicar={() => filtrarEIr({ camada: "1" })} />
           <Resumo indice={1} icone={Siren} rotulo="Camada 2 · urgentes" valor={urgentes} cor="var(--cls-b-fg)" detalhe="Sinal clínico de urgência" aoClicar={() => filtrarEIr({ camada: "2" })} />
           <Resumo indice={2} icone={TimerOff} rotulo="Vencidos (>100% do prazo)" valor={vencidos} cor="var(--prazo-vencido)" detalhe={`de ${TOTAL_FILA} na fila`} aoClicar={() => filtrarEIr({ vencidos: true })} />
           <Resumo indice={3} icone={CheckCheck} rotulo="Revisados" valor={revisados} cor="var(--sobe)" detalhe={`${aprovados} aprovados · ${editados} editados · ${TOTAL_FILA - revisados} pendentes`} aoClicar={() => filtrarEIr({ status: "revisados" })} />
         </div>
 
-        <div className="grid gap-3 @3xl:grid-cols-2">
-          <CartaoGrafico titulo="Prioridade manual × classe sugerida" descricao="Quem hoje é 'alta' ou 'baixa' no cadastro e onde cai na classe do SWALIS">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.porClasse} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="classe" tick={{ fontSize: 12, fontWeight: 600, fill: "var(--foreground)" }} stroke="var(--border)" />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                  {dados.prioridades.map(([chave, rotulo], i) => (
-                    <Bar key={chave} name={rotulo} dataKey={chave} stackId="p" fill={corPrioridade[chave]} fillOpacity={0.85} animationDuration={900} animationBegin={i * 120} />
-                  ))}
-                </BarChart>
-              </ResponsiveContainer>
+        <section aria-label="Resumo das análises">
+          <h2 className="mb-2 text-sm font-semibold">Resumo</h2>
+          <div className="grid gap-3 md:grid-cols-2">
+            {cartaoPrioridade}
+            {cartaoPosicao}
+            {cartaoHistograma}
+            {cartaoEsperas}
+          </div>
+        </section>
+
+        <section aria-label="Mais análises" className="space-y-2">
+          <button
+            type="button"
+            aria-expanded={maisAberto}
+            aria-controls={maisAberto ? "mais-analises" : undefined}
+            onClick={() => setMaisAberto((v) => !v)}
+            className="flex w-full items-center justify-between gap-2 rounded-xl bg-muted/40 p-3 text-left text-sm font-semibold outline-none transition-colors hover:bg-muted/70 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            Mais análises
+            <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", maisAberto && "rotate-180")} aria-hidden />
+          </button>
+          {maisAberto && (
+            <div id="mais-analises" className="grid gap-3 md:grid-cols-2">
+              {cartaoCamadas}
+              {cartaoMapa}
+              {cartaoAlertas}
             </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Histograma do % do prazo consumido" descricao="Faixas do SWALIS e, depois de 100%, os vencidos em escala crescente">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.bins} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-                  <ReferenceLine x="100–200%" stroke="var(--prazo-vencido)" strokeDasharray="3 3" />
-                  <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={1000}>
-                    {dados.bins.map((b) => (
-                      <Cell key={b.faixa} fill={b.cor} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Mudança de posição: atual → proposta" descricao="Atual = prioridade manual + data de entrada · proposta = camadas + score">
-            <div className="h-64">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.posicoes} margin={{ top: 12, right: 8, bottom: 0, left: -6 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="faixa" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} stroke="var(--border)" interval={0} />
-                  <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} formatter={(v) => [v, "Solicitações"]} />
-                  <Bar dataKey="n" radius={[4, 4, 0, 0]} animationDuration={900}>
-                    {dados.posicoes.map((b) => (
-                      <Cell key={b.faixa} fill={b.faixa === "igual" ? "var(--muted-foreground)" : b.sobe ? "var(--sobe)" : "var(--desce)"} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Camadas por especialidade" descricao="Quantas solicitações de cada especialidade caem em cada camada">
-            <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dados.porEsp} layout="vertical" margin={{ top: 0, right: 12, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} stroke="var(--border)" />
-                  <YAxis type="category" dataKey="especialidade" width={150} interval={0} tick={{ fontSize: 10.5, fill: "var(--foreground)" }} stroke="none" />
-                  <Tooltip cursor={{ fill: "var(--muted)", fillOpacity: 0.5 }} />
-                  <Legend iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-                  <Bar name={`1 · ${NOME_CAMADA[1]}`} dataKey="c1" stackId="c" fill={corCamada.c1} animationDuration={900} />
-                  <Bar name={`2 · ${NOME_CAMADA[2]}`} dataKey="c2" stackId="c" fill={corCamada.c2} animationDuration={900} animationBegin={150} />
-                  <Bar name={`3 · ${NOME_CAMADA[3]}`} dataKey="c3" stackId="c" fill={corCamada.c3} animationDuration={900} animationBegin={300} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Mapa de calor: especialidade × classe" descricao="Número de solicitações em cada célula">
-            <div className="overflow-x-auto">
-              <table className="w-full border-separate border-spacing-1 text-xs">
-                <thead>
-                  <tr>
-                    <th />
-                    {CLASSES.map((c) => (
-                      <th key={c} className="pb-1">
-                        <ClasseBadge classe={c} />
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {dados.matriz.map((linha, li) => (
-                    <tr key={linha.especialidade}>
-                      <th className="pr-2 text-left font-medium whitespace-nowrap">{linha.especialidade}</th>
-                      {linha.celulas.map((n, ci) => (
-                        <td
-                          key={ci}
-                          className={cn("fx-pop h-7 rounded text-center font-semibold tabular-nums", n === 0 && "text-muted-foreground/60")}
-                          style={{
-                            animationDelay: `${(li * 5 + ci) * 20}ms`,
-                            background: n === 0 ? "var(--muted)" : `color-mix(in oklab, ${corClasse(CLASSES[ci])} ${Math.round(18 + (n / dados.maxCelula) * 60)}%, transparent)`,
-                          }}
-                          title={`${linha.especialidade} · ${CLASSES[ci]}: ${n}`}
-                        >
-                          {n}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="Alertas de dados" descricao="Inconsistências do cadastro e dados faltando · clique para filtrar a fila">
-            <ul className="space-y-1.5">
-              {dados.alertas.map(([alerta, n], i) => (
-                <li key={alerta}>
-                  <button type="button" onClick={() => filtrarEIr({ alertas: true })} className="group w-full rounded-md p-1 text-left outline-none hover:bg-muted/60 focus-visible:ring-2 focus-visible:ring-ring">
-                    <div className="mb-0.5 flex items-baseline justify-between gap-2 text-xs">
-                      <span>{alerta}</span>
-                      <span className="font-semibold tabular-nums">{n}</span>
-                    </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                      <div className="fx-grow-x h-full rounded-full bg-[var(--prazo-limite)]" style={{ width: `${(n / dados.alertas[0][1]) * 100}%`, animationDelay: `${i * 90}ms` }} />
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </CartaoGrafico>
-
-          <CartaoGrafico titulo="10 maiores esperas" descricao="Clique para abrir o paciente na fila">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Pos.</TableHead>
-                  <TableHead>Caso</TableHead>
-                  <TableHead>Camada</TableHead>
-                  <TableHead className="text-right">Dias</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {dados.esperas.map((p, i) => (
-                  <TableRow key={p.id} className="fx-fade-up cursor-pointer" style={{ animationDelay: `${i * 45}ms` }} onClick={() => abrirNaFila(p.id)}>
-                    <TableCell className="tabular-nums">#{p.posicao}</TableCell>
-                    <TableCell>
-                      <button type="button" className="text-left outline-none focus-visible:underline" onClick={() => abrirNaFila(p.id)}>
-                        <div className="font-semibold tabular-nums">{p.id}</div>
-                        <div className="max-w-52 truncate text-xs text-muted-foreground">{p.procedimento}</div>
-                      </button>
-                    </TableCell>
-                    <TableCell>
-                      <CamadaBadge camada={p.camada} />
-                    </TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">{p.dias_em_fila.toLocaleString("pt-BR")}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CartaoGrafico>
-        </div>
+          )}
+        </section>
       </div>
     </div>
   )

@@ -25,7 +25,7 @@ export function LinhaResumo({ paciente: p, decisao, selecionado = false, comMarc
           onChange={() => alternarMarcado(p.id)}
           onClick={(e) => e.stopPropagation()}
           aria-label={`Selecionar ${p.id}`}
-          className="relative size-3.5 shrink-0 cursor-pointer accent-[var(--primary)]"
+          className="relative size-3.5 shrink-0 cursor-pointer accent-[var(--primary)] max-md:size-5"
         />
       )}
       <div className="relative shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
@@ -37,7 +37,7 @@ export function LinhaResumo({ paciente: p, decisao, selecionado = false, comMarc
       </div>
       <div className="relative flex shrink-0 items-center gap-1" style={estiloColuna("classe", l, o)}>
         <ClasseBadge classe={p.classe} />
-        {p.prioridade_atual && <span className="truncate text-[10px] text-muted-foreground">{p.prioridade_atual === "media" ? "méd" : p.prioridade_atual}</span>}
+        {p.prioridade_atual && <span className="truncate text-xs text-muted-foreground">{p.prioridade_atual === "media" ? "méd" : p.prioridade_atual}</span>}
       </div>
       <div className="relative shrink-0" style={estiloColuna("camada", l, o)}>
         <CamadaBadge camada={p.camada} />
