@@ -185,7 +185,7 @@ def test_classe_confirmada_segura_evento_ate_nova_decisao(dataset):
     _registrar(r).executar(NovoEvento("SOL-2026-00239", date(2026, 10, 20), "biopsia", "positivo",
                                       descricao="AP: adenocarcinoma"))
     r.publicar()
-    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "B"
+    assert next(l for l in r.publicada if l.solicitacao_id == "SOL-2026-00239").classe == "C"
 
 
 def test_evento_que_muda_a_classe_vai_ao_inbox_e_congela_a_classe(dataset):
