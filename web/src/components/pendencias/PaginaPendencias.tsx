@@ -64,7 +64,7 @@ export default function PaginaPendencias() {
 
         <div className="flex flex-wrap items-center gap-2" role="search" aria-label="Filtros de pendências">
           <Select items={ITENS_TIPO} value={tipo} onValueChange={(v) => setTipo((v ?? "todas") as TipoFiltro)}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-44" aria-label="Filtrar por tipo">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-44" aria-label="Filtrar por tipo">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -76,7 +76,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={ITENS_REGRA} value={regra} onValueChange={(v) => setRegra(v ?? "todas")}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-64" aria-label="Filtrar por regra">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-64" aria-label="Filtrar por regra">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -88,7 +88,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           <Select items={STATUS_PENDENCIA} value={status} onValueChange={(v) => setStatus((v ?? "aberta") as StatusPendencia)}>
-            <SelectTrigger size="sm" className="h-9 w-full sm:h-8 sm:w-40" aria-label="Filtrar por status">
+            <SelectTrigger size="sm" className="h-9 w-full data-[size=sm]:h-9 sm:w-40" aria-label="Filtrar por status">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -100,7 +100,7 @@ export default function PaginaPendencias() {
             </SelectContent>
           </Select>
           {filtrando && (
-            <Button variant="ghost" size="sm" className="h-9 sm:h-8" onClick={limpar}>
+            <Button variant="ghost" size="sm" className="h-9 lg:h-8" onClick={limpar}>
               <FilterX aria-hidden /> Limpar
             </Button>
           )}
@@ -117,7 +117,7 @@ export default function PaginaPendencias() {
                 )}
               </>
             )}
-            <Button variant="outline" size="sm" className="h-9 sm:h-8" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 lg:h-8" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw className={cn(estado.tipo === "ok" && estado.atualizando && "animate-spin")} aria-hidden /> Atualizar
             </Button>
           </div>

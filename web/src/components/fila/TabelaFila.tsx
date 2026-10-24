@@ -67,7 +67,7 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
           const ordenado = h.column.getIsSorted()
           const podeOrdenar = h.column.getCanSort()
           return (
-            <div key={h.id} className="min-w-0" style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
+            <div key={h.id} className={cn("min-w-0 max-md:!w-auto max-md:!flex-1", h.column.id === "paciente" && "max-md:hidden")} style={estiloColuna(h.column.id, larguras, ocultas)} role="columnheader" aria-sort={ordenado === "asc" ? "ascending" : ordenado === "desc" ? "descending" : "none"}>
               {podeOrdenar ? (
                 <button type="button" onClick={() => h.column.toggleSorting(ordenado === "asc")} className="inline-flex min-h-9 items-center md:min-h-7 gap-1 rounded px-0.5 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
                   {flexRender(h.column.columnDef.header, h.getContext())}

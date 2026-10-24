@@ -68,7 +68,7 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
             key={a.resolucao}
             size="sm"
             variant={escolhida === a.resolucao ? "default" : "outline"}
-            className="h-9 sm:h-8"
+            className="h-9 lg:h-8"
             aria-pressed={escolhida === a.resolucao}
             disabled={enviando}
             onClick={() => (escolhida === a.resolucao ? cancelar() : setEscolhida(a.resolucao))}
@@ -115,10 +115,10 @@ export function AcoesPendencia({ pendencia: p, aoResolver }: { pendencia: Penden
           </label>
 
           <div className="flex flex-wrap items-center gap-2">
-            <Button size="sm" className="h-9 sm:h-8" onClick={confirmar} disabled={enviando || faltaObservacao}>
+            <Button size="sm" className="h-9 lg:h-8" onClick={confirmar} disabled={enviando || faltaObservacao}>
               {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} {acao.resolucao === "confirmar_saida" ? "Confirmar a saída" : `${acao.rotulo}: confirmar`}
             </Button>
-            <Button size="sm" variant="ghost" className="h-9 sm:h-8" onClick={cancelar} disabled={enviando}>
+            <Button size="sm" variant="ghost" className="h-9 lg:h-8" onClick={cancelar} disabled={enviando}>
               Cancelar
             </Button>
             <span className="text-xs text-muted-foreground sm:ml-auto">por {usuarioAtual()}</span>

@@ -119,7 +119,7 @@ export function AcoesDecisao({ paciente, variante = "painel" }: { paciente: Paci
             <div id={`${idBase}-classe`} className="text-xs font-medium text-muted-foreground">
               Nova classe
             </div>
-            <div role="radiogroup" aria-labelledby={`${idBase}-classe`} className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            <div role="radiogroup" aria-labelledby={`${idBase}-classe`} className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {CLASSES.map((c, i) => {
                 const sel = c === classe
                 return (
@@ -134,10 +134,10 @@ export function AcoesDecisao({ paciente, variante = "painel" }: { paciente: Paci
                     tabIndex={sel ? 0 : -1}
                     onClick={() => setClasse(c)}
                     onKeyDown={(e) => moverClasse(e, i)}
-                    className={`flex min-h-11 flex-col items-center justify-center rounded-lg border px-1 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring ${sel ? "border-primary bg-primary/15" : "border-border hover:bg-muted"}`}
+                    className={`flex min-h-12 flex-col items-center justify-center rounded-lg border px-0.5 py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-ring ${sel ? "border-primary bg-primary/15" : "border-border hover:bg-muted"}`}
                   >
                     <span className="text-base font-semibold">{c}</span>
-                    <span className="text-xs text-muted-foreground">até {PRAZO_MAX[c]} dias</span>
+                    <span className="text-xs text-muted-foreground"><span className="sm:hidden">{PRAZO_MAX[c]} d</span><span className="hidden sm:inline">até {PRAZO_MAX[c]} dias</span></span>
                   </button>
                 )
               })}
@@ -147,7 +147,7 @@ export function AcoesDecisao({ paciente, variante = "painel" }: { paciente: Paci
           <label className="block space-y-1.5 text-xs font-medium text-muted-foreground">
             Motivo
             <Select items={ITENS_MOTIVO} value={motivoCodigo} onValueChange={(v) => setMotivoCodigo((v ?? "outro") as MotivoCodificado)}>
-              <SelectTrigger className="h-9 w-full text-sm font-normal text-foreground">
+              <SelectTrigger className="h-10 w-full sm:h-9 text-sm font-normal text-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

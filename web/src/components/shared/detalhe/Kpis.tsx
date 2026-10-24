@@ -26,8 +26,8 @@ export function Resumo({ p }: { p: Paciente }) {
         <div className="text-xs text-muted-foreground">em fila</div>
       </div>
       <div>
-        <div className="font-semibold tabular-nums">{formatarPct(p.pct)}</div>
-        <div className="text-xs text-muted-foreground">do prazo consumido</div>
+        <div className="font-semibold tabular-nums">{p.pct > 1000 ? `${Math.round(p.pct).toLocaleString("pt-BR")}%` : formatarPct(p.pct)}</div>
+        <div className="text-xs text-muted-foreground">{p.pct > 100 ? "do prazo (vencido)" : "do prazo consumido"}</div>
         <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted" aria-hidden>
           <div className="h-full bg-foreground/60" style={{ width: `${largura}%` }} />
         </div>

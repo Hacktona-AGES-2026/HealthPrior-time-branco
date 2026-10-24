@@ -21,10 +21,32 @@ export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { pac
           <input type="checkbox" checked={marcado} onChange={() => alternarMarcado(p.id)} aria-label={`Selecionar ${p.iniciais}`} className="size-4 cursor-pointer accent-[var(--primary)]" />
         </label>
       )}
-      <div className="shrink-0 font-bold tabular-nums" style={estiloColuna("pos", l, o)}>
+      <div className="flex min-w-0 flex-1 flex-col gap-1 md:hidden">
+        <div className="flex items-center gap-2">
+          <span className="font-bold tabular-nums">#{p.posicao}</span>
+          <span className="inline-flex items-center gap-1">
+            <ClasseBadge classe={classeEmVigor(p)} />
+            {propostaPendente(p) && (
+              <>
+                <span className="text-xs text-muted-foreground" aria-hidden>→</span>
+                <ClasseBadge classe={p.classe} />
+              </>
+            )}
+          </span>
+          {p.oncologico && <span className="shrink-0 text-xs font-semibold text-primary">Oncológico</span>}
+          <span className="ml-auto flex shrink-0 items-center gap-1">
+            {pendente ? <span className="text-xs text-muted-foreground">A revisar</span> : <StatusAprovacao decisao={decisao} />}
+            <AlertaRevisao paciente={p} />
+          </span>
+        </div>
+        <div className="truncate text-xs text-muted-foreground" title={p.procedimento}>
+          <span className="font-medium text-foreground">{p.iniciais}, {p.idade} a</span> · {p.procedimento}
+        </div>
+      </div>
+      <div className="hidden shrink-0 font-bold tabular-nums md:block" style={estiloColuna("pos", l, o)}>
         #{p.posicao}
       </div>
-      <div className="min-w-0" style={estiloColuna("paciente", l, o)}>
+      <div className="hidden min-w-0 md:block" style={estiloColuna("paciente", l, o)}>
         <div className="flex items-center gap-2 text-sm">
           <span className="truncate font-medium">
             {p.iniciais}, {p.idade} a
@@ -35,7 +57,7 @@ export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { pac
           {p.procedimento}
         </div>
       </div>
-      <div className="shrink-0" style={estiloColuna("classe", l, o)}>
+      <div className="hidden shrink-0 md:block" style={estiloColuna("classe", l, o)}>
         <span className="inline-flex items-center gap-1" title={propostaPendente(p) ? `Proposta ${p.classe} aguardando aprovação` : undefined}>
           <ClasseBadge classe={classeEmVigor(p)} />
           {propostaPendente(p) && (
@@ -46,13 +68,13 @@ export function LinhaResumo({ paciente: p, decisao, comMarcacao = false }: { pac
           )}
         </span>
       </div>
-      <div className="min-w-0 shrink-0" style={estiloColuna("prazo", l, o)}>
+      <div className="hidden min-w-0 shrink-0 md:block" style={estiloColuna("prazo", l, o)}>
         <span className="block h-1.5 w-full overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={Math.round(p.pct)} aria-valuemin={0} aria-valuemax={100} aria-label="Prazo consumido" title={`${Math.round(p.pct)}% do prazo`}>
           <span className="block h-full rounded-full" style={{ width: `${Math.min(100, p.pct)}%`, background: corPrazo(p.pct) }} />
         </span>
         <div className="mt-1 text-xs text-muted-foreground tabular-nums">{textoDias(p.dias_em_fila)}</div>
       </div>
-      <div className="flex shrink-0 items-center gap-1" style={estiloColuna("status", l, o)}>
+      <div className="hidden shrink-0 items-center gap-1 md:flex" style={estiloColuna("status", l, o)}>
         {pendente ? <span className="text-xs text-muted-foreground">A revisar</span> : <StatusAprovacao decisao={decisao} />}
         <AlertaRevisao paciente={p} />
       </div>

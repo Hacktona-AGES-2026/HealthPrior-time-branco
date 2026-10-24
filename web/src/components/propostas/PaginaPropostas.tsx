@@ -16,7 +16,7 @@ const ABAS: Record<StatusProposta, string> = {
   aprovada: "Aprovadas",
   rejeitada: "Rejeitadas",
   revertida: "Revertidas",
-  descartada: "Descartadas (I-01)",
+  descartada: "Descartadas",
 }
 const ROTULO_MOTIVO = (m: string) => m.replaceAll("_", " ")
 
@@ -33,14 +33,13 @@ export default function PaginaPropostas() {
             <FileCheck2 className="size-4" aria-hidden /> Propostas de regra
           </h2>
           <p className="text-sm text-muted-foreground">
-            Padrões que os reguladores repetiram nas edições, agrupados por procedimento e motivo. O comitê vê os casos de origem e o <b className="text-foreground">impacto simulado</b>{" "}
-            na fila de hoje, e aprova ou rejeita. Aprovar abre uma nova versão das regras e manda os afetados ao Inbox: cada paciente continua com decisão humana.
+            Padrões que os reguladores repetiram. Veja o <b className="text-foreground">impacto simulado</b> na fila e aprove ou rejeite. Aprovar não muda ninguém sozinho: os afetados vão ao Inbox para decisão humana.
           </p>
         </header>
 
         <div className="flex flex-wrap items-center gap-2" role="tablist" aria-label="Status das propostas">
           {(Object.keys(ABAS) as StatusProposta[]).map((s) => (
-            <Button key={s} role="tab" aria-selected={status === s} size="sm" variant={status === s ? "default" : "outline"} onClick={() => setStatus(s)}>
+            <Button key={s} className="h-9 lg:h-7" role="tab" aria-selected={status === s} size="sm" variant={status === s ? "default" : "outline"} onClick={() => setStatus(s)}>
               {ABAS[s]}
             </Button>
           ))}
@@ -50,7 +49,7 @@ export default function PaginaPropostas() {
                 <b className="text-foreground tabular-nums">{estado.dados.total}</b> {estado.dados.total === 1 ? "proposta" : "propostas"}
               </span>
             )}
-            <Button variant="outline" size="sm" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 lg:h-7" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw className={cn(estado.tipo === "ok" && estado.atualizando && "animate-spin")} aria-hidden /> Atualizar
             </Button>
           </div>
@@ -141,9 +140,9 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
   }
 
   return (
-    <li className="rounded-xl border bg-card p-4">
+    <li className="rounded-xl border bg-card p-3 sm:p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold">{p.procedimento ?? p.procedimento_id}</span>
+        <span className="min-w-0 text-sm font-semibold">{p.procedimento ?? p.procedimento_id}</span>
         <Badge variant="outline">{ROTULO_MOTIVO(p.motivo)}</Badge>
         <span className="flex items-center gap-1.5 text-sm">
           <Badge variant="secondary">{p.classe_de}</Badge>
@@ -151,7 +150,7 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
           <Badge>{p.classe_para}</Badge>
           <span className="text-xs text-muted-foreground">({p.direcao === "subir" ? "sobe" : "rebaixa"})</span>
         </span>
-        <span className="ml-auto font-mono text-xs text-muted-foreground">{p.proposta_id}</span>
+        <span className="ml-auto hidden font-mono text-xs text-muted-foreground md:inline">{p.proposta_id}</span>
       </div>
 
       <dl className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
@@ -181,7 +180,7 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
 
       {p.casos_origem.length > 0 && (
         <details className="mt-3 text-sm">
-          <summary className="cursor-pointer font-medium">Casos de origem ({p.casos_origem.length})</summary>
+          <summary className="flex min-h-9 cursor-pointer items-center font-medium">Casos de origem ({p.casos_origem.length})</summary>
           <ul className="mt-2 grid gap-2 @lg:grid-cols-2">
             {p.casos_origem.map((c) => (
               <li key={c.decisao_id} className="rounded-lg bg-muted/50 p-2.5">
@@ -204,20 +203,20 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
           {rejeitando ? (
             <div className="space-y-2">
               <Textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} placeholder="Motivo da rejeição (obrigatório)" aria-label="Motivo da rejeição" />
-              <div className="flex items-center gap-2">
-                <Button size="sm" variant="destructive" disabled={enviando || observacao.trim() === ""} onClick={() => decidir("rejeitar")}>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button size="sm" className="h-9 lg:h-7" variant="destructive" disabled={enviando || observacao.trim() === ""} onClick={() => decidir("rejeitar")}>
                   {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <X aria-hidden />} Rejeitar: confirmar
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => { setRejeitando(false); setObservacao("") }}>Cancelar</Button>
+                <Button size="sm" className="h-9 lg:h-7" variant="ghost" onClick={() => { setRejeitando(false); setObservacao("") }}>Cancelar</Button>
                 <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button size="sm" disabled={enviando} onClick={() => decidir("aprovar")}>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" className="h-9 lg:h-7" disabled={enviando} onClick={() => decidir("aprovar")}>
                 {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Check aria-hidden />} Aprovar regra
               </Button>
-              <Button size="sm" variant="outline" disabled={enviando} onClick={() => setRejeitando(true)}>
+              <Button size="sm" className="h-9 lg:h-7" variant="outline" disabled={enviando} onClick={() => setRejeitando(true)}>
                 <X aria-hidden /> Rejeitar
               </Button>
               <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
@@ -246,17 +245,17 @@ function CartaoProposta({ proposta: p, aoDecidir }: { proposta: Proposta; aoDeci
             (revertendo ? (
               <div className="mt-3 space-y-2">
                 <Textarea value={motivoReversao} onChange={(e) => setMotivoReversao(e.target.value)} placeholder="Motivo da reversão (obrigatório)" aria-label="Motivo da reversão" />
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="destructive" disabled={enviando || motivoReversao.trim() === ""} onClick={reverter}>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button size="sm" className="h-9 lg:h-7" variant="destructive" disabled={enviando || motivoReversao.trim() === ""} onClick={reverter}>
                     {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Undo2 aria-hidden />} Reverter: confirmar
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => { setRevertendo(false); setMotivoReversao("") }}>Cancelar</Button>
+                  <Button size="sm" className="h-9 lg:h-7" variant="ghost" onClick={() => { setRevertendo(false); setMotivoReversao("") }}>Cancelar</Button>
                   <span className="ml-auto text-xs text-muted-foreground">por {usuarioAtual()}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">A regra deixa de valer. Quem ela mandou ao Inbox e ninguém decidiu sai de lá; quem o regulador já decidiu não muda.</p>
               </div>
             ) : (
-              <Button size="sm" variant="outline" className="mt-3" onClick={() => setRevertendo(true)}>
+              <Button size="sm" className="mt-3 h-9 lg:h-7" variant="outline" onClick={() => setRevertendo(true)}>
                 <Undo2 aria-hidden /> Reverter regra
               </Button>
             ))}

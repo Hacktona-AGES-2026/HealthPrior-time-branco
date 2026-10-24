@@ -453,13 +453,13 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
             return (
               <g key={t}>
                 <line x1={x} x2={x} y1={BASE_BARRA + 16} y2={BASE_BARRA + 21} style={{ stroke: "var(--muted-foreground)" }} />
-                <text x={x} y={BASE_BARRA + 32} textAnchor={anchor} fontSize={10.5} className="tabular-nums" style={{ fill: "var(--muted-foreground)" }}>
+                <text x={x} y={BASE_BARRA + 32} textAnchor={anchor} fontSize={12} className="tabular-nums" style={{ fill: "var(--muted-foreground)" }}>
                   {t}
                 </text>
               </g>
             )
           })}
-          <text x={largura / 2} y={ALTURA - 4} textAnchor="middle" fontSize={10.5} style={{ fill: "var(--muted-foreground)" }}>
+          <text x={largura / 2} y={ALTURA - 4} textAnchor="middle" fontSize={12} style={{ fill: "var(--muted-foreground)" }}>
             posição na fila proposta
           </text>
 

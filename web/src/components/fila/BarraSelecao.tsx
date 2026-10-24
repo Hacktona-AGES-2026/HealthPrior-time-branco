@@ -35,15 +35,15 @@ export function BarraSelecao({ rodape = false }: { rodape?: boolean }) {
           role="region"
           aria-label="Seleção"
           className={cn(
-            "flex items-center gap-3 rounded-lg bg-primary/10 px-3 py-1.5 text-sm",
-            rodape ? "sticky bottom-0 z-10 mx-3 mb-2 shadow-md md:hidden" : "max-md:hidden"
+            "flex items-center gap-2 rounded-lg bg-[color-mix(in_oklab,var(--primary)_10%,var(--background))] px-3 py-1.5 text-sm",
+            rodape ? "sticky bottom-16 z-10 mx-3 mb-2 border border-primary/30 shadow-md md:hidden" : "max-md:hidden"
           )}
         >
-          <span className="font-medium tabular-nums">{marcados.length} selecionados</span>
+          <span className="font-medium whitespace-nowrap tabular-nums">{marcados.length} selecionados</span>
           <Button className="h-9" disabled={E === 0} title={E === 0 ? "Nenhum dos selecionados pode ser aprovado em lote" : undefined} onClick={() => setAcao("aprovar")}>
             Aprovar
           </Button>
-          <Button variant="ghost" className="h-9" onClick={limparMarcados}>
+          <Button variant="ghost" className="h-9 whitespace-nowrap" onClick={limparMarcados}>
             Limpar seleção
           </Button>
         </div>

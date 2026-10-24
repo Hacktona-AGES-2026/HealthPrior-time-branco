@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { PreviaDecisao } from "@/components/shared/PreviaDecisao"
 import { AlertTriangle, ArrowRight, Check, Inbox as IconeInbox, RefreshCw } from "lucide-react"
 import { toast } from "sonner"
 import { aprovarProposta, URL_API, type ItemInbox } from "@/api/cliente"
@@ -10,6 +9,7 @@ import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { frasePrazo, motivosDoInbox } from "./motivosInbox"
 import { useInbox } from "./useInbox"
 
 export default function PaginaInbox() {
@@ -21,10 +21,10 @@ export default function PaginaInbox() {
       <div className="@container mx-auto max-w-5xl space-y-4 p-4">
         <header className="fx-fade-up space-y-1">
           <h2 className="flex items-center gap-2 text-base font-semibold">
-            <IconeInbox className="size-4" aria-hidden /> Inbox de revisão
+            <IconeInbox className="size-4" aria-hidden /> Casos para revisar
           </h2>
           <p className="text-sm text-muted-foreground">
-            Casos em que a classe sugerida pelo sistema merece a sua decisão. <b className="text-foreground">Aprovar</b> confirma a classe sugerida, registra no log e recalcula a fila.
+            Casos em que a classe sugerida merece a sua decisão. <b className="text-foreground">Aprovar</b> confirma a classe e atualiza a fila.
           </p>
         </header>
 
@@ -34,7 +34,7 @@ export default function PaginaInbox() {
               <b className="text-foreground tabular-nums">{estado.dados.total}</b> {estado.dados.total === 1 ? "caso" : "casos"} para revisar
             </span>
           )}
-          <Button variant="outline" size="sm" className="ml-auto" onClick={recarregar} aria-label="Atualizar o inbox">
+          <Button variant="outline" size="sm" className="ml-auto h-9 lg:h-7" onClick={recarregar} aria-label="Atualizar a lista">
             <RefreshCw className={cn(estado.tipo === "ok" && estado.atualizando && "animate-spin")} aria-hidden /> Atualizar
           </Button>
         </div>
@@ -105,55 +105,85 @@ function CartaoInbox({ item, aoDecidir }: { item: ItemInbox; aoDecidir: () => vo
     }
   }
 
+  const { frases, trecho } = motivosDoInbox(item)
+  const previa = item.previa
+  const de = previa?.posicao_atual
+  const para = previa?.posicao_estimada
+
   return (
-    <li className="rounded-xl border bg-card p-4">
-      <div className="flex flex-wrap items-center gap-2">
+    <li className="rounded-xl border bg-card p-3 sm:p-4">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <span className="font-mono text-sm font-semibold">{item.solicitacao_id}</span>
-        <Badge variant="outline">Camada {item.camada}</Badge>
-        <span className="text-sm text-muted-foreground">{item.procedimento}</span>
         <span className="ml-auto text-xs text-muted-foreground tabular-nums">{item.dias_em_fila} dias em fila</span>
       </div>
+      <p className="mt-0.5 text-sm text-muted-foreground">{item.procedimento}</p>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
         <span className="text-muted-foreground">Classe</span>
         <Badge variant="secondary">{item.classe_atual ?? "sem classe"}</Badge>
         <ArrowRight className="size-4 text-muted-foreground" aria-hidden />
         <Badge>{item.classe_sugerida}</Badge>
-        {item.evento_gatilho && <span className="text-xs text-muted-foreground">gatilho: {item.evento_gatilho}</span>}
       </div>
-      {item.previa && <PreviaDecisao previa={item.previa} rotulo={`Se aprovar ${item.classe_sugerida}`} className="mt-2" />}
 
-      {item.editado_anteriormente && (
-        <p className="mt-2 text-sm text-muted-foreground">
-          Editado antes por <span className="font-mono">{item.editado_anteriormente.por}</span> em {formatarData(item.editado_anteriormente.em)}. Aprovar remove essa edição.
+      {previa && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">Se aprovar {item.classe_sugerida}:</span>{" "}
+          {para == null ? (
+            "sai da fila publicada"
+          ) : (
+            <>
+              posição {de ?? "—"} → <span className="font-semibold tabular-nums text-foreground">{para}</span>
+              {de === para && " (sem mudança)"}
+            </>
+          )}{" "}
+          · {frasePrazo(previa.pct_prazo_consumido)}
         </p>
       )}
 
-      {item.motivos.length > 0 && (
-        <ul className="mt-3 grid gap-2 @lg:grid-cols-2">
-          {item.motivos.map((m, i) => (
-            <li key={`${i}-${m.sinal}`} className="rounded-lg bg-muted/50 p-2.5 text-sm">
-              <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">{m.sinal}</span>
-                <span>{m.fonte}</span>
-                {m.ref && <span className="font-mono">{m.ref}</span>}
-                {m.data && <span>{formatarData(m.data)}</span>}
-              </div>
-              <p className="leading-snug">{m.evidencia}</p>
-            </li>
-          ))}
-        </ul>
+      {item.editado_anteriormente && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          Editado antes por {item.editado_anteriormente.por} em {formatarData(item.editado_anteriormente.em)}. Aprovar remove essa edição.
+        </p>
       )}
 
-      <div className="mt-3 flex items-center gap-2 border-t pt-3">
-        <Button size="sm" onClick={aprovar} disabled={enviando}>
+      {(frases.length > 0 || trecho) && (
+        <div className="mt-2 space-y-1.5">
+          {frases.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5" aria-label="Por que está aqui">
+              {frases.map((f) => (
+                <li key={f} className="rounded-md bg-muted px-2 py-1 text-xs leading-tight">
+                  {f}
+                </li>
+              ))}
+            </ul>
+          )}
+          {trecho && <TrechoLongo texto={trecho} />}
+        </div>
+      )}
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t pt-3">
+        <Button className="h-9 lg:h-7" size="sm" onClick={aprovar} disabled={enviando}>
           <Check aria-hidden /> {enviando ? "Aprovando…" : `Aprovar ${item.classe_sugerida}`}
         </Button>
-        <Button size="sm" variant="outline" onClick={() => useStore.getState().abrirNaFila(item.solicitacao_id)}>
+        <Button className="h-9 lg:h-7" size="sm" variant="outline" onClick={() => useStore.getState().abrirNaFila(item.solicitacao_id)}>
           Abrir na fila
         </Button>
-        <span className="ml-auto text-xs text-muted-foreground">por {reguladorAtual()}</span>
       </div>
     </li>
+  )
+}
+
+function TrechoLongo({ texto }: { texto: string }) {
+  const [aberto, setAberto] = useState(false)
+  const longo = texto.length > 90
+  return (
+    <p className="text-xs text-muted-foreground">
+      <span className={cn("italic", longo && !aberto && "line-clamp-2")}>“{texto}”</span>
+      {longo && (
+        <button type="button" className="-my-2 inline-flex min-h-9 items-center py-2 text-xs font-medium text-foreground underline lg:min-h-0 lg:py-0" onClick={() => setAberto((v) => !v)}>
+          {aberto ? "Ler menos" : "Ler mais"}
+        </button>
+      )}
+    </p>
   )
 }

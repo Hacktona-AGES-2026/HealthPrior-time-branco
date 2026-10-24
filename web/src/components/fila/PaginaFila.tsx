@@ -67,7 +67,7 @@ export default function PaginaFila() {
             <BarraSelecao />
             <CabecalhoTabela table={table} />
           </div>
-          <div className="px-3 pb-8">
+          <div className="px-3 pb-8 max-lg:pb-20">
             <CorpoTabela key={`${visiveis}-${JSON.stringify(filtros)}`} table={table} rolagemRef={rolagem} alturaFixa={alturaFixa} />
           </div>
           <BarraSelecao rodape />

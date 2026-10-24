@@ -74,10 +74,10 @@ export default function PaginaNotificacoes() {
           )}
           {dados && <span className="text-sm text-muted-foreground"><b className="tabular-nums text-foreground">{dados.total}</b> mensagens</span>}
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={recarregar} aria-label="Atualizar a lista">
+            <Button variant="outline" size="sm" className="h-9 lg:h-7" onClick={recarregar} aria-label="Atualizar a lista">
               <RefreshCw aria-hidden /> Atualizar
             </Button>
-            <Button size="sm" disabled={enviando} onClick={enviar}>
+            <Button size="sm" className="h-9 lg:h-7" disabled={enviando} onClick={enviar}>
               {enviando ? <Loader2 className="animate-spin" aria-hidden /> : <Send aria-hidden />} Enviar pendentes
             </Button>
           </div>
@@ -109,7 +109,7 @@ export default function PaginaNotificacoes() {
                   <Badge variant={STATUS[n.status].variante}>{STATUS[n.status].rotulo}</Badge>
                   <span className="font-medium">{MOTIVO[n.motivo]}</span>
                   <span className="font-mono text-xs text-muted-foreground">{n.solicitacao_id}</span>
-                  <span className="ml-auto font-mono text-xs text-muted-foreground">{n.notificacao_id} · {n.canal}</span>
+                  <span className="ml-auto hidden font-mono text-xs text-muted-foreground md:inline">{n.notificacao_id} · {n.canal}</span>
                 </div>
                 <p className={cn("mt-1.5 leading-snug")}>{n.texto}</p>
                 {n.detalhe && <p className="mt-1 text-xs text-muted-foreground">{n.detalhe}</p>}

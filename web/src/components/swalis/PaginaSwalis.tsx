@@ -75,11 +75,11 @@ export default function PaginaSwalis() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-20">Classe</TableHead>
+                  <TableHead className="w-16">Classe</TableHead>
                   <TableHead>Descrição</TableHead>
-                  <TableHead className="w-28">Prazo máximo</TableHead>
-                  <TableHead>Exemplos</TableHead>
-                  <TableHead className="w-24 text-right">Na fila</TableHead>
+                  <TableHead className="w-20">Prazo</TableHead>
+                  <TableHead className="hidden md:table-cell">Exemplos</TableHead>
+                  <TableHead className="w-16 text-right">Na fila</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,7 +92,7 @@ export default function PaginaSwalis() {
                       </TableCell>
                       <TableCell className="whitespace-normal text-sm">{c.descricao}</TableCell>
                       <TableCell className="font-semibold tabular-nums">{c.prazo} dias</TableCell>
-                      <TableCell className="whitespace-normal text-xs text-muted-foreground">{c.exemplos}</TableCell>
+                      <TableCell className="hidden whitespace-normal text-xs text-muted-foreground md:table-cell">{c.exemplos}</TableCell>
                       <TableCell className="text-right tabular-nums">{porClasse.find((x) => x.classe === c.classe)?.total ?? 0}</TableCell>
                     </TableRow>
                   )
