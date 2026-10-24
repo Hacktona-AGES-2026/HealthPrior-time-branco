@@ -12,4 +12,5 @@
   - `guardiao-invariantes` — revisa mudanças contra as invariantes I-01..I-10. Use antes de commitar qualquer coisa que mexa em ordenação, classe ou status.
   - `analista-dados` — investiga o dataset (somente leitura) e responde com números e IDs reais.
 - Antes de editar vários arquivos, mostre o plano.
+- Trabalhando no backend: siga `docs/arquitetura-backend.md` (o `backend/CLAUDE.md` carrega o `backend/AGENTS.md` automaticamente).
 - Preferências locais (permissões pessoais) vão em `.claude/settings.local.json`, que não é commitado.

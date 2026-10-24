@@ -20,6 +20,7 @@ Decisões de fluxo detalhadas em `docs/fluxo-sistema.md` §10.
 | D-11 | 2026-10-24 | Stack: FastAPI + SQLite + pandas no back; React (Vite + TS) no front | Conhecimento do time; rapidez | — | todos |
 | D-12 | 2026-10-24 | Sem login: seletor de persona e de usuário fixo no front | Hackathon; o log ainda registra autores distintos | Autenticação real | US-23 |
 | D-13 | 2026-10-24 | API é a fronteira back × front; back sobe mocks com o contrato final primeiro | Trabalho em paralelo sem retrabalho | Front esperar o back | US-01..US-23 |
+| D-14 | 2026-10-24 | Backend em Clean Architecture enxuta (domain / application / infrastructure / api), com teste que protege a regra de dependência | Separar regra clínica de detalhe técnico; trocar SWALIS stub pelo real sem mexer no resto | Rotas com regra de negócio direto no banco | backend |
 
 ## Solicitações fora da fila
 

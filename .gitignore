@@ -29,3 +29,8 @@ CLAUDE.local.md
 
 # Cache de LLM local (commite apenas o cache da demo, se decidido)
 .cache/
+
+# Backend
+backend/*.db
+backend/*.db-journal
+backend/output/
