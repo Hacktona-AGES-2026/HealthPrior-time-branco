@@ -1,16 +1,13 @@
 import { useMemo, useRef, useState } from "react"
-import { ChevronLeft, ChevronRight, ExternalLink, Printer, UserSearch } from "lucide-react"
+import { ChevronLeft, ChevronRight, ExternalLink, Printer } from "lucide-react"
 import { PACIENTES, PACIENTE_POR_ID } from "@/data/fila"
 import type { Paciente } from "@/data/tipos"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { AcoesDecisao } from "@/components/shared/AcoesDecisao"
 import { ClasseBadge, SetaVariacao, StatusAprovacao } from "@/components/shared/Basicos"
-import { LinhaResumo } from "@/components/shared/LinhaResumo"
 import { PacienteDetalhe } from "@/components/shared/PacienteDetalhe"
 import { normalizar } from "@/lib/filtros"
-import { AlcaColuna } from "@/components/shared/AlcaColuna"
-import { COLUNAS, estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 import { FichaSus } from "./FichaSus"
 
@@ -28,8 +25,6 @@ export default function PaginaPacientes() {
   const [consulta, setConsulta] = useState("")
   const [aberta, setAberta] = useState(false)
   const caixa = useRef<HTMLDivElement>(null)
-  const larguras = useColunas((c) => c.larguras)
-  const ocultas = useColunas((c) => c.ocultas)
   const paciente = selecionadoId ? PACIENTE_POR_ID[selecionadoId] : undefined
 
   const resultados = useMemo(() => {
@@ -61,16 +56,16 @@ export default function PaginaPacientes() {
                 setAberta(true)
               }}
               onFocus={() => setAberta(true)}
-              placeholder="Buscar por ID, iniciais, CID, procedimento, município, especialidade, motivo ou alerta"
+              placeholder="Buscar paciente"
               className="h-10 text-base"
               aria-label="Buscar paciente"
             />
             {aberta && (
               <CommandList className="max-h-80 border-t">
                 <CommandEmpty>Nenhum paciente encontrado.</CommandEmpty>
-                <CommandGroup heading={`${resultados.length} resultado${resultados.length === 1 ? "" : "s"}`}>
-                  {resultados.map((p, i) => (
-                    <CommandItem key={p.id} value={p.id} onSelect={() => escolher(p)} className="fx-fade-up gap-3 py-2" style={{ animationDelay: `${i * 25}ms` }}>
+                <CommandGroup>
+                  {resultados.map((p) => (
+                    <CommandItem key={p.id} value={p.id} onSelect={() => escolher(p)} className="gap-3 py-2">
                       <ClasseBadge classe={p.classe} />
                       <span className="shrink-0 font-semibold tabular-nums sm:w-28">{p.id}</span>
                       <span className="min-w-0 flex-1 truncate">
@@ -90,15 +85,9 @@ export default function PaginaPacientes() {
           </Command>
         </div>
 
-        {!paciente ? (
-          <div className="fx-fade-up flex flex-col items-center gap-3 rounded-xl border border-dashed py-20 text-center text-sm text-muted-foreground">
-            <UserSearch className="size-10" aria-hidden />
-            <p className="text-base font-medium text-foreground">Busque um paciente para ver a ficha completa</p>
-            <p>Tente “C18.7”, “colecistectomia”, “Canoas” ou “SOL-2023-00010”.</p>
-          </div>
-        ) : (
+        {paciente && (
           <div key={paciente.id} className="space-y-4">
-            <div className="fx-fade-up flex flex-wrap items-center gap-3 rounded-xl bg-muted/40 p-3">
+            <div className="flex flex-wrap items-center gap-3 border-b pb-3">
               <div className="min-w-0 flex-1">
                 <div className="text-lg font-bold tabular-nums">{paciente.id}</div>
                 <div className="break-words text-sm text-muted-foreground">
@@ -106,10 +95,10 @@ export default function PaginaPacientes() {
                 </div>
               </div>
               <div className="no-print flex flex-wrap items-center gap-2">
-                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(-1)} disabled={paciente.posicao <= 1} aria-label="Paciente anterior na fila" title="Anterior na fila">
+                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(-1)} disabled={paciente.posicao <= 1} aria-label="Paciente anterior na fila" title="Anterior">
                   <ChevronLeft aria-hidden />
                 </Button>
-                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(1)} aria-label="Próximo paciente na fila" title="Próximo na fila">
+                <Button variant="outline" size="icon-sm" className="size-9 sm:size-8" onClick={() => moverNaFicha(1)} aria-label="Próximo paciente na fila" title="Próximo">
                   <ChevronRight aria-hidden />
                 </Button>
                 <Button variant="outline" size="sm" className="h-9 gap-1.5 sm:h-8" onClick={() => abrirNaFila(paciente.id)}>
@@ -123,20 +112,6 @@ export default function PaginaPacientes() {
                 <AcoesDecisao paciente={paciente} />
               </div>
             </div>
-
-            <section className="fx-fade-up @container overflow-x-auto rounded-xl bg-muted/40" aria-label="Linha da tabela">
-              <div className="flex min-w-max items-center gap-2 border-b border-border/60 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {COLUNAS.map((c) => (
-                  <div key={c.id} className="relative" style={estiloColuna(c.id, larguras, ocultas)}>
-                    {c.rotulo}
-                    {c.id !== "alerta" && <AlcaColuna id={c.id} />}
-                  </div>
-                ))}
-              </div>
-              <div className="relative flex h-11 items-center gap-2 min-w-max bg-primary/5 px-3 text-sm shadow-[inset_2px_0_0_var(--primary)]">
-                <LinhaResumo paciente={paciente} decisao={decisoes[paciente.id]} selecionado />
-              </div>
-            </section>
 
             <FichaSus p={paciente} />
             <PacienteDetalhe paciente={paciente} />

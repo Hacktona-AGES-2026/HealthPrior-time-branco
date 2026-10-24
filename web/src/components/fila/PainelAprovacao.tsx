@@ -1,4 +1,4 @@
-import { ExternalLink, PanelRightClose, PanelRightOpen } from "lucide-react"
+import { ExternalLink, PanelRightClose, PanelRightOpen, TriangleAlert } from "lucide-react"
 import { PACIENTE_POR_ID } from "@/data/fila"
 import type { Paciente } from "@/data/tipos"
 import { Button } from "@/components/ui/button"
@@ -17,18 +17,18 @@ function traduzir(texto: string): string[] {
   const frases: string[] = []
   const dor = t.match(/^dor EVA (\d+)/i)
   if (dor) {
-    if (Number(dor[1]) > 0) frases.push(`Dor de intensidade ${dor[1]} em 10`)
+    if (Number(dor[1]) > 0) frases.push(`Dor ${dor[1]}/10`)
     const lim = t.match(/limitação (leve|moderada|grave)/i)
-    if (lim) frases.push(`Limitação nas atividades: ${lim[1].toLowerCase()}`)
+    if (lim) frases.push(`Limitação ${lim[1].toLowerCase()}`)
     return frases
   }
   const lf = t.match(/^limitação funcional (\w+)/i)
-  if (lf) return lf[1] === "nenhuma" ? [] : [`Limitação nas atividades: ${lf[1]}`]
-  if (/piora durante a espera/i.test(t)) return ["Piorou durante a espera"]
-  if (/sinal de alarme/i.test(t)) return ["Sinal de alarme descrito no encaminhamento"]
-  if (/biópsia positiva com CID não oncológico/i.test(t)) return ["Biópsia positiva, mas o CID não é oncológico (conferir)"]
+  if (lf) return lf[1] === "nenhuma" ? [] : [`Limitação ${lf[1]}`]
+  if (/piora durante a espera/i.test(t)) return ["Piorou na espera"]
+  if (/sinal de alarme/i.test(t)) return ["Sinal de alarme"]
+  if (/biópsia positiva com CID não oncológico/i.test(t)) return ["Biópsia positiva; conferir CID"]
   const neo = t.match(/neoplasia maligna pelo CID (\S+)/i)
-  if (neo) return [`Neoplasia maligna (CID ${neo[1]})`]
+  if (neo) return ["Câncer confirmado"]
   if (/^biópsia positiva/i.test(t)) return ["Biópsia positiva"]
   if (/dor não informada/i.test(t)) return ["Dor não informada"]
   return [t.charAt(0).toUpperCase() + t.slice(1)]
@@ -36,18 +36,13 @@ function traduzir(texto: string): string[] {
 
 function motivosClinicos(p: Paciente): string[] {
   const todos = [...p.motivos, ...p.sintomas].flatMap(traduzir)
-  const lista = [...(p.oncologico && !todos.some((f) => f.startsWith("Neoplasia")) ? ["Caso oncológico"] : []), ...todos]
-  return [...new Set(lista)].slice(0, 4)
+  const lista = [...(p.oncologico && !todos.some((f) => f.startsWith("Câncer")) ? ["Oncológico"] : []), ...todos]
+  return [...new Set(lista)].slice(0, 3)
 }
 
-function fraseDaPosicao(p: Paciente): string {
-  const prioridade =
-    p.camada === 1 ? "Prioridade alta por ser oncológico" : p.camada === 2 ? "Prioridade elevada por sinais de urgência" : `Ordenado pela classe ${p.classe} e pelo tempo de espera`
-  const prazo = p.pct >= 100 ? `o prazo já foi ultrapassado (${formatarPct(p.pct)})` : `já usou ${formatarPct(p.pct)} do prazo`
-  const base = `${prioridade}; ${prazo} (${p.dias_em_fila} ${p.dias_em_fila === 1 ? "dia" : "dias"} em fila).`
-  if (p.posicao < p.posicao_atual) return `${base} Subiu da posição ${p.posicao_atual} para ${p.posicao}.`
-  if (p.posicao > p.posicao_atual) return `${base} Desceu da posição ${p.posicao_atual} para ${p.posicao}.`
-  return `${base} Mantém a posição ${p.posicao}.`
+function linhaDados(p: Paciente): string {
+  const pos = p.posicao_atual !== p.posicao ? `Posição ${p.posicao} (era ${p.posicao_atual})` : `Posição ${p.posicao}`
+  return `${pos} · ${formatarPct(p.pct)} do prazo · ${p.dias_em_fila} dias`
 }
 
 export function PainelAprovacao({ className, modo = "lateral" }: { className?: string; modo?: "lateral" | "drawer" }) {
@@ -61,7 +56,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
   if (oculto && modo === "lateral") {
     return (
       <aside className={cn("flex w-11 shrink-0 flex-col items-center border-l py-3", className)} aria-label="Painel de aprovação recolhido">
-        <Button variant="ghost" size="icon-sm" onClick={() => setOculto(false)} title="Mostrar detalhes do paciente (])" aria-label="Mostrar painel de aprovação">
+        <Button variant="ghost" size="icon-sm" onClick={() => setOculto(false)} title="Mostrar painel (])" aria-label="Mostrar painel de aprovação">
           <PanelRightOpen aria-hidden />
         </Button>
       </aside>
@@ -74,7 +69,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
     <div className="p-4">
       {!p ? (
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm text-muted-foreground">Selecione um paciente na lista para ver os detalhes.</p>
+          <p className="text-sm text-muted-foreground">Selecione um paciente.</p>
           {modo === "lateral" && (
             <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel (])" aria-label="Ocultar painel de aprovação">
               <PanelRightClose aria-hidden />
@@ -86,7 +81,7 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
           <section aria-label="Identificação" className="space-y-1">
             <div className="flex items-start justify-between gap-2">
               <div className="text-sm text-muted-foreground">
-                <span className="font-semibold text-foreground">{p.iniciais}</span> · {p.idade} anos · {p.sexo === "F" ? "feminino" : "masculino"} · {p.municipio}
+                <span className="font-semibold text-foreground">{p.iniciais}</span> · {p.idade} anos · {p.sexo}
               </div>
               {modo === "lateral" && (
                 <Button variant="ghost" size="icon-sm" className="-mt-1 -mr-1 shrink-0 max-md:size-9" onClick={() => setOculto(true)} title="Ocultar painel (])" aria-label="Ocultar painel de aprovação">
@@ -96,53 +91,40 @@ export function PainelAprovacao({ className, modo = "lateral" }: { className?: s
             </div>
             <div className="text-sm font-bold">{p.procedimento}</div>
             <div className="text-xs text-muted-foreground">
-              {p.cid}
-              {p.cid_descricao && ` · ${p.cid_descricao}`}
+              CID {p.cid}
+              {p.cid_descricao && ` — ${p.cid_descricao}`}
             </div>
           </section>
 
-          {motivos.length > 0 && (
-            <>
-              <Separator />
-              <section aria-labelledby="pq-fila" className="space-y-1.5">
-                <h3 id="pq-fila" className="text-xs font-semibold text-muted-foreground">
-                  Por que está na fila
-                </h3>
-                <ul className="list-disc space-y-0.5 pl-4 text-sm">
-                  {motivos.map((m) => (
-                    <li key={m}>{m}</li>
-                  ))}
-                </ul>
-              </section>
-            </>
-          )}
-
           <Separator />
-          <section aria-labelledby="pq-posicao" className="space-y-1.5">
-            <h3 id="pq-posicao" className="text-xs font-semibold text-muted-foreground">
-              Por que está na posição {p.posicao}
+          <section aria-labelledby="motivo" className="space-y-1">
+            <h3 id="motivo" className="text-xs font-semibold text-muted-foreground">
+              Motivo
             </h3>
-            <p className="text-sm">{fraseDaPosicao(p)}</p>
+            {motivos.length > 0 && (
+              <ul className="list-disc space-y-0.5 pl-4 text-sm">
+                {motivos.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+            )}
+            <p className="text-xs text-muted-foreground tabular-nums">{linhaDados(p)}</p>
           </section>
 
           {p.alertas.length > 0 && (
-            <>
-              <Separator />
-              <ul className="list-disc space-y-0.5 pl-4 text-sm text-muted-foreground">
-                {p.alertas.map((a) => (
-                  <li key={a}>{a}</li>
-                ))}
-              </ul>
-            </>
+            <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+              <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+              <span>{p.alertas.join(" · ")}</span>
+            </p>
           )}
 
           <Separator />
           <section aria-label="Decisão" className="space-y-2">
             <AcoesDecisao paciente={p} />
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <div className="flex flex-wrap items-center gap-1">
               <NovoEvento solicitacaoId={p.id} />
-              <Button variant="link" size="sm" className="h-9 gap-1.5 px-0 text-muted-foreground" onClick={() => abrirFicha(p.id)}>
-                <ExternalLink aria-hidden /> Ver ficha completa
+              <Button variant="ghost" size="sm" className="h-9 gap-1.5 px-2 text-muted-foreground" onClick={() => abrirFicha(p.id)}>
+                <ExternalLink aria-hidden /> Ficha completa
               </Button>
             </div>
           </section>

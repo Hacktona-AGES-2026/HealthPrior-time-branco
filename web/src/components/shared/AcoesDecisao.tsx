@@ -42,7 +42,7 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
   if (decisao) {
     const ok = decisao.status === "aprovado"
     return (
-      <div className="fx-pop space-y-2 text-sm">
+      <div className="space-y-2 text-sm">
         <div className="flex flex-wrap items-center gap-2 font-semibold">
           {ok ? <Check className="size-4" style={{ color: "var(--sobe)" }} aria-hidden /> : <Pencil className="size-4" style={{ color: "var(--cls-c)" }} aria-hidden />}
           {ok ? "Classe aprovada" : "Classe editada"}
@@ -69,7 +69,7 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
     const valido = texto.trim().length >= 3
     return (
       <form
-        className="fx-expand space-y-3"
+        className="space-y-3"
         onSubmit={(e) => {
           e.preventDefault()
           if (valido) editar(id, classe, motivoCodigo, texto.trim())
@@ -107,10 +107,9 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
           </Select>
         </label>
         <label className="block space-y-1 text-xs text-muted-foreground">
-          Justificativa (obrigatória)
-          <Textarea ref={campo} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Explique por que a classe sugerida não se aplica" rows={3} className="text-foreground" aria-required />
+          Justificativa
+          <Textarea ref={campo} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Por que mudar a classe?" rows={3} className="text-foreground" aria-required />
         </label>
-        {paciente.oncologico && <p className="text-xs text-muted-foreground">Oncológicos permanecem na camada 1, qualquer que seja a classe.</p>}
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="outline" className="h-9 flex-1 sm:h-8" onClick={() => setEditando(false)}>
             Cancelar
@@ -125,11 +124,11 @@ export function AcoesDecisao({ paciente }: { paciente: Paciente }) {
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta no inbox: a classe sugerida já é a classe em vigor" : undefined} className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
-        <Check className="text-[var(--sobe)]" aria-hidden /> Aprovar <kbd className="rounded bg-background/60 px-1 text-xs text-muted-foreground">A</kbd>
+      <Button variant="ghost" disabled={enviando || semProposta} title={semProposta ? "Sem proposta pendente" : "Aprovar (A)"} className="gap-1.5 bg-[var(--sobe)]/15 text-foreground hover:bg-[var(--sobe)]/25" onClick={() => aprovar(id)}>
+        <Check className="text-[var(--sobe)]" aria-hidden /> Aprovar
       </Button>
-      <Button variant="ghost" disabled={enviando} className="gap-1.5 bg-muted text-foreground hover:bg-muted/70" onClick={() => setEditando(true)}>
-        <Pencil aria-hidden /> Editar <kbd className="rounded bg-background/60 px-1 text-xs text-muted-foreground">R</kbd>
+      <Button variant="ghost" disabled={enviando} title="Editar (R)" className="gap-1.5 bg-muted text-foreground hover:bg-muted/70" onClick={() => setEditando(true)}>
+        <Pencil aria-hidden /> Editar
       </Button>
     </div>
   )

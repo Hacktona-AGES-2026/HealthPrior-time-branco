@@ -8,7 +8,6 @@ import { indiceClasse } from "@/lib/cores"
 import { aplicarFiltros, statusDe, type Decisao } from "@/lib/filtros"
 import { cn } from "@/lib/utils"
 import { LinhaResumo } from "@/components/shared/LinhaResumo"
-import { PacienteDetalhe } from "@/components/shared/PacienteDetalhe"
 import { estiloColuna, useColunas } from "@/store/colunas"
 import { useStore } from "@/store/useStore"
 
@@ -24,7 +23,6 @@ export const usarTabela = () => {
       { id: "paciente", header: "Paciente", enableSorting: false, accessorFn: (p) => p.iniciais },
       { id: "classe", header: "Classe", accessorFn: (p) => indiceClasse(p.classe) },
       { id: "prazo", header: "Prazo", accessorFn: (p) => p.pct },
-      { id: "porque", header: "Por que está na fila", enableSorting: false, accessorFn: (p) => p.motivos.length },
       { id: "status", header: "Situação", accessorFn: (p) => statusDe(decisoes, p.id) },
     ],
     [decisoes]
@@ -72,17 +70,16 @@ export function CabecalhoTabela({ table }: { table: Table<Paciente> }) {
 type LinhaProps = {
   paciente: Paciente
   selecionado: boolean
-  expandido: boolean
   decisao?: Decisao
   aoAlternar: (id: string) => void
-  par: boolean
 }
 
-const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, expandido, decisao, aoAlternar, par }: LinhaProps) {
+const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, decisao, aoAlternar }: LinhaProps) {
   return (
-    <div className="@container" role="row" aria-selected={selecionado} aria-expanded={expandido}>
+    <div className="@container" role="row" aria-selected={selecionado}>
       <div
         role="button"
+        aria-current={selecionado ? "true" : undefined}
         tabIndex={0}
         onClick={() => aoAlternar(p.id)}
         onKeyDown={(e) => {
@@ -92,18 +89,12 @@ const LinhaPaciente = memo(function LinhaPaciente({ paciente: p, selecionado, ex
           }
         }}
         className={cn(
-          "relative flex min-h-14 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 py-1.5 text-sm outline-none hover:bg-muted/50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
-          par && "bg-muted/20",
-          selecionado && "bg-primary/10 shadow-[inset_2px_0_0_var(--primary)] hover:bg-primary/10"
+          "relative flex min-h-14 cursor-pointer items-center gap-2 overflow-hidden border-b border-border/50 px-3 py-1.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+          selecionado ? "bg-primary/15 text-foreground shadow-[inset_4px_0_0_var(--primary)] hover:bg-primary/15" : "hover:bg-muted/50"
         )}
       >
         <LinhaResumo paciente={p} decisao={decisao} selecionado={selecionado} />
       </div>
-      {expandido && (
-        <div className="border-b border-border/50 px-1 pt-2 pb-5" onClick={(e) => e.stopPropagation()}>
-          <PacienteDetalhe paciente={p} />
-        </div>
-      )}
     </div>
   )
 })
@@ -116,9 +107,8 @@ type CorpoProps = {
 
 export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const selecionadoId = useStore((s) => s.selecionadoId)
-  const expandidoId = useStore((s) => s.expandidoId)
   const decisoes = useStore((s) => s.decisoes)
-  const alternarExpandido = useStore((s) => s.alternarExpandido)
+  const selecionar = useStore((s) => s.selecionar)
   const listaRef = useRef<HTMLDivElement>(null)
   const [margem, setMargem] = useState(0)
   const linhas = table.getRowModel().rows
@@ -138,27 +128,20 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
   const virtualizador = useVirtualizer({
     count: linhas.length,
     getScrollElement: () => rolagemRef.current,
-    estimateSize: (i) => (linhas[i]?.original.id === expandidoId ? 1400 : 56),
+    estimateSize: () => 56,
     overscan: 8,
     scrollMargin: margem,
     scrollPaddingStart: alturaFixa + 4,
     getItemKey: (i) => linhas[i]?.original.id ?? i,
   })
 
-  const aoAlternar = useCallback((id: string) => alternarExpandido(id), [alternarExpandido])
+  const aoAlternar = useCallback((id: string) => selecionar(id), [selecionar])
 
   useEffect(() => {
-    if (!expandidoId) return
-    const idx = linhas.findIndex((l) => l.original.id === expandidoId)
-    if (idx < 0) return
-    const rolar = () => virtualizador.scrollToIndex(idx, { align: "start" })
-    const t1 = setTimeout(rolar, 30)
-    const t2 = setTimeout(rolar, 450)
-    return () => {
-      clearTimeout(t1)
-      clearTimeout(t2)
-    }
-  }, [expandidoId])
+    if (!selecionadoId) return
+    const idx = linhas.findIndex((l) => l.original.id === selecionadoId)
+    if (idx >= 0) virtualizador.scrollToIndex(idx, { align: "auto" })
+  }, [selecionadoId])
 
   if (linhas.length === 0) {
     return (
@@ -180,7 +163,7 @@ export function CorpoTabela({ table, rolagemRef, alturaFixa }: CorpoProps) {
             ref={virtualizador.measureElement}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", transform: `translateY(${item.start - margem}px)` }}
           >
-            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} par={item.index % 2 === 1} expandido={expandidoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
+            <LinhaPaciente paciente={p} selecionado={selecionadoId === p.id} decisao={decisoes[p.id]} aoAlternar={aoAlternar} />
           </div>
         )
       })}

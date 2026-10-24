@@ -7,8 +7,7 @@ export const COLUNAS: DefinicaoColuna[] = [
   { id: "pos", rotulo: "Posição", padrao: 72, min: 56, max: 140 },
   { id: "paciente", rotulo: "Paciente", padrao: 240, min: 120, max: 600, flexivel: true },
   { id: "classe", rotulo: "Classe", padrao: 72, min: 56, max: 160 },
-  { id: "prazo", rotulo: "Prazo", padrao: 168, min: 100, max: 320, minVw: 768 },
-  { id: "porque", rotulo: "Por que está na fila", padrao: 280, min: 120, max: 900, flexivel: true, minVw: 768 },
+  { id: "prazo", rotulo: "Prazo", padrao: 150, min: 100, max: 320, minVw: 768 },
   { id: "status", rotulo: "Situação", padrao: 112, min: 90, max: 200 },
 ]
 

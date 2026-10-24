@@ -12,8 +12,8 @@ import { cn } from "@/lib/utils"
 import { useStore } from "@/store/useStore"
 
 const TOGGLES: { chave: keyof Filtros; rotulo: string; icone: typeof TimerOff }[] = [
-  { chave: "vencidos", rotulo: "Só prazo vencido", icone: TimerOff },
-  { chave: "alertas", rotulo: "Só com alertas", icone: AlertTriangle },
+  { chave: "vencidos", rotulo: "Prazo vencido", icone: TimerOff },
+  { chave: "alertas", rotulo: "Com alerta", icone: AlertTriangle },
 ]
 
 const STATUS: [StatusFiltro, string][] = [
@@ -22,10 +22,10 @@ const STATUS: [StatusFiltro, string][] = [
   ["revisados", "Revisados"],
 ]
 
-const itensEspecialidade = (): Record<string, string> => Object.fromEntries([["todas", "Todas as especialidades"], ...ESPECIALIDADES.map((e) => [e, e])])
+const itensEspecialidade = (): Record<string, string> => Object.fromEntries([["todas", "Todas"], ...ESPECIALIDADES.map((e) => [e, e])])
 const ITENS_CAMADA: Record<string, string> = { todas: "Todas", "1": "Oncológicos", "2": "Urgentes", "3": "Demais" }
 
-const ITENS_CLASSE: Record<string, string> = Object.fromEntries([["todas", "Todas as classes"], ...CLASSES.map((c) => [c, `Classe ${c}`])])
+const ITENS_CLASSE: Record<string, string> = Object.fromEntries([["todas", "Todas"], ...CLASSES.map((c) => [c, `Classe ${c}`])])
 
 export function FiltrosFila({ total, visiveis }: { total: number; visiveis: number }) {
   const ITENS_ESPECIALIDADE = itensEspecialidade()
@@ -59,7 +59,7 @@ export function FiltrosFila({ total, visiveis }: { total: number; visiveis: numb
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-0 flex-1 basis-full sm:basis-56">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input id="busca-fila" value={filtros.busca} onChange={(e) => setFiltros({ busca: e.target.value })} placeholder="Buscar paciente, CID ou procedimento  ( / )" className="h-9 pl-8" aria-label="Buscar por ID, CID ou procedimento" />
+          <Input id="busca-fila" value={filtros.busca} onChange={(e) => setFiltros({ busca: e.target.value })} placeholder="Buscar" className="h-9 pl-8" aria-label="Buscar por ID, CID ou procedimento" />
         </div>
         <div role="group" aria-label="Filtrar por situação da revisão" className="flex shrink-0 items-center gap-0.5 rounded-lg bg-muted/60 p-0.5">
           {STATUS.map(([valor, rotulo]) => {
@@ -88,7 +88,7 @@ export function FiltrosFila({ total, visiveis }: { total: number; visiveis: numb
         {ativo && (
           <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
             <span className="tabular-nums">
-              {visiveis} de {total} pacientes
+              {visiveis} de {total}
             </span>
             <Button size="xs" variant="ghost" onClick={limpar} className="h-9 gap-1 sm:h-7" aria-label="Limpar filtros">
               <FilterX className="size-3" aria-hidden />
@@ -104,7 +104,7 @@ export function FiltrosFila({ total, visiveis }: { total: number; visiveis: numb
             <SheetTitle>Filtros</SheetTitle>
           </SheetHeader>
           <div className="flex flex-col gap-4 px-4 pb-4">
-            {seletor(ITENS_CAMADA, filtros.camada, (v) => setFiltros({ camada: v }), "Prioridade clínica")}
+            {seletor(ITENS_CAMADA, filtros.camada, (v) => setFiltros({ camada: v }), "Prioridade")}
             {seletor(ITENS_CLASSE, filtros.classe, (v) => setFiltros({ classe: v }), "Classe")}
             {seletor(ITENS_ESPECIALIDADE, filtros.especialidade, (v) => setFiltros({ especialidade: v }), "Especialidade")}
             <div className="flex flex-wrap gap-2">

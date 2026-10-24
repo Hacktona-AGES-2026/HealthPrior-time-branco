@@ -294,7 +294,7 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
       <div className="mb-1 flex items-center justify-between gap-2 px-1">
         <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <span className="truncate">
-            <span className="font-semibold text-foreground">Fila proposta</span> · {TOTAL_FILA} posições
+            <span className="font-semibold text-foreground">Fila proposta</span> · {TOTAL_FILA}
           </span>
           <Button
             size="icon-xs"
@@ -329,8 +329,7 @@ export function Faixa({ aoOcultar }: { aoOcultar?: () => void } = {}) {
       </div>
       {ajuda && (
         <p className="mb-1 px-1 text-xs text-muted-foreground">
-          Coluna = mix de classes do bloco. Linha = salto médio (verde subiu, vermelho desceu). Clique num bloco para ampliar; arraste para selecionar um trecho.
-        </p>
+          Cada coluna é um grupo de posições; clique para ampliar.</p>
       )}
       <div ref={caixa} className="relative w-full rounded-lg outline-none select-none focus-visible:ring-2 focus-visible:ring-ring" style={{ height: ALTURA }} tabIndex={0} onKeyDown={aoTeclar} aria-label="Faixa da fila: setas trocam o paciente, + e - dão zoom, C centraliza, Home reseta">
         <svg width={largura} height={ALTURA} role="img" aria-label={`Faixa da fila com ${TOTAL_FILA} posições${selecionado ? `; paciente ${selecionado.id} vai da posição ${selecionado.posicao_atual} para ${selecionado.posicao}` : ""}`} className="block overflow-visible">

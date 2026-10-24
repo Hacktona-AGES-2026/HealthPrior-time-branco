@@ -14,9 +14,9 @@ function Campo({ rotulo, children, larga }: { rotulo: string; children: ReactNod
   )
 }
 
-function Bloco({ titulo, icone: Icone, children, indice }: { titulo: string; icone: typeof IdCard; children: ReactNode; indice: number }) {
+function Bloco({ titulo, icone: Icone, children }: { titulo: string; icone: typeof IdCard; children: ReactNode; indice?: number }) {
   return (
-    <section className="fx-fade-up rounded-xl bg-muted/40" style={{ animationDelay: `${indice * 90}ms` }}>
+    <section className="rounded-xl bg-muted/40">
       <h3 className="flex items-center gap-1.5 border-b border-border/60 px-3 py-2 text-xs font-semibold uppercase tracking-wide">
         <Icone className="size-3.5" aria-hidden /> {titulo}
       </h3>
